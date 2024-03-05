@@ -3,7 +3,9 @@ module try-on
 go 1.21.7
 
 require (
+	atomicgo.dev/constraints v0.0.1
 	github.com/gofiber/fiber/v2 v2.52.2
+	github.com/gomodule/redigo v1.9.2
 	github.com/google/uuid v1.5.0
 )
 

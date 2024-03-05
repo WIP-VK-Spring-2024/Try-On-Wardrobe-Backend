@@ -6,6 +6,7 @@ import (
 	"try-on/internal/pkg/config"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 )
@@ -21,7 +22,13 @@ func main() {
 		Format: config.JsonLogFormat,
 	})
 
-	api.Use(recover, logger)
+	cors := cors.New(cors.Config{
+		AllowOrigins:     "localhost:80",
+		AllowCredentials: true,
+		MaxAge:           -1,
+	})
+
+	api.Use(recover, logger, cors)
 
 	api.Get("/", func(c *fiber.Ctx) error {
 		_, err := c.WriteString("Hello, world!\n")

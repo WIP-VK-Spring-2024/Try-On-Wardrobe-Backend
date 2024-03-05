@@ -3,7 +3,7 @@ package session
 import "github.com/google/uuid"
 
 type Session struct {
-	Key    string
+	ID     string
 	UserID uuid.UUID
 }
 

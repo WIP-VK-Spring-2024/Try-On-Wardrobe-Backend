@@ -1,7 +1,7 @@
 package domain
 
 import (
-	seasons "try-on/internal/pkg/season"
+	seasons "try-on/internal/pkg/domain/season"
 
 	"github.com/google/uuid"
 )

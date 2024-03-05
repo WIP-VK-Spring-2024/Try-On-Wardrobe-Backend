@@ -1,6 +1,6 @@
 package domain
 
-import "try-on/internal/pkg/gender"
+import "try-on/internal/pkg/domain/gender"
 
 type User struct {
 	Model
