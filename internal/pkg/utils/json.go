@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 )
 
+const EmptyJson = "{}"
+
 func GetJson[T any](bytes []byte) (*T, error) {
 	result := new(T)
 

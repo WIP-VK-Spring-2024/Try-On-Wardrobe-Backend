@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 
 	"try-on/internal/pkg/api_errors"
-	"try-on/internal/pkg/session"
+	"try-on/internal/pkg/domain"
 
 	"github.com/gomodule/redigo/redis"
-	"github.com/google/uuid"
 )
 
 type Config struct {
@@ -17,7 +16,7 @@ type Config struct {
 	RedisAddr     string
 }
 
-func NewRedisSessionStorage(cfg Config) session.SessionRepository {
+func NewRedisSessionStorage(cfg Config) domain.SessionRepository {
 	return &RedisSessionStorage{
 		pool: &redis.Pool{
 			MaxActive: cfg.MaxConn,
@@ -34,14 +33,14 @@ type RedisSessionStorage struct {
 	expireSeconds int64
 }
 
-func (repo *RedisSessionStorage) Put(session *session.Session) error {
+func (repo *RedisSessionStorage) Put(session domain.Session) error {
 	conn := repo.pool.Get()
 	defer conn.Close()
 
 	return repo.add(conn, session, repo.expireSeconds)
 }
 
-func (repo *RedisSessionStorage) Get(key string) (uuid.UUID, error) {
+func (repo *RedisSessionStorage) Get(key string) (*domain.Session, error) {
 	var bytes []byte
 
 	conn := repo.pool.Get()
@@ -52,14 +51,14 @@ func (repo *RedisSessionStorage) Get(key string) (uuid.UUID, error) {
 		if err == redis.ErrNil {
 			err = api_errors.ErrNotFound
 		}
-		return uuid.Nil, err
+		return nil, err
 	}
 
-	result := uuid.Nil
+	result := &domain.Session{}
 
-	err = json.Unmarshal(bytes, &result)
+	err = json.Unmarshal(bytes, result)
 	if err != nil {
-		return uuid.Nil, err
+		return nil, err
 	}
 	return result, nil
 }
@@ -76,7 +75,7 @@ func (repo *RedisSessionStorage) getKey(key string) string {
 	return repo.namespace + ":" + key
 }
 
-func (repo *RedisSessionStorage) add(conn redis.Conn, session *session.Session, expireSeconds int64) error {
+func (repo *RedisSessionStorage) add(conn redis.Conn, session domain.Session, expireSeconds int64) error {
 	bytes, err := json.Marshal(session)
 	if err != nil {
 		return err

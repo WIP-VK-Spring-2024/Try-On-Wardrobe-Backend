@@ -6,10 +6,11 @@ type User struct {
 	Model
 	Name     string
 	Email    string
-	Password string
+	Password []byte
 	Gender   gender.Gender
 }
 
 type UserRepository interface {
 	Create(*User) error
+	GetByName(name string) (*User, error)
 }

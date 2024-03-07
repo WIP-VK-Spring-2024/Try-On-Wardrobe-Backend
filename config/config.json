@@ -1,0 +1,19 @@
+{
+  "port": 8000,
+  "session": {
+    "keyNamespace": "session_id",
+    "cookieName": "session_id",
+    "maxAge": 3600
+  },
+  "postgres": {
+    "user": "try_on_admin",
+    "db": "try_on",
+    "host": "localhost",
+    "port": 5432,
+    "maxConn": 100
+  },
+  "redis": {
+    "host": "localhost:6379",
+    "maxConn": 10
+  }
+}

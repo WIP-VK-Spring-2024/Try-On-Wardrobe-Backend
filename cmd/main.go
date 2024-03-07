@@ -1,39 +1,50 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 
 	"try-on/internal/pkg/config"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/viper"
 )
 
+var configPath *string = flag.String("c", "config/config.json", "Specify config path")
+
 func main() {
-	api := fiber.New()
+	viper.SetConfigFile(*configPath)
 
-	recover := recover.New(recover.Config{
-		EnableStackTrace: true,
+	cfg := config.Config{}
+
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		tmp := config.Config{}
+		err := viper.Unmarshal(&tmp)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		cfg = tmp
+		fmt.Printf("%+v\n", cfg)
 	})
 
-	logger := logger.New(logger.Config{
-		Format: config.JsonLogFormat,
-	})
+	viper.WatchConfig()
 
-	cors := cors.New(cors.Config{
-		AllowOrigins:     "localhost:80",
-		AllowCredentials: true,
-		MaxAge:           -1,
-	})
+	err := viper.ReadInConfig()
+	if err != nil {
+		log.Println(err)
+		return
+	}
 
-	api.Use(recover, logger, cors)
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	fmt.Printf("%+v\n", cfg)
 
-	api.Get("/", func(c *fiber.Ctx) error {
-		_, err := c.WriteString("Hello, world!\n")
-		return err
-	})
+	app := NewApp(&cfg)
 
-	log.Fatal(api.Listen(":8000"))
+	log.Fatal(app.Run())
 }
