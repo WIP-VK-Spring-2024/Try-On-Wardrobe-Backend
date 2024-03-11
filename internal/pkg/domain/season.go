@@ -1,4 +1,4 @@
-package seasons
+package domain
 
 //go:generate stringer -type=Season
 type Season uint8

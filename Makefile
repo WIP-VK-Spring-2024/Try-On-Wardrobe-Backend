@@ -1,12 +1,18 @@
-GO=go1.22.0
-BUILD=build
+GO=go
+BUILD_DIR=build
+ENV=env POSTGRES.PASSWORD=12345
+INTERNAL=internal/pkg
+DOMAIN_PKG=${INTERNAL}/domain
+DELIVERY_PKG=$$(${GO} list -f '{{.Dir}}' ./... | grep delivery | tr '\n' ' ')
+ERRORS_PKG=${INTERNAL}/app_errors
 
-generate:
+gen:
+	easyjson -snake_case -omit_empty -pkg ${DOMAIN_PKG} ${DELIVERY_PKG} ${ERRORS_PKG}
 	${GO} generate ./...
 
-build: generate
-	mkdir -p ${BUILD}
-	${GO} build -o ${BUILD} ./...
+build: gen
+	mkdir -p ${BUILD_DIR}
+	${GO} build -o ${BUILD_DIR} ./...
 
 run: build
-	./${BUILD}/cmd
+	${ENV} ./${BUILD_DIR}/cmd

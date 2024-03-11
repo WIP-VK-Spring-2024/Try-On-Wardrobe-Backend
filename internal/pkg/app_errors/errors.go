@@ -1,6 +1,9 @@
-package api_errors
+package app_errors
 
-import "errors"
+import (
+	"errors"
+	"runtime"
+)
 
 var (
 	ErrNotFound              = errors.New("requested resource does not exist")
@@ -10,3 +13,27 @@ var (
 	ErrAlreadyExists         = errors.New("resource already exists")
 	ErrSessionNotInitialized = errors.New("failed initializing session")
 )
+
+type Error struct {
+	Err  error
+	File string
+	Line int
+}
+
+func (err *Error) Error() string {
+	return err.Err.Error()
+}
+
+func New(err error) *Error {
+	_, file, line, _ := runtime.Caller(1)
+	return &Error{
+		Err:  err,
+		File: file,
+		Line: line,
+	}
+}
+
+//easyjson:json
+type ErrorMsg struct {
+	Msg string
+}

@@ -4,20 +4,25 @@ import (
 	"fmt"
 
 	"try-on/internal/pkg/utils"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Port string
-	Redis
-	Postgres
-	Session
-	Cors
+	Addr     string
+	SqlDir   string
+	Redis    Redis
+	Postgres Postgres
+	Session  Session
+	Cors     Cors
 }
 
 type Cors struct {
 	Domain           string
 	AllowCredentials bool
 	MaxAge           int
+	AllowMethods     []string
 }
 
 type Redis struct {
@@ -45,12 +50,51 @@ type Session struct {
 	MaxAge       int
 }
 
+func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {
+	viper.SetConfigFile(configPath)
+	viper.BindEnv("postgres.password")
+
+	cfg := Config{}
+
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		tmp := Config{}
+		err := viper.Unmarshal(&tmp)
+		if err != nil {
+			if onError != nil {
+				onError(err)
+			}
+			return
+		}
+
+		cfg = tmp
+
+		if onChange != nil {
+			onChange(&cfg)
+		}
+	})
+
+	viper.WatchConfig()
+
+	err := viper.ReadInConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	err = viper.Unmarshal(&cfg)
+	if err != nil {
+		return nil, err
+	}
+	return &cfg, nil
+}
+
 var JsonLogFormat = func() string {
 	values := []string{"time", "status", "latency", "ip", "method", "path", "error"}
 
 	result := utils.Reduce(values, func(first, second string) string {
-		return first + fmt.Sprintf(`%s: "${%s}", `, second, second)
+		return first + fmt.Sprintf(`"%s": "${%s}",`, second, second)
 	})
 
-	return "{" + result[:len(result)-2] + "}\n"
+	return `{"level":"info",` + result[:len(result)-1] + "}\n"
 }()
+
+const TimeFormat = "15:04:05 02.01.2006"

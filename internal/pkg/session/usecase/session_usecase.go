@@ -8,7 +8,7 @@ import (
 	"math/big"
 	"slices"
 
-	"try-on/internal/pkg/api_errors"
+	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 
 	"github.com/google/uuid"
@@ -33,8 +33,8 @@ func (s SessionUsecase) Login(creds domain.Credentials) (*domain.Session, error)
 		return nil, err
 	}
 
-	if !checkPassword(creds.Password, user.Password) {
-		return nil, api_errors.ErrInvalidCredentials
+	if !checkPassword([]byte(creds.Password), user.Password) {
+		return nil, app_errors.ErrInvalidCredentials
 	}
 	return nil, nil
 }
@@ -46,13 +46,13 @@ func (s SessionUsecase) Logout(sessionID string) error {
 func (s SessionUsecase) Register(user *domain.User) (*domain.Session, error) {
 	salt, err := generateSalt()
 	if err != nil {
-		return nil, err
+		return nil, app_errors.New(err)
 	}
 
 	user.Password = slices.Concat(hash(user.Password, salt), []byte{':'}, salt)
 	err = s.users.Create(user)
 	if err != nil {
-		return nil, err
+		return nil, app_errors.New(err)
 	}
 
 	session := domain.Session{
@@ -62,7 +62,7 @@ func (s SessionUsecase) Register(user *domain.User) (*domain.Session, error) {
 
 	err = s.sessions.Put(session)
 	if err != nil {
-		return nil, errors.Join(err, api_errors.ErrSessionNotInitialized)
+		return nil, errors.Join(err, app_errors.ErrSessionNotInitialized)
 	}
 
 	return &session, nil
@@ -82,7 +82,7 @@ func checkPassword(got, expected []byte) bool {
 
 func hash(pass, salt []byte) []byte {
 	bytes := argon2.IDKey(pass, salt, 1, 64*1024, 4, 32)
-	result := make([]byte, 0, 3*len(bytes)/2)
+	result := make([]byte, base64.StdEncoding.EncodedLen(len(bytes)))
 	base64.StdEncoding.Encode(result, bytes)
 	return result
 }

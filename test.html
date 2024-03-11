@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <button id="register-btn">Register</button>
+    <script>
+      document.getElementById("register-btn").addEventListener("click", () => {
+        fetch("http://localhost:8000/register", {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name: "test", password: "111" }),
+        });
+      });
+    </script>
+  </body>
+</html>

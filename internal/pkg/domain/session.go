@@ -7,9 +7,10 @@ type Session struct {
 	UserID uuid.UUID
 }
 
+//easyjson:json
 type Credentials struct {
 	Name     string
-	Password []byte
+	Password string
 }
 
 type SessionUsecase interface {

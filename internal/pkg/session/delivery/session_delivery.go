@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"try-on/internal/pkg/api_errors"
+	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	sessionRepo "try-on/internal/pkg/session/repository"
@@ -44,15 +44,13 @@ func NewSessionHandler(db *gorm.DB, cfg Config) *SessionHandler {
 
 func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 	var credentials domain.Credentials
-
-	err := json.Unmarshal(ctx.Body(), &credentials)
-	if err != nil {
-		return err
+	if err := ctx.BodyParser(&credentials); err != nil {
+		return app_errors.New(err)
 	}
 
 	user := domain.User{
 		Name:     credentials.Name,
-		Password: credentials.Password,
+		Password: []byte(credentials.Password),
 	}
 
 	session, err := h.sessions.Register(&user)
@@ -61,10 +59,10 @@ func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 		ctx.Cookie(getCookie(h.cfg.CookieName, session.ID, h.cfg.MaxAge))
 		return ctx.SendString(utils.EmptyJson)
 
-	case errors.Is(err, api_errors.ErrAlreadyExists):
+	case errors.Is(err, app_errors.ErrAlreadyExists):
 		return fiber.ErrConflict
 
-	case errors.Is(err, api_errors.ErrSessionNotInitialized):
+	case errors.Is(err, app_errors.ErrSessionNotInitialized):
 		log.Warnw("user", credentials.Name, "error", err)
 		return nil
 
@@ -87,11 +85,11 @@ func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 		ctx.Cookie(getCookie(h.cfg.CookieName, session.ID, h.cfg.MaxAge))
 		return ctx.SendString(utils.EmptyJson)
 
-	case errors.Is(err, api_errors.ErrSessionNotInitialized):
+	case errors.Is(err, app_errors.ErrSessionNotInitialized):
 		log.Warnw("user", credentials.Name, "error", err)
 		return nil
 
-	case errors.Is(err, api_errors.ErrInvalidCredentials):
+	case errors.Is(err, app_errors.ErrInvalidCredentials):
 		return fiber.ErrForbidden
 
 	default:

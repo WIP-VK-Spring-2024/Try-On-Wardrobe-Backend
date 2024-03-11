@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:16.2-alpine
+    restart: unless-stopped
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: try-on-admin
+      POSTGRES_DB: try-on
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    ports:
+      - 5432:5432 # Для дебага
+    secrets:
+      - postgres_password
+
+  redis:
+    image: redis:7.2.4-alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379 # Для дебага
+
+secrets:
+  postgres_password:
+      environment: "POSTGRES.PASSWORD"

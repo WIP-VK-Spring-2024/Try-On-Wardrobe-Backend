@@ -1,13 +1,11 @@
 package domain
 
-import "try-on/internal/pkg/domain/gender"
-
 type User struct {
 	Model
-	Name     string
-	Email    string
-	Password []byte
-	Gender   gender.Gender
+	Name     string `gorm:"type:varchar(256)"`
+	Email    string `gorm:"type:varchar(512);unique"`
+	Password []byte `gorm:"type:varchar(256)"`
+	Gender   Gender `gorm:"type:gender"`
 }
 
 type UserRepository interface {

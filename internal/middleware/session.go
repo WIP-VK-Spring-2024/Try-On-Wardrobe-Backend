@@ -3,7 +3,7 @@ package middleware
 import (
 	"context"
 
-	"try-on/internal/pkg/api_errors"
+	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,7 +23,7 @@ func AddSession(cfg SessionConfig) fiber.Handler {
 		cookie := ctx.Cookies(cfg.CookieName)
 
 		session, err := cfg.Sessions.Get(cookie)
-		if err != nil && err != api_errors.ErrInvalidCredentials {
+		if err != nil && err != app_errors.ErrInvalidCredentials {
 			return err
 		}
 

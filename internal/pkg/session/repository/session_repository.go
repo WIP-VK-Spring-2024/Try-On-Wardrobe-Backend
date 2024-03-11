@@ -3,7 +3,7 @@ package redis
 import (
 	"encoding/json"
 
-	"try-on/internal/pkg/api_errors"
+	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 
 	"github.com/gomodule/redigo/redis"
@@ -49,7 +49,7 @@ func (repo *RedisSessionStorage) Get(key string) (*domain.Session, error) {
 	bytes, err := redis.Bytes(conn.Do("GET", repo.getKey(key)))
 	if err != nil {
 		if err == redis.ErrNil {
-			err = api_errors.ErrNotFound
+			err = app_errors.ErrNotFound
 		}
 		return nil, err
 	}
