@@ -10,9 +10,9 @@ import (
 	"go.uber.org/zap"
 )
 
-type loggerKeyType string
+type loggerKeyType struct{}
 
-const loggerKey loggerKeyType = "logger"
+var loggerKey loggerKeyType = struct{}{}
 
 func AddLogger(logger *zap.SugaredLogger) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
@@ -21,11 +21,16 @@ func AddLogger(logger *zap.SugaredLogger) fiber.Handler {
 	}
 }
 
-func LogError(ctx *fiber.Ctx, err error) {
+func GetLogger(ctx *fiber.Ctx) *zap.SugaredLogger {
 	logger, ok := ctx.UserContext().Value(loggerKey).(*zap.SugaredLogger)
 	if !ok {
 		logger = zap.S()
 	}
+	return logger
+}
+
+func LogError(ctx *fiber.Ctx, err error) {
+	logger := GetLogger(ctx)
 
 	var e *app_errors.Error
 	if errors.As(err, &e) {

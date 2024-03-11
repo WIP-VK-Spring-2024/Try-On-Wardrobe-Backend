@@ -15,8 +15,8 @@ type Credentials struct {
 
 type SessionUsecase interface {
 	Login(Credentials) (*Session, error)
-	Register(user *User) (*Session, error)
-	Logout(sessionID string) error
+	IsLoggedIn(*Session) (bool, error)
+	IssueToken(id uuid.UUID) (string, error)
 }
 
 type SessionRepository interface {

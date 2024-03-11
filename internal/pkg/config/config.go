@@ -12,7 +12,6 @@ import (
 type Config struct {
 	Addr     string
 	SqlDir   string
-	Redis    Redis
 	Postgres Postgres
 	Session  Session
 	Cors     Cors
@@ -23,11 +22,6 @@ type Cors struct {
 	AllowCredentials bool
 	MaxAge           int
 	AllowMethods     []string
-}
-
-type Redis struct {
-	Addr    string
-	MaxConn int
 }
 
 type Postgres struct {
@@ -45,14 +39,16 @@ func (cfg *Postgres) DSN() string {
 }
 
 type Session struct {
-	KeyNamespace string
-	CookieName   string
-	MaxAge       int
+	TokenName string
+	MaxAge    int
+	Secret    string
 }
 
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {
 	viper.SetConfigFile(configPath)
+
 	viper.BindEnv("postgres.password")
+	viper.BindEnv("session.secret")
 
 	cfg := Config{}
 
@@ -88,10 +84,10 @@ func NewDynamicConfig(configPath string, onChange func(*Config), onError func(er
 }
 
 var JsonLogFormat = func() string {
-	values := []string{"time", "status", "latency", "ip", "method", "path", "error"}
+	values := []string{"time", "status", "latency", "ip", "method", "path"}
 
 	result := utils.Reduce(values, func(first, second string) string {
-		return first + fmt.Sprintf(`"%s": "${%s}",`, second, second)
+		return first + fmt.Sprintf(`"%s":"${%s}",`, second, second)
 	})
 
 	return `{"level":"info",` + result[:len(result)-1] + "}\n"

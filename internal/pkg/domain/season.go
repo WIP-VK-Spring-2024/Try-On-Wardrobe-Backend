@@ -1,11 +1,10 @@
 package domain
 
-//go:generate stringer -type=Season
-type Season uint8
+type Season string
 
 const (
-	Winter Season = iota
-	Spring
-	Summer
-	Autumn
+	Winter Season = "winter"
+	Spring Season = "spring"
+	Summer Season = "summer"
+	Autumn Season = "autumn"
 )

@@ -2,70 +2,103 @@ package usecase
 
 import (
 	"bytes"
-	"crypto/rand"
-	"encoding/base64"
 	"errors"
-	"math/big"
+	"fmt"
 	"slices"
+	"time"
 
 	"try-on/internal/pkg/app_errors"
+	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/utils"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"golang.org/x/crypto/argon2"
 )
 
-type SessionUsecase struct {
-	users    domain.UserRepository
-	sessions domain.SessionRepository
+type JwtSessionUsecase struct {
+	users domain.UserRepository
+	cfg   *config.Session
 }
 
-func NewSessionUsecase(users domain.UserRepository, sessions domain.SessionRepository) domain.SessionUsecase {
-	return &SessionUsecase{
-		users:    users,
-		sessions: sessions,
+func New(users domain.UserRepository, cfg *config.Session) domain.SessionUsecase {
+	return &JwtSessionUsecase{
+		users: users,
+		cfg:   cfg,
 	}
 }
 
-func (s SessionUsecase) Login(creds domain.Credentials) (*domain.Session, error) {
+func (s JwtSessionUsecase) Login(creds domain.Credentials) (*domain.Session, error) {
 	user, err := s.users.GetByName(creds.Name)
 	if err != nil {
-		return nil, err
+		return nil, app_errors.New(err)
 	}
 
 	if !checkPassword([]byte(creds.Password), user.Password) {
 		return nil, app_errors.ErrInvalidCredentials
 	}
-	return nil, nil
-}
 
-func (s SessionUsecase) Logout(sessionID string) error {
-	return s.sessions.Delete(sessionID)
-}
-
-func (s SessionUsecase) Register(user *domain.User) (*domain.Session, error) {
-	salt, err := generateSalt()
+	token, err := s.IssueToken(user.ID)
 	if err != nil {
 		return nil, app_errors.New(err)
 	}
 
-	user.Password = slices.Concat(hash(user.Password, salt), []byte{':'}, salt)
-	err = s.users.Create(user)
-	if err != nil {
-		return nil, app_errors.New(err)
-	}
-
-	session := domain.Session{
-		ID:     uuid.NewString(),
+	return &domain.Session{
+		ID:     token,
 		UserID: user.ID,
-	}
+	}, nil
+}
 
-	err = s.sessions.Put(session)
+func (s JwtSessionUsecase) IsLoggedIn(session *domain.Session) (bool, error) {
+	token, err := jwt.Parse(session.ID, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(s.cfg.Secret), nil
+	})
+
+	switch {
+	case token != nil && token.Valid:
+		subject, err := token.Claims.GetSubject()
+		if err != nil {
+			return false, app_errors.New(err)
+		}
+
+		session.UserID, err = uuid.Parse(subject)
+		if err != nil {
+			return false, app_errors.New(err)
+		}
+		return true, nil
+
+	case errors.Is(err, jwt.ErrTokenMalformed):
+		return false, app_errors.ErrTokenMalformed
+
+	case errors.Is(err, jwt.ErrTokenSignatureInvalid):
+		return false, app_errors.ErrInvalidSignature
+
+	case errors.Is(err, jwt.ErrTokenExpired) || errors.Is(err, jwt.ErrTokenNotValidYet):
+		return false, app_errors.ErrTokenExpired
+
+	default:
+		return false, app_errors.New(err)
+	}
+}
+
+func (s JwtSessionUsecase) IssueToken(id uuid.UUID) (string, error) {
+	issuedAt := time.Now()
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": id.String(),
+		"iat": jwt.NewNumericDate(issuedAt),
+		"exp": jwt.NewNumericDate(issuedAt.Add(time.Second * time.Duration(s.cfg.MaxAge))),
+	})
+
+	tokenString, err := token.SignedString([]byte(s.cfg.Secret))
 	if err != nil {
-		return nil, errors.Join(err, app_errors.ErrSessionNotInitialized)
+		return "", app_errors.New(err)
 	}
 
-	return &session, nil
+	return tokenString, nil
 }
 
 func checkPassword(got, expected []byte) bool {
@@ -75,24 +108,7 @@ func checkPassword(got, expected []byte) bool {
 	}
 
 	pass, salt := parts[0], parts[1]
-	hashed := hash(got, salt)
+	hashed := utils.Hash(got, salt)
 
 	return slices.Equal(hashed, pass)
-}
-
-func hash(pass, salt []byte) []byte {
-	bytes := argon2.IDKey(pass, salt, 1, 64*1024, 4, 32)
-	result := make([]byte, base64.StdEncoding.EncodedLen(len(bytes)))
-	base64.StdEncoding.Encode(result, bytes)
-	return result
-}
-
-var intMax *big.Int = big.NewInt(64 * 1024)
-
-func generateSalt() ([]byte, error) {
-	salt, err := rand.Int(rand.Reader, intMax)
-	if err != nil {
-		return nil, err
-	}
-	return salt.Bytes(), nil
 }

@@ -1,11 +1,10 @@
 package domain
 
-//go:generate stringer -type=Gender
-type Gender uint8
+type Gender string
 
 const (
-	Male Gender = iota
-	Female
-	Unisex
-	Unknown
+	Male    Gender = "male"
+	Female  Gender = "female"
+	Unisex  Gender = "unisex"
+	Unknown Gender = "unknown"
 )

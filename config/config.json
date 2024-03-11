@@ -2,9 +2,9 @@
   "addr": ":8000",
   "sqlDir": "scripts/sql",
   "session": {
-    "keyNamespace": "session_id",
-    "cookieName": "session_id",
-    "maxAge": 3600
+    "tokenName": "X-Session-ID",
+    "maxAge": 60,
+    "secret": "secret"
   },
   "postgres": {
     "user": "try-on-admin",
@@ -12,10 +12,6 @@
     "host": "localhost",
     "port": 5432,
     "maxConn": 100
-  },
-  "redis": {
-    "host": "localhost:6379",
-    "maxConn": 10
   },
   "cors": {
     "domain": "http://127.0.0.1:5500",

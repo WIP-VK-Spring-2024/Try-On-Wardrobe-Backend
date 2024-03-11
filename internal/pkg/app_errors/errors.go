@@ -12,6 +12,9 @@ var (
 	ErrInvalidCredentials    = errors.New("invalid credentials")
 	ErrAlreadyExists         = errors.New("resource already exists")
 	ErrSessionNotInitialized = errors.New("failed initializing session")
+	ErrTokenMalformed        = errors.New("token malformed or missing")
+	ErrInvalidSignature      = errors.New("token has invalid signature")
+	ErrTokenExpired          = errors.New("token has expired")
 )
 
 type Error struct {
@@ -24,13 +27,13 @@ func (err *Error) Error() string {
 	return err.Err.Error()
 }
 
-func New(err error) *Error {
+func New(err error) error {
 	_, file, line, _ := runtime.Caller(1)
-	return &Error{
+	return errors.Join(&Error{
 		Err:  err,
 		File: file,
 		Line: line,
-	}
+	}, err)
 }
 
 //easyjson:json

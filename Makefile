@@ -1,6 +1,7 @@
 GO=go
 BUILD_DIR=build
 ENV=env POSTGRES.PASSWORD=12345
+
 INTERNAL=internal/pkg
 DOMAIN_PKG=${INTERNAL}/domain
 DELIVERY_PKG=$$(${GO} list -f '{{.Dir}}' ./... | grep delivery | tr '\n' ' ')
@@ -16,3 +17,6 @@ build: gen
 
 run: build
 	${ENV} ./${BUILD_DIR}/cmd
+
+docker: build
+	docker compose up --build

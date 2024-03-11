@@ -2,6 +2,8 @@ package middleware
 
 import (
 	"context"
+	"slices"
+	"strings"
 
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
@@ -9,44 +11,50 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-type sessionKeyType string
+type sessionKeyType struct{}
 
-const sessionKey sessionKeyType = "session"
+var sessionKey sessionKeyType = struct{}{}
 
 type SessionConfig struct {
-	CookieName string
-	Sessions   domain.SessionRepository
+	TokenName    string
+	Sessions     domain.SessionUsecase
+	NoAuthRoutes []string
+	SecureRoutes []string
 }
 
-func AddSession(cfg SessionConfig) fiber.Handler {
+func CheckSession(cfg SessionConfig) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		cookie := ctx.Cookies(cfg.CookieName)
+		if slices.Contains(cfg.NoAuthRoutes, ctx.Path()) {
+			return ctx.Next()
+		}
 
-		session, err := cfg.Sessions.Get(cookie)
+		session := domain.Session{
+			ID: ctx.Get(cfg.TokenName),
+		}
+
+		ok, err := cfg.Sessions.IsLoggedIn(&session)
 		if err != nil && err != app_errors.ErrInvalidCredentials {
 			return err
 		}
 
-		context := context.WithValue(ctx.UserContext(), sessionKey, session)
-		ctx.SetUserContext(context)
+		if ok {
+			context := context.WithValue(ctx.UserContext(), sessionKey, &session)
+			ctx.SetUserContext(context)
+		} else if slices.ContainsFunc(cfg.SecureRoutes, func(prefix string) bool {
+			return strings.HasPrefix(ctx.Path(), prefix)
+		}) {
+			return fiber.ErrUnauthorized
+		}
 
 		return ctx.Next()
 	}
 }
 
-func GetSession(ctx *fiber.Ctx) *domain.Session {
+func Session(ctx *fiber.Ctx) *domain.Session {
 	value := ctx.UserContext().Value(sessionKey)
 	session, ok := value.(*domain.Session)
 	if !ok {
 		return nil
 	}
 	return session
-}
-
-func CheckSession(ctx *fiber.Ctx) error {
-	session := GetSession(ctx)
-	if session == nil {
-		return fiber.ErrUnauthorized
-	}
-	return ctx.Next()
 }

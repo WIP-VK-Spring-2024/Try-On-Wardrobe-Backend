@@ -12,12 +12,6 @@ services:
     secrets:
       - postgres_password
 
-  redis:
-    image: redis:7.2.4-alpine
-    restart: unless-stopped
-    ports:
-      - 6379:6379 # Для дебага
-
 secrets:
   postgres_password:
       environment: "POSTGRES.PASSWORD"

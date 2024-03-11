@@ -1,44 +1,41 @@
 package delivery
 
 import (
-	"encoding/json"
 	"errors"
 
+	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	sessionRepo "try-on/internal/pkg/session/repository"
 	sessionUsecase "try-on/internal/pkg/session/usecase"
 	userRepo "try-on/internal/pkg/users/repository"
-	"try-on/internal/pkg/utils"
+	userUsecase "try-on/internal/pkg/users/usecase"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
 )
 
 type SessionHandler struct {
-	sessions domain.SessionUsecase
-	cfg      config.Session
+	Sessions domain.SessionUsecase
+	users    domain.UserUsecase
+	cfg      *config.Session
 }
 
-type Config struct {
-	config.Session
-	config.Redis
+//easyjson:json
+type tokenResponse struct {
+	Token string
 }
 
-func NewSessionHandler(db *gorm.DB, cfg Config) *SessionHandler {
+func NewSessionHandler(db *gorm.DB, cfg *config.Session) *SessionHandler {
+	userRepo := userRepo.New(db)
+
 	return &SessionHandler{
-		sessions: sessionUsecase.NewSessionUsecase(
-			userRepo.NewUserRepository(db),
-			sessionRepo.NewRedisSessionStorage(sessionRepo.Config{
-				Namespace:     cfg.KeyNamespace,
-				MaxConn:       cfg.MaxConn,
-				RedisAddr:     cfg.Addr,
-				ExpireSeconds: int64(cfg.MaxAge),
-			}),
+		Sessions: sessionUsecase.New(
+			userRepo,
+			cfg,
 		),
-		cfg: cfg.Session,
+		users: userUsecase.New(userRepo),
+		cfg:   cfg,
 	}
 }
 
@@ -48,45 +45,47 @@ func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	user := domain.User{
-		Name:     credentials.Name,
-		Password: []byte(credentials.Password),
-	}
-
-	session, err := h.sessions.Register(&user)
+	user, err := h.users.Create(credentials)
 	switch {
 	case err == nil:
-		ctx.Cookie(getCookie(h.cfg.CookieName, session.ID, h.cfg.MaxAge))
-		return ctx.SendString(utils.EmptyJson)
+		break
 
 	case errors.Is(err, app_errors.ErrAlreadyExists):
 		return fiber.ErrConflict
 
 	case errors.Is(err, app_errors.ErrSessionNotInitialized):
-		log.Warnw("user", credentials.Name, "error", err)
+		middleware.GetLogger(ctx).Warnw("user", credentials.Name, "error", err)
 		return nil
 
 	default:
 		return err
 	}
-}
 
-func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
-	var credentials domain.Credentials
-
-	err := json.Unmarshal(ctx.Body(), &credentials)
+	token, err := h.Sessions.IssueToken(user.ID)
 	if err != nil {
 		return err
 	}
 
-	session, err := h.sessions.Login(credentials)
+	return ctx.JSON(tokenResponse{
+		Token: token,
+	})
+}
+
+func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
+	var credentials domain.Credentials
+	if err := ctx.BodyParser(&credentials); err != nil {
+		return app_errors.New(err)
+	}
+
+	session, err := h.Sessions.Login(credentials)
 	switch {
 	case err == nil:
-		ctx.Cookie(getCookie(h.cfg.CookieName, session.ID, h.cfg.MaxAge))
-		return ctx.SendString(utils.EmptyJson)
+		return ctx.JSON(tokenResponse{
+			Token: session.ID,
+		})
 
 	case errors.Is(err, app_errors.ErrSessionNotInitialized):
-		log.Warnw("user", credentials.Name, "error", err)
+		middleware.GetLogger(ctx).Warnw("user", credentials.Name, "error", err)
 		return nil
 
 	case errors.Is(err, app_errors.ErrInvalidCredentials):
@@ -94,29 +93,5 @@ func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 
 	default:
 		return err
-	}
-}
-
-func (h *SessionHandler) Logout(ctx *fiber.Ctx) error {
-	sessionID := ctx.Cookies(h.cfg.CookieName)
-	if sessionID == "" {
-		return fiber.ErrUnauthorized
-	}
-
-	err := h.sessions.Logout(sessionID)
-	if err != nil {
-		return err
-	}
-
-	return ctx.SendString(utils.EmptyJson)
-}
-
-func getCookie(name, value string, maxAge int) *fiber.Cookie {
-	return &fiber.Cookie{
-		Name:     name,
-		Value:    value,
-		SameSite: "strict",
-		HTTPOnly: true,
-		MaxAge:   maxAge,
 	}
 }

@@ -21,7 +21,6 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	gormLogger "gorm.io/gorm/logger"
 )
 
 type App struct {
@@ -40,8 +39,6 @@ func (app *App) Run() error {
 	if err != nil {
 		return err
 	}
-
-	app.registerMiddleware()
 
 	err = app.registerRoutes(db)
 	if err != nil {
@@ -68,7 +65,8 @@ func (app *App) getDB() (*gorm.DB, error) {
 	dsn := app.cfg.Postgres.DSN()
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: gormLogger.Discard,
+		// Logger: gormLogger.Discard,
+		TranslateError: true,
 	})
 	if err != nil {
 		return nil, err
@@ -78,31 +76,6 @@ func (app *App) getDB() (*gorm.DB, error) {
 }
 
 func (app *App) registerRoutes(db *gorm.DB) error {
-	sessionHandler := session.NewSessionHandler(db, session.Config{
-		Session: app.cfg.Session,
-		Redis:   app.cfg.Redis,
-	})
-
-	authRoutes := fiber.New()
-	// authRoutes.Use(middleware.AddSession(middleware.SessionConfig{
-	// 	CookieName: app.cfg.Session.CookieName,
-	// 	Sessions: ,
-	// }), middleware.CheckSession)
-
-	app.api.Post("/register", sessionHandler.Register)
-	app.api.Post("/login", sessionHandler.Login)
-	authRoutes.Post("/logout", sessionHandler.Logout)
-
-	app.api.Get("/", func(ctx *fiber.Ctx) error {
-		return ctx.SendString("Hello, world!\n")
-	})
-
-	app.api.Mount("/", authRoutes)
-
-	return nil
-}
-
-func (app *App) registerMiddleware() {
 	recover := recover.New(recover.Config{
 		EnableStackTrace: true,
 	})
@@ -118,7 +91,38 @@ func (app *App) registerMiddleware() {
 		MaxAge:           app.cfg.Cors.MaxAge,
 	})
 
-	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger))
+	sessionHandler := session.NewSessionHandler(db, &app.cfg.Session)
+
+	addSession := middleware.CheckSession(middleware.SessionConfig{
+		TokenName:    app.cfg.Session.TokenName,
+		Sessions:     sessionHandler.Sessions,
+		NoAuthRoutes: []string{"/register", "/login"},
+		SecureRoutes: []string{"/auth-only"},
+	})
+
+	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), addSession)
+
+	app.api.Post("/register", sessionHandler.Register)
+	app.api.Post("/login", sessionHandler.Login)
+
+	app.api.Get("/check", func(ctx *fiber.Ctx) error {
+		session := middleware.Session(ctx)
+		if session == nil {
+			return ctx.SendString("Not logged in\n")
+		}
+		return ctx.SendString("Logged in\n")
+	})
+
+	app.api.Get("/auth-only", func(ctx *fiber.Ctx) error {
+		session := middleware.Session(ctx)
+		return ctx.SendString(fmt.Sprintln("Hello,", session.UserID, '!'))
+	})
+
+	app.api.Get("/", func(ctx *fiber.Ctx) error {
+		return ctx.SendString("Hello, world!\n")
+	})
+
+	return nil
 }
 
 func applyMigrations(scriptsDir string, db *gorm.DB) error {

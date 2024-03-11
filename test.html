@@ -6,18 +6,51 @@
     <title>Document</title>
   </head>
   <body>
-    <button id="register-btn">Register</button>
+    <input type="text" name="name" id="name" />
+    <input type="password" name="password" id="password" />
+
+    <div style="display: flex">
+      <button id="register-btn">Register</button>
+      <button id="login-btn">Login</button>
+      <button id="auth-only-btn">Auth only</button>
+      <button id="logged-in-btn">Am i logged in?</button>
+    </div>
+
+    <div id="body"></div>
     <script>
-      document.getElementById("register-btn").addEventListener("click", () => {
-        fetch("http://localhost:8000/register", {
-          method: "POST",
-          mode: "cors",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ name: "test", password: "111" }),
-        });
+      let jwtToken = "";
+
+      const getCredentials = () => ({
+        name: document.getElementById("name").value,
+        password: document.getElementById("password").value,
       });
+
+      const makeRequestBtn = (btn, route, method) => {
+        document.getElementById(btn).addEventListener("click", () => {
+          fetch("http://localhost:8000/" + route, {
+            method: method,
+            mode: "cors",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Session-ID": jwtToken,
+            },
+            body: method == "POST" ? JSON.stringify(getCredentials()) : null,
+          })
+            .then((resp) => resp.json())
+            .then((resp) => {
+              document.getElementById("body").textContent =
+                JSON.stringify(resp);
+              if (resp.token) {
+                jwtToken = resp.token;
+              }
+            });
+        });
+      };
+
+      makeRequestBtn("register-btn", "register", "POST");
+      makeRequestBtn("login-btn", "login", "POST");
+      makeRequestBtn("logged-in-btn", "check", "GET");
+      makeRequestBtn("auth-only-btn", "auth-only", "GET");
     </script>
   </body>
 </html>
