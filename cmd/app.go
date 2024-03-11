@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
+	"time"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
@@ -62,9 +65,14 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 }
 
 func (app *App) getDB() (*gorm.DB, error) {
-	dsn := app.cfg.Postgres.DSN()
+	pg, err := initPostgres(&app.cfg.Postgres)
+	if err != nil {
+		return nil, err
+	}
 
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: pg,
+	}), &gorm.Config{
 		// Logger: gormLogger.Discard,
 		TranslateError: true,
 	})
@@ -197,4 +205,32 @@ func easyjsonUnmarshal(data []byte, value interface{}) error {
 		return easyjson.Unmarshal(data, unmarshaler)
 	}
 	return json.Unmarshal(data, value)
+}
+
+func initPostgres(config *config.Postgres) (*sql.DB, error) {
+	till := time.Now().Add(time.Second * config.InitTimeout)
+
+	db, err := sql.Open("pgx", config.DSN())
+	if err != nil {
+		return nil, err
+	}
+
+	for time.Now().Before(till) {
+		log.Println("Trying to open pg connection")
+
+		err = db.Ping()
+		if err == nil {
+			log.Println("Ping sucessful")
+			break
+		}
+
+		time.Sleep(time.Second)
+	}
+
+	if err != nil {
+		return nil, errors.New("connection to postgres timed out")
+	}
+
+	db.SetMaxOpenConns(config.MaxConn)
+	return db, nil
 }

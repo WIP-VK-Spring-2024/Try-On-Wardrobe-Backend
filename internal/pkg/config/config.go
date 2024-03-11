@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"time"
 
 	"try-on/internal/pkg/utils"
 
@@ -25,12 +26,13 @@ type Cors struct {
 }
 
 type Postgres struct {
-	DB       string
-	User     string
-	Password string
-	Host     string
-	Port     string
-	MaxConn  int
+	DB          string
+	User        string
+	Password    string
+	Host        string
+	Port        string
+	MaxConn     int
+	InitTimeout time.Duration
 }
 
 func (cfg *Postgres) DSN() string {
@@ -47,6 +49,8 @@ type Session struct {
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {
 	viper.SetConfigFile(configPath)
 
+	viper.BindEnv("postgres.host")
+	viper.BindEnv("postgres.port")
 	viper.BindEnv("postgres.password")
 	viper.BindEnv("session.secret")
 

@@ -9,9 +9,10 @@
   "postgres": {
     "user": "try-on-admin",
     "db": "try-on",
-    "host": "localhost",
+    "addr": "localhost",
     "port": 5432,
-    "maxConn": 100
+    "maxConn": 100,
+    "initTimeout": 10
   },
   "cors": {
     "domain": "http://127.0.0.1:5500",

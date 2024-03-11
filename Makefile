@@ -15,8 +15,12 @@ build: gen
 	mkdir -p ${BUILD_DIR}
 	${GO} build -o ${BUILD_DIR} ./...
 
+build_alpine: gen
+	mkdir -p ${BUILD_DIR}/alpine
+	env GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ${GO} build -o ${BUILD_DIR}/alpine ./...
+
 run: build
 	${ENV} ./${BUILD_DIR}/cmd
 
-docker: build
-	docker compose up --build
+docker: build_alpine
+	docker compose up --build -d
