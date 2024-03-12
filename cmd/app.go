@@ -1,19 +1,13 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"log"
-	"os"
-	"time"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
-	"try-on/internal/pkg/domain"
 	session "try-on/internal/pkg/session/delivery"
 
 	"github.com/gofiber/fiber/v2"
@@ -38,7 +32,7 @@ func (app *App) Run() error {
 		return err
 	}
 
-	err = applyMigrations(app.cfg.SqlDir, db)
+	err = applyMigrations(app.cfg.Sql, db)
 	if err != nil {
 		return err
 	}
@@ -133,43 +127,6 @@ func (app *App) registerRoutes(db *gorm.DB) error {
 	return nil
 }
 
-func applyMigrations(scriptsDir string, db *gorm.DB) error {
-	files, err := os.ReadDir(scriptsDir)
-	if err != nil {
-		return err
-	}
-
-	for _, fileInfo := range files {
-		if fileInfo.IsDir() {
-			continue
-		}
-
-		file, err := os.Open(scriptsDir + "/" + fileInfo.Name())
-		if err != nil {
-			return err
-		}
-
-		bytes, err := io.ReadAll(file)
-		if err != nil {
-			return err
-		}
-
-		err = db.Exec(string(bytes)).Error
-		if err != nil {
-			return errors.Join(fmt.Errorf("failed applying migration '%s'", fileInfo.Name()), err)
-		}
-	}
-
-	return db.AutoMigrate(
-		&domain.User{},
-		&domain.Clothes{},
-		&domain.Tag{},
-		&domain.Style{},
-		&domain.Type{},
-		&domain.Subtype{},
-	)
-}
-
 func errorHandler(ctx *fiber.Ctx, err error) error {
 	code := fiber.StatusInternalServerError
 	msg := "Internal Server Error"
@@ -205,32 +162,4 @@ func easyjsonUnmarshal(data []byte, value interface{}) error {
 		return easyjson.Unmarshal(data, unmarshaler)
 	}
 	return json.Unmarshal(data, value)
-}
-
-func initPostgres(config *config.Postgres) (*sql.DB, error) {
-	till := time.Now().Add(time.Second * config.InitTimeout)
-
-	db, err := sql.Open("pgx", config.DSN())
-	if err != nil {
-		return nil, err
-	}
-
-	for time.Now().Before(till) {
-		log.Println("Trying to open pg connection")
-
-		err = db.Ping()
-		if err == nil {
-			log.Println("Ping sucessful")
-			break
-		}
-
-		time.Sleep(time.Second)
-	}
-
-	if err != nil {
-		return nil, errors.New("connection to postgres timed out")
-	}
-
-	db.SetMaxOpenConns(config.MaxConn)
-	return db, nil
 }

@@ -16,6 +16,7 @@ type Config struct {
 	Postgres Postgres
 	Session  Session
 	Cors     Cors
+	Sql      Sql
 }
 
 type Cors struct {
@@ -33,6 +34,12 @@ type Postgres struct {
 	Port        string
 	MaxConn     int
 	InitTimeout time.Duration
+}
+
+type Sql struct {
+	Dir        string
+	BeforeGorm []string
+	AfterGorm  []string
 }
 
 func (cfg *Postgres) DSN() string {

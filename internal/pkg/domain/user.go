@@ -4,8 +4,8 @@ import "database/sql"
 
 type User struct {
 	Model
-	Name     string         `gorm:"type:varchar(256);uniqueIndex:uni_users_name,class:varchar_pattern_ops"`
-	Email    sql.NullString `gorm:"type:varchar(512);unique"`
+	Name     string         `gorm:"type:varchar(256)"`
+	Email    sql.NullString `gorm:"type:varchar(512)"`
 	Password []byte         `gorm:"type:varchar(256)"`
 	Gender   Gender         `gorm:"type:gender;default:gender('unknown')"`
 }

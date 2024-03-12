@@ -1,27 +1,29 @@
 package domain
 
 import (
+	"database/sql"
+
 	"github.com/google/uuid"
 )
 
 type Clothes struct {
 	Model
 
-	Name string `gorm:"type:varchar(128)"`
-	Note string `gorm:"type:varchar(512)"`
-	Tags []Tag  `gorm:"many2many:clothes_tags;"`
+	Name string         `gorm:"type:varchar(128)"`
+	Note sql.NullString `gorm:"type:varchar(512)"`
+	Tags []Tag          `gorm:"many2many:clothes_tags;"`
 
-	StyleID int
-	Style   Style
+	StyleID uuid.UUID
+	Style   *Style
 
-	TypeID int
+	TypeID uuid.UUID
 	Type   Type
 
-	SubtypeID int
+	SubtypeID uuid.UUID
 	Subtype   Subtype
 
-	Color   string   `gorm:"type:char(7)"`
-	Seasons []Season `gorm:"type:season[]"`
+	Color   sql.NullString `gorm:"type:char(7)"`
+	Seasons []Season       `gorm:"type:season[]"`
 }
 
 type ClothesFilters struct {
