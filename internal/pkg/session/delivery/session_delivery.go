@@ -26,7 +26,7 @@ type tokenResponse struct {
 	Token string
 }
 
-func NewSessionHandler(db *gorm.DB, cfg *config.Session) *SessionHandler {
+func New(db *gorm.DB, cfg *config.Session) *SessionHandler {
 	userRepo := userRepo.New(db)
 
 	return &SessionHandler{
@@ -52,10 +52,6 @@ func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 
 	case errors.Is(err, app_errors.ErrAlreadyExists):
 		return fiber.ErrConflict
-
-	case errors.Is(err, app_errors.ErrSessionNotInitialized):
-		middleware.GetLogger(ctx).Warnw("user", credentials.Name, "error", err)
-		return nil
 
 	default:
 		return err
@@ -84,14 +80,26 @@ func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 			Token: session.ID,
 		})
 
-	case errors.Is(err, app_errors.ErrSessionNotInitialized):
-		middleware.GetLogger(ctx).Warnw("user", credentials.Name, "error", err)
-		return nil
-
 	case errors.Is(err, app_errors.ErrInvalidCredentials):
 		return fiber.ErrForbidden
 
 	default:
 		return err
 	}
+}
+
+func (h *SessionHandler) Renew(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return fiber.ErrUnauthorized
+	}
+
+	token, err := h.Sessions.IssueToken(session.UserID)
+	if err != nil {
+		return err
+	}
+
+	return ctx.JSON(tokenResponse{
+		Token: token,
+	})
 }

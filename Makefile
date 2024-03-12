@@ -7,6 +7,8 @@ DOMAIN_PKG=${INTERNAL}/domain
 DELIVERY_PKG=$$(${GO} list -f '{{.Dir}}' ./... | grep delivery | tr '\n' ' ')
 ERRORS_PKG=${INTERNAL}/app_errors
 
+.PHONY: gen build build_alpine run docker
+
 gen:
 	easyjson -snake_case -omit_empty -pkg ${DOMAIN_PKG} ${DELIVERY_PKG} ${ERRORS_PKG}
 	${GO} generate ./...

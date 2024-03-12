@@ -3,10 +3,10 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
+	clothes "try-on/internal/pkg/clothes/delivery"
 	"try-on/internal/pkg/config"
 	session "try-on/internal/pkg/session/delivery"
 
@@ -93,36 +93,26 @@ func (app *App) registerRoutes(db *gorm.DB) error {
 		MaxAge:           app.cfg.Cors.MaxAge,
 	})
 
-	sessionHandler := session.NewSessionHandler(db, &app.cfg.Session)
+	sessionHandler := session.New(db, &app.cfg.Session)
 
-	addSession := middleware.CheckSession(middleware.SessionConfig{
+	checkSession := middleware.CheckSession(middleware.SessionConfig{
 		TokenName:    app.cfg.Session.TokenName,
 		Sessions:     sessionHandler.Sessions,
 		NoAuthRoutes: []string{"/register", "/login"},
-		SecureRoutes: []string{"/auth-only"},
+		SecureRoutes: []string{"/renew"},
 	})
 
-	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), addSession)
+	clothesHandler := clothes.New(db)
+
+	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
 
 	app.api.Post("/register", sessionHandler.Register)
 	app.api.Post("/login", sessionHandler.Login)
+	app.api.Post("/renew", sessionHandler.Renew)
 
-	app.api.Get("/check", func(ctx *fiber.Ctx) error {
-		session := middleware.Session(ctx)
-		if session == nil {
-			return ctx.SendString("Not logged in\n")
-		}
-		return ctx.SendString("Logged in\n")
-	})
-
-	app.api.Get("/auth-only", func(ctx *fiber.Ctx) error {
-		session := middleware.Session(ctx)
-		return ctx.SendString(fmt.Sprintln("Hello,", session.UserID, '!'))
-	})
-
-	app.api.Get("/", func(ctx *fiber.Ctx) error {
-		return ctx.SendString("Hello, world!\n")
-	})
+	app.api.Post("/clothes", clothesHandler.Upload)
+	app.api.Get("/clothes/:id", clothesHandler.GetByID)
+	app.api.Get("/user/:id/clothes", clothesHandler.GetByUser)
 
 	return nil
 }

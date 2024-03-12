@@ -15,6 +15,7 @@ var (
 	ErrTokenMalformed        = errors.New("token malformed or missing")
 	ErrInvalidSignature      = errors.New("token has invalid signature")
 	ErrTokenExpired          = errors.New("token has expired")
+	ErrUnimplemented         = errors.New("method unimplemented")
 )
 
 type Error struct {

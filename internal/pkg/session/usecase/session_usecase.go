@@ -84,11 +84,11 @@ func (s JwtSessionUsecase) IsLoggedIn(session *domain.Session) (bool, error) {
 	}
 }
 
-func (s JwtSessionUsecase) IssueToken(id uuid.UUID) (string, error) {
+func (s JwtSessionUsecase) IssueToken(userID uuid.UUID) (string, error) {
 	issuedAt := time.Now()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": id.String(),
+		"sub": userID.String(),
 		"iat": jwt.NewNumericDate(issuedAt),
 		"exp": jwt.NewNumericDate(issuedAt.Add(time.Second * time.Duration(s.cfg.MaxAge))),
 	})
