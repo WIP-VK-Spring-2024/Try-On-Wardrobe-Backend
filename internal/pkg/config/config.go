@@ -18,6 +18,7 @@ type Config struct {
 	Cors     Cors
 	Sql      Sql
 	S3       S3
+	Rabbit   Rabbit
 }
 
 type Cors struct {
@@ -25,6 +26,19 @@ type Cors struct {
 	AllowCredentials bool
 	MaxAge           int
 	AllowMethods     []string
+}
+
+type Rabbit struct {
+	Host          string
+	Port          int
+	User          string
+	Password      string
+	RequestQueue  string
+	ResponseQueue string
+}
+
+func (cfg *Rabbit) Addr() string {
+	return fmt.Sprintf("amqp://%s:%s@%s:%d/", cfg.User, cfg.Password, cfg.Host, cfg.Port)
 }
 
 type Postgres struct {
@@ -70,6 +84,7 @@ func NewDynamicConfig(configPath string, onChange func(*Config), onError func(er
 	viper.BindEnv("session.secret")
 	viper.BindEnv("s3.accessKey")
 	viper.BindEnv("s3.secretKey")
+	viper.BindEnv("rabbit.password")
 
 	cfg := Config{}
 

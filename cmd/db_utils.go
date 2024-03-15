@@ -23,7 +23,7 @@ func applyMigrations(cfg config.Sql, db *gorm.DB) error {
 
 	err = db.AutoMigrate(
 		&domain.User{},
-		&domain.Clothes{},
+		&domain.ClothesModel{},
 		&domain.Tag{},
 		&domain.Style{},
 		&domain.Type{},
@@ -62,6 +62,7 @@ func execSqlScript(db *gorm.DB, path string) error {
 
 func initPostgres(config *config.Postgres) (*sql.DB, error) {
 	till := time.Now().Add(time.Second * config.InitTimeout)
+	log.Println("Connecting to postgres:", config.DSN())
 
 	db, err := sql.Open("pgx", config.DSN())
 	if err != nil {

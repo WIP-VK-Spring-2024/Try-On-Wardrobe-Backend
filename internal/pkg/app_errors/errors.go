@@ -21,6 +21,7 @@ var (
 		Msg:  "bad request",
 		Code: http.StatusBadRequest,
 	}
+
 	ErrUnauthorized = ErrorMsg{
 		Msg:  "credentials missing or invalid",
 		Code: http.StatusUnauthorized,
@@ -61,7 +62,7 @@ func New(err error) error {
 	case errors.Is(err, ErrAlreadyExists):
 		code = http.StatusConflict
 
-	case errors.Is(err, ErrAlreadyExists):
+	case errors.Is(err, ErrNotFound):
 		code = http.StatusNotFound
 
 	case errors.Is(err, ErrInvalidCredentials):

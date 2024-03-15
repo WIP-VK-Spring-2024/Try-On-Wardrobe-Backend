@@ -18,7 +18,13 @@ func New(repo domain.ClothesRepository) domain.ClothesUsecase {
 }
 
 func (c *ClothesUsecase) Create(clothes *domain.Clothes) error {
-	return app_errors.ErrUnimplemented
+	return c.repo.Create(&domain.ClothesModel{
+		UserID: clothes.UserID,
+		Name:   clothes.Name,
+		Type: domain.Type{
+			Name: clothes.Type,
+		},
+	})
 }
 
 func (c *ClothesUsecase) Update(clothes *domain.Clothes) error {

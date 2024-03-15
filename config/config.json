@@ -1,20 +1,32 @@
 {
-  "addr": ":8000",
+  "addr": ":8001",
   "imageDir": "images",
+
+  "rabbit": {
+    "host": "wardrobe-rabbitmq",
+    "port": 5672,
+    "user": "usr",
+    "requestQueue": "model",
+    "responseQueue": "model_response"
+  },
+
   "sql": {
     "dir": "scripts/sql",
     "beforeGorm": ["data_types.sql"],
     "afterGorm": ["indeces.sql"]
   },
+
   "s3": {
     "endpoint": "https://hb.ru-msk.vkcs.cloud",
     "bucket": "try_on_wardrobe_images"
   },
+
   "session": {
     "tokenName": "X-Session-ID",
     "maxAge": 60,
     "secret": "secret"
   },
+
   "postgres": {
     "user": "try-on-admin",
     "db": "try-on",
@@ -23,6 +35,7 @@
     "maxConn": 100,
     "initTimeout": 10
   },
+
   "cors": {
     "domain": "http://127.0.0.1:5500",
     "allowCredentials": true,

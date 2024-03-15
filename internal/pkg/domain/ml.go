@@ -1,15 +1,24 @@
 package domain
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type ClothesProcessingModel interface {
-	Process(opts ClothesProcessingOpts) error
+	Process(ctx context.Context, opts ClothesProcessingOpts) error
 }
 
+//easyjson:json
 type ClothesProcessingOpts struct {
-	UserID        uuid.UUID
-	ClothesID     uuid.UUID
-	ImagePath     string
-	CutBackground bool
-	Categorise    bool
+	UserID    uuid.UUID
+	ImageID   uuid.UUID
+	FileName  string
+	ImageType string
 }
+
+const (
+	ImageTypeCloth    = "cloth"
+	ImageTypeFullBody = "full-body"
+)

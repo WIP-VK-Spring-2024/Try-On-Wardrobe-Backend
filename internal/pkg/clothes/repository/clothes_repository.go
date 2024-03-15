@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ClothesRepository struct {
@@ -21,7 +22,16 @@ func New(db *gorm.DB) domain.ClothesRepository {
 const initClothesNum = 15
 
 func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
-	err := c.db.Create(clothes).Error
+	err := c.db.Clauses(clause.OnConflict{
+		Columns: []clause.Column{
+			{Table: "tags", Name: "name"},
+			{Table: "styles", Name: "name"},
+			{Table: "types", Name: "name"},
+			{Table: "subtypes", Name: "name"},
+		},
+		DoNothing: true,
+	}).Create(clothes).Error
+
 	return utils.GormError(err)
 }
 

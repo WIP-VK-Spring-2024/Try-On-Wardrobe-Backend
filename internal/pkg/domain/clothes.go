@@ -18,13 +18,13 @@ type ClothesModel struct {
 	UserID uuid.UUID
 	User   User
 
-	StyleID uuid.UUID
+	StyleID uuid.UUID `gorm:"default:null"`
 	Style   *Style
 
-	TypeID uuid.UUID
+	TypeID uuid.UUID `gorm:"default:null"`
 	Type   Type
 
-	SubtypeID uuid.UUID
+	SubtypeID uuid.UUID `gorm:"default:null"`
 	Subtype   Subtype
 
 	Color   sql.NullString `gorm:"type:char(7)"`

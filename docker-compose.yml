@@ -5,12 +5,13 @@ services:
     depends_on:
       - postgres
     ports:
-      - 8000:8000
+      - 8001:8001
     environment:
       - POSTGRES.PASSWORD
       - POSTGRES.HOST
       - POSTGRES.PORT
       - SESSION.SECRET
+      - RABBIT.PASSWORD
 
 
   postgres:
@@ -27,3 +28,8 @@ services:
 secrets:
   postgres_password:
       environment: "POSTGRES.PASSWORD"
+
+networks:
+  default:
+      external: true
+      name: shared-api-network

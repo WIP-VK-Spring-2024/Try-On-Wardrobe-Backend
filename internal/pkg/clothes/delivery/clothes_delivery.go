@@ -7,8 +7,8 @@ import (
 	"try-on/internal/pkg/app_errors"
 	clothesRepo "try-on/internal/pkg/clothes/repository"
 	clothesUsecase "try-on/internal/pkg/clothes/usecase"
+	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -20,10 +20,11 @@ type ClothesHandler struct {
 	model   domain.ClothesProcessingModel
 }
 
-func New(db *gorm.DB, file domain.FileManager) *ClothesHandler {
+func New(db *gorm.DB, file domain.FileManager, model domain.ClothesProcessingModel) *ClothesHandler {
 	return &ClothesHandler{
 		clothes: clothesUsecase.New(clothesRepo.New(db)),
 		file:    file,
+		model:   model,
 	}
 }
 
@@ -38,6 +39,7 @@ type clothesUploadArgs struct {
 func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	var args clothesUploadArgs
 	if err := ctx.BodyParser(&args); err != nil {
+		middleware.LogError(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 
@@ -59,6 +61,7 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 
 	fileHeader, err := ctx.FormFile("img")
 	if err != nil {
+		middleware.LogError(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 
@@ -80,17 +83,17 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	err = h.model.Process(domain.ClothesProcessingOpts{
-		UserID:        session.UserID,
-		ClothesID:     clothes.ID,
-		ImagePath:     imagePath,
-		CutBackground: true,
+	err = h.model.Process(ctx.UserContext(), domain.ClothesProcessingOpts{
+		UserID:    session.UserID,
+		ImageID:   clothes.ID,
+		FileName:  imagePath,
+		ImageType: domain.ImageTypeCloth,
 	})
 	if err != nil {
 		return app_errors.New(err)
 	}
 
-	return ctx.SendString(utils.EmptyJson)
+	return ctx.SendString(common.EmptyJson)
 }
 
 func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {

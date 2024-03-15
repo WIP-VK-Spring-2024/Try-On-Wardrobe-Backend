@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
 	"try-on/internal/middleware"
@@ -10,7 +11,10 @@ import (
 	clothes "try-on/internal/pkg/clothes/delivery"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/file_manager/filesystem"
+	"try-on/internal/pkg/ml"
 	session "try-on/internal/pkg/session/delivery"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -39,7 +43,20 @@ func (app *App) Run() error {
 		return err
 	}
 
-	err = app.registerRoutes(db)
+	log.Println("Connecting to rabbit", app.cfg.Rabbit.Addr())
+	rabbitConn, err := amqp.Dial(app.cfg.Rabbit.Addr())
+	if err != nil {
+		return err
+	}
+	defer rabbitConn.Close()
+
+	rabbitChan, err := rabbitConn.Channel()
+	if err != nil {
+		return err
+	}
+	defer rabbitChan.Close()
+
+	err = app.registerRoutes(db, rabbitChan)
 	if err != nil {
 		return err
 	}
@@ -70,7 +87,8 @@ func (app *App) getDB() (*gorm.DB, error) {
 		Conn: pg,
 	}), &gorm.Config{
 		// Logger: gormLogger.Discard,
-		TranslateError: true,
+		FullSaveAssociations: true,
+		TranslateError:       true,
 	})
 	if err != nil {
 		return nil, err
@@ -79,7 +97,7 @@ func (app *App) getDB() (*gorm.DB, error) {
 	return db, nil
 }
 
-func (app *App) registerRoutes(db *gorm.DB) error {
+func (app *App) registerRoutes(db *gorm.DB, rabbitChan *amqp.Channel) error {
 	recover := recover.New(recover.Config{
 		EnableStackTrace: true,
 	})
@@ -101,10 +119,15 @@ func (app *App) registerRoutes(db *gorm.DB) error {
 		TokenName:    app.cfg.Session.TokenName,
 		Sessions:     sessionHandler.Sessions,
 		NoAuthRoutes: []string{"/register", "/login"},
-		SecureRoutes: []string{"/renew"},
+		SecureRoutes: []string{"/renew", "/clothes", "/user"},
 	})
 
-	clothesHandler := clothes.New(db, filesystem.New(app.cfg.ImageDir))
+	clothesProcessor, err := ml.New(app.cfg.Rabbit.RequestQueue, rabbitChan)
+	if err != nil {
+		return err
+	}
+
+	clothesHandler := clothes.New(db, filesystem.New(app.cfg.ImageDir), clothesProcessor)
 
 	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
 
@@ -122,7 +145,7 @@ func (app *App) registerRoutes(db *gorm.DB) error {
 func errorHandler(ctx *fiber.Ctx, err error) error {
 	msg := "Internal Server Error"
 
-	var errorMsg *app_errors.ErrorMsg
+	var errorMsg app_errors.ErrorMsg
 	if errors.As(err, &errorMsg) {
 		return ctx.Status(errorMsg.Code).JSON(errorMsg)
 	}

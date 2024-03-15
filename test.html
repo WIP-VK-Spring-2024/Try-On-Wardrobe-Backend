@@ -14,9 +14,18 @@
       <button id="login-btn">Login</button>
     </div>
 
+    <br />
+
+    <form action="http://localhost:8001/clothes" method="post" id="form">
+      <input type="text" name="type" id="clothesName" />
+      <input type="file" name="img" />
+      <button type="submit">Send image</button>
+    </form>
+
     <div id="body"></div>
     <script>
       let jwtToken = "";
+      const form = document.getElementById("form");
 
       const getCredentials = () => ({
         name: document.getElementById("name").value,
@@ -25,7 +34,7 @@
 
       const makeRequestBtn = (btn, route, method) => {
         document.getElementById(btn).addEventListener("click", () => {
-          fetch("http://localhost:8000/" + route, {
+          fetch("http://localhost:8001/" + route, {
             method: method,
             mode: "cors",
             headers: {
@@ -47,6 +56,26 @@
 
       makeRequestBtn("register-btn", "register", "POST");
       makeRequestBtn("login-btn", "login", "POST");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        fetch("http://localhost:8001/clothes", {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-Session-ID": jwtToken,
+          },
+          body: new URLSearchParams(new FormData(form)),
+        })
+          .then((resp) => resp.json())
+          .then((resp) => {
+            document.getElementById("body").textContent = JSON.stringify(resp);
+            if (resp.token) {
+              jwtToken = resp.token;
+            }
+          });
+      });
     </script>
   </body>
 </html>

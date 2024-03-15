@@ -54,8 +54,12 @@ func easyjson5d450e75EncodeTryOnInternalPkgAppErrors(out *jwriter.Writer, in Err
 	_ = first
 	if in.Msg != "" {
 		const prefix string = ",\"msg\":"
-		first = false
-		out.RawString(prefix[1:])
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.Msg))
 	}
 	out.RawByte('}')
