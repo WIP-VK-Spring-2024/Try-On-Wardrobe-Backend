@@ -1,8 +1,6 @@
 package delivery
 
 import (
-	"errors"
-
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
@@ -42,24 +40,17 @@ func New(db *gorm.DB, cfg *config.Session) *SessionHandler {
 func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 	var credentials domain.Credentials
 	if err := ctx.BodyParser(&credentials); err != nil {
-		return app_errors.New(err)
+		return app_errors.ErrBadRequest
 	}
 
 	user, err := h.users.Create(credentials)
-	switch {
-	case err == nil:
-		break
-
-	case errors.Is(err, app_errors.ErrAlreadyExists):
-		return fiber.ErrConflict
-
-	default:
-		return err
+	if err != nil {
+		return app_errors.New(err)
 	}
 
 	token, err := h.Sessions.IssueToken(user.ID)
 	if err != nil {
-		return err
+		return app_errors.New(err)
 	}
 
 	return ctx.JSON(tokenResponse{
@@ -70,33 +61,27 @@ func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 	var credentials domain.Credentials
 	if err := ctx.BodyParser(&credentials); err != nil {
-		return app_errors.New(err)
+		return app_errors.ErrBadRequest
 	}
 
 	session, err := h.Sessions.Login(credentials)
-	switch {
-	case err == nil:
-		return ctx.JSON(tokenResponse{
-			Token: session.ID,
-		})
-
-	case errors.Is(err, app_errors.ErrInvalidCredentials):
-		return fiber.ErrForbidden
-
-	default:
-		return err
+	if err != nil {
+		return app_errors.New(err)
 	}
+	return ctx.JSON(tokenResponse{
+		Token: session.ID,
+	})
 }
 
 func (h *SessionHandler) Renew(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
-		return fiber.ErrUnauthorized
+		return app_errors.ErrUnauthorized
 	}
 
 	token, err := h.Sessions.IssueToken(session.UserID)
 	if err != nil {
-		return err
+		return app_errors.New(err)
 	}
 
 	return ctx.JSON(tokenResponse{

@@ -12,7 +12,7 @@ import (
 
 type Config struct {
 	Addr     string
-	SqlDir   string
+	ImageDir string
 	Postgres Postgres
 	Session  Session
 	Cors     Cors

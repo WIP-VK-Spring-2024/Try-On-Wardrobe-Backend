@@ -3,11 +3,13 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"net/http"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	clothes "try-on/internal/pkg/clothes/delivery"
 	"try-on/internal/pkg/config"
+	"try-on/internal/pkg/file_manager/filesystem"
 	session "try-on/internal/pkg/session/delivery"
 
 	"github.com/gofiber/fiber/v2"
@@ -102,7 +104,7 @@ func (app *App) registerRoutes(db *gorm.DB) error {
 		SecureRoutes: []string{"/renew"},
 	})
 
-	clothesHandler := clothes.New(db)
+	clothesHandler := clothes.New(db, filesystem.New(app.cfg.ImageDir))
 
 	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
 
@@ -118,20 +120,16 @@ func (app *App) registerRoutes(db *gorm.DB) error {
 }
 
 func errorHandler(ctx *fiber.Ctx, err error) error {
-	code := fiber.StatusInternalServerError
 	msg := "Internal Server Error"
 
-	var fiberError *fiber.Error
-	if errors.As(err, &fiberError) {
-		code = fiberError.Code
-		msg = err.Error()
+	var errorMsg *app_errors.ErrorMsg
+	if errors.As(err, &errorMsg) {
+		return ctx.Status(errorMsg.Code).JSON(errorMsg)
 	}
 
-	if code == fiber.StatusInternalServerError {
-		middleware.LogError(ctx, err)
-	}
+	middleware.LogError(ctx, err)
 
-	return ctx.Status(code).JSON(
+	return ctx.Status(http.StatusInternalServerError).JSON(
 		&app_errors.ErrorMsg{
 			Msg: msg,
 		},

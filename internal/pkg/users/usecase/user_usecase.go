@@ -3,7 +3,6 @@ package usecase
 import (
 	"slices"
 
-	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
@@ -21,7 +20,7 @@ func New(repo domain.UserRepository) domain.UserUsecase {
 func (u *UserUsecase) Create(creds domain.Credentials) (*domain.User, error) {
 	salt, err := utils.NewSalt()
 	if err != nil {
-		return nil, app_errors.New(err)
+		return nil, err
 	}
 
 	user := &domain.User{
@@ -31,7 +30,7 @@ func (u *UserUsecase) Create(creds domain.Credentials) (*domain.User, error) {
 
 	err = u.repo.Create(user)
 	if err != nil {
-		return nil, app_errors.New(err)
+		return nil, err
 	}
 
 	return user, nil

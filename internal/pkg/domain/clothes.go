@@ -13,6 +13,8 @@ type ClothesModel struct {
 	Note sql.NullString `gorm:"type:varchar(512)"`
 	Tags []Tag          `gorm:"many2many:clothes_tags;"`
 
+	Image string `gorm:"type:varchar(256)"`
+
 	UserID uuid.UUID
 	User   User
 
@@ -34,6 +36,10 @@ type Clothes struct {
 	Name string
 	Note string
 	Tags []string
+
+	Image string
+
+	UserID uuid.UUID
 
 	Style   string
 	Type    string

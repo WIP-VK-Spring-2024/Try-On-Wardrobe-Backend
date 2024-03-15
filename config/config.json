@@ -1,5 +1,6 @@
 {
   "addr": ":8000",
+  "imageDir": "images",
   "sql": {
     "dir": "scripts/sql",
     "beforeGorm": ["data_types.sql"],

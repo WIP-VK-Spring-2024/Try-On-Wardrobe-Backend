@@ -32,7 +32,7 @@ func GetLogger(ctx *fiber.Ctx) *zap.SugaredLogger {
 func LogError(ctx *fiber.Ctx, err error) {
 	logger := GetLogger(ctx)
 
-	var e *app_errors.Error
+	var e *app_errors.InternalError
 	if errors.As(err, &e) {
 		logger.Errorw(err.Error(), "method", ctx.Method(), "path", ctx.Path(), "file", e.File, "line", e.Line)
 	} else {

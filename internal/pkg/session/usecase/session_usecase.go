@@ -31,7 +31,7 @@ func New(users domain.UserRepository, cfg *config.Session) domain.SessionUsecase
 func (s JwtSessionUsecase) Login(creds domain.Credentials) (*domain.Session, error) {
 	user, err := s.users.GetByName(creds.Name)
 	if err != nil {
-		return nil, app_errors.New(err)
+		return nil, err
 	}
 
 	if !checkPassword([]byte(creds.Password), user.Password) {
@@ -40,7 +40,7 @@ func (s JwtSessionUsecase) Login(creds domain.Credentials) (*domain.Session, err
 
 	token, err := s.IssueToken(user.ID)
 	if err != nil {
-		return nil, app_errors.New(err)
+		return nil, err
 	}
 
 	return &domain.Session{
@@ -61,12 +61,12 @@ func (s JwtSessionUsecase) IsLoggedIn(session *domain.Session) (bool, error) {
 	case token != nil && token.Valid:
 		subject, err := token.Claims.GetSubject()
 		if err != nil {
-			return false, app_errors.New(err)
+			return false, err
 		}
 
 		session.UserID, err = uuid.Parse(subject)
 		if err != nil {
-			return false, app_errors.New(err)
+			return false, err
 		}
 		return true, nil
 
@@ -80,7 +80,7 @@ func (s JwtSessionUsecase) IsLoggedIn(session *domain.Session) (bool, error) {
 		return false, app_errors.ErrTokenExpired
 
 	default:
-		return false, app_errors.New(err)
+		return false, err
 	}
 }
 
@@ -95,7 +95,7 @@ func (s JwtSessionUsecase) IssueToken(userID uuid.UUID) (string, error) {
 
 	tokenString, err := token.SignedString([]byte(s.cfg.Secret))
 	if err != nil {
-		return "", app_errors.New(err)
+		return "", err
 	}
 
 	return tokenString, nil
