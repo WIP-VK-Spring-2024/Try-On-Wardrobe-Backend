@@ -17,6 +17,7 @@ type Config struct {
 	Session  Session
 	Cors     Cors
 	Sql      Sql
+	S3       S3
 }
 
 type Cors struct {
@@ -36,21 +37,28 @@ type Postgres struct {
 	InitTimeout time.Duration
 }
 
+func (cfg *Postgres) DSN() string {
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		cfg.Host, cfg.User, cfg.Password, cfg.DB, cfg.Port)
+}
+
 type Sql struct {
 	Dir        string
 	BeforeGorm []string
 	AfterGorm  []string
 }
 
-func (cfg *Postgres) DSN() string {
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		cfg.Host, cfg.User, cfg.Password, cfg.DB, cfg.Port)
-}
-
 type Session struct {
 	TokenName string
 	MaxAge    int
 	Secret    string
+}
+
+type S3 struct {
+	Endpoint  string
+	Bucket    string
+	AccessKey string
+	SecretKey string
 }
 
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {
@@ -60,6 +68,8 @@ func NewDynamicConfig(configPath string, onChange func(*Config), onError func(er
 	viper.BindEnv("postgres.port")
 	viper.BindEnv("postgres.password")
 	viper.BindEnv("session.secret")
+	viper.BindEnv("s3.accessKey")
+	viper.BindEnv("s3.secretKey")
 
 	cfg := Config{}
 

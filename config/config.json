@@ -5,6 +5,10 @@
     "beforeGorm": ["data_types.sql"],
     "afterGorm": ["indeces.sql"]
   },
+  "s3": {
+    "endpoint": "https://hb.ru-msk.vkcs.cloud",
+    "bucket": "try_on_wardrobe_images"
+  },
   "session": {
     "tokenName": "X-Session-ID",
     "maxAge": 60,
