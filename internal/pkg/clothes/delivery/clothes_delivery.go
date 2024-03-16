@@ -226,5 +226,5 @@ func (c *ClothesHandler) GetTryOnResult(ctx *fiber.Ctx) error {
 	// 	return app_errors.New(err)
 	// }
 
-	return ctx.SendString("{'url':'result.jpeg'}")
+	return ctx.SendString(`{"url":"result.jpeg"}`)
 }
