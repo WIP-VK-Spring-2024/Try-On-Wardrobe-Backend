@@ -190,6 +190,7 @@ func (h *ClothesHandler) TryOn(ctx *fiber.Ctx) error {
 
 	err = h.model.TryOn(ctx.UserContext(), domain.TryOnOpts{
 		UserID:          userID,
+		ClothesID:       clothingID,
 		ClothesFileName: clothing.Image,
 		ClothesFilePath: curPath + "/stubs/clothes/" + clothing.Image,
 		PersonFileName:  personFileName,
