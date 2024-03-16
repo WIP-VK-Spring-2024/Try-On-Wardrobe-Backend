@@ -13,7 +13,7 @@
   "sql": {
     "dir": "scripts/sql",
     "beforeGorm": ["data_types.sql"],
-    "afterGorm": ["indeces.sql"]
+    "afterGorm": ["indeces.sql", "init_fill.sql"]
   },
 
   "s3": {
@@ -23,14 +23,14 @@
 
   "session": {
     "tokenName": "X-Session-ID",
-    "maxAge": 60,
+    "maxAge": 86400,
     "secret": "secret"
   },
 
   "postgres": {
     "user": "try-on-admin",
     "db": "try-on",
-    "addr": "localhost",
+    "addr": "postgres",
     "port": 5432,
     "maxConn": 100,
     "initTimeout": 10

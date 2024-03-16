@@ -22,15 +22,28 @@ func New(db *gorm.DB) domain.ClothesRepository {
 const initClothesNum = 15
 
 func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
-	err := c.db.Clauses(clause.OnConflict{
-		Columns: []clause.Column{
-			{Table: "tags", Name: "name"},
-			{Table: "styles", Name: "name"},
-			{Table: "types", Name: "name"},
-			{Table: "subtypes", Name: "name"},
-		},
-		DoNothing: true,
-	}).Create(clothes).Error
+	err := c.db.Transaction(func(tx *gorm.DB) error {
+		clauses := func() *gorm.DB {
+			return tx.Clauses(clause.OnConflict{DoNothing: true})
+		}
+
+		if clothes.Style != nil {
+			if err := clauses().Create(clothes.Style).Error; err != nil {
+				return err
+			}
+		}
+
+		if err := clauses().Create(&clothes.Subtype).Error; err != nil {
+			return err
+		}
+
+		if err := clauses().Create(&clothes.Type).Error; err != nil {
+			return err
+		}
+
+		return tx.Create(clothes).Error
+	},
+	)
 
 	return utils.GormError(err)
 }
@@ -53,7 +66,10 @@ func (c *ClothesRepository) Delete(id uuid.UUID) error {
 
 func (c *ClothesRepository) GetByUser(userID uuid.UUID, filters *domain.ClothesFilters) ([]domain.ClothesModel, error) {
 	clothes := make([]domain.ClothesModel, 0, initClothesNum)
-	err := utils.GormError(c.db.Find(clothes, "user_id = ?", userID).Error)
+
+	result := c.db.Limit(initClothesNum).Find(clothes, "user_id = ?", userID)
+
+	err := utils.GormError(result.Error)
 	if err != nil {
 		return nil, err
 	}

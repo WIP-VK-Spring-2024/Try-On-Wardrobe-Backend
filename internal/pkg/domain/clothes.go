@@ -54,6 +54,7 @@ func (ClothesModel) TableName() string {
 }
 
 type ClothesFilters struct {
+	Limit   int
 	Tags    []string
 	Style   string
 	Type    string

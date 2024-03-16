@@ -2,6 +2,7 @@ package delivery
 
 import (
 	"fmt"
+	"net/http"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
@@ -11,6 +12,7 @@ import (
 	"try-on/internal/pkg/domain"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -97,5 +99,27 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 }
 
 func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {
-	return app_errors.ErrUnimplemented
+	userID, err := uuid.Parse(ctx.Params("user"))
+	if err != nil {
+		return &app_errors.ErrorMsg{
+			Code: http.StatusBadRequest,
+			Msg:  "userID should be a valid uuid",
+		}
+	}
+
+	var filters domain.ClothesFilters
+
+	if err := ctx.QueryParser(&filters); err != nil {
+		return &app_errors.ErrorMsg{
+			Code: http.StatusBadRequest,
+			Msg:  "invalid filters passed",
+		}
+	}
+
+	clothes, err := h.clothes.GetByUser(userID, &filters)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(clothes) // TODO: Make normal
 }

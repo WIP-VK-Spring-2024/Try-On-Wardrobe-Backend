@@ -87,7 +87,7 @@ func (app *App) getDB() (*gorm.DB, error) {
 		Conn: pg,
 	}), &gorm.Config{
 		// Logger: gormLogger.Discard,
-		FullSaveAssociations: true,
+		FullSaveAssociations: false,
 		TranslateError:       true,
 	})
 	if err != nil {
@@ -119,7 +119,7 @@ func (app *App) registerRoutes(db *gorm.DB, rabbitChan *amqp.Channel) error {
 		TokenName:    app.cfg.Session.TokenName,
 		Sessions:     sessionHandler.Sessions,
 		NoAuthRoutes: []string{"/register", "/login"},
-		SecureRoutes: []string{"/renew", "/clothes", "/user"},
+		SecureRoutes: []string{"/renew", "/clothes"},
 	})
 
 	clothesProcessor, err := ml.New(app.cfg.Rabbit.RequestQueue, rabbitChan)

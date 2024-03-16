@@ -43,7 +43,7 @@ func CheckSession(cfg SessionConfig) fiber.Handler {
 		} else if slices.ContainsFunc(cfg.SecureRoutes, func(prefix string) bool {
 			return strings.HasPrefix(ctx.Path(), prefix)
 		}) {
-			return fiber.ErrUnauthorized
+			return app_errors.ErrUnauthorized
 		}
 
 		return ctx.Next()
