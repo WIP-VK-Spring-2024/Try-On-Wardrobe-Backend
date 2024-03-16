@@ -9,7 +9,7 @@ type TryOnResult struct {
 	Rating int
 
 	UserID uuid.UUID
-	USer   *User
+	User   *User
 
 	ClothesModelID uuid.UUID
 	ClothesModel   *ClothesModel
