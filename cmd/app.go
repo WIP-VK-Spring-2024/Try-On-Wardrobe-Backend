@@ -139,6 +139,8 @@ func (app *App) registerRoutes(db *gorm.DB, rabbitChan *amqp.Channel) error {
 	app.api.Get("/clothes/:id", clothesHandler.GetByID)
 	app.api.Get("/user/:id/clothes", clothesHandler.GetByUser)
 
+	app.api.Static("/", "./images")
+
 	return nil
 }
 
