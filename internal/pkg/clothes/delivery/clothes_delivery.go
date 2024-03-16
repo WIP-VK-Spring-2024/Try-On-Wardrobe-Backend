@@ -99,8 +99,9 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 }
 
 func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {
-	userID, err := uuid.Parse(ctx.Params("user"))
+	userID, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
+		middleware.LogError(ctx, err)
 		return &app_errors.ErrorMsg{
 			Code: http.StatusBadRequest,
 			Msg:  "userID should be a valid uuid",
@@ -110,6 +111,7 @@ func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {
 	var filters domain.ClothesFilters
 
 	if err := ctx.QueryParser(&filters); err != nil {
+		middleware.LogError(ctx, err)
 		return &app_errors.ErrorMsg{
 			Code: http.StatusBadRequest,
 			Msg:  "invalid filters passed",

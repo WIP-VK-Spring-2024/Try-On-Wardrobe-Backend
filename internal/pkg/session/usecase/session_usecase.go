@@ -71,7 +71,7 @@ func (s JwtSessionUsecase) IsLoggedIn(session *domain.Session) (bool, error) {
 		return true, nil
 
 	case errors.Is(err, jwt.ErrTokenMalformed):
-		return false, app_errors.ErrTokenMalformed
+		return false, app_errors.ErrInvalidCredentials
 
 	case errors.Is(err, jwt.ErrTokenSignatureInvalid):
 		return false, app_errors.ErrInvalidSignature

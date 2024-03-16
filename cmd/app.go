@@ -119,7 +119,7 @@ func (app *App) registerRoutes(db *gorm.DB, rabbitChan *amqp.Channel) error {
 		TokenName:    app.cfg.Session.TokenName,
 		Sessions:     sessionHandler.Sessions,
 		NoAuthRoutes: []string{"/register", "/login"},
-		SecureRoutes: []string{"/renew", "/clothes"},
+		// SecureRoutes: []string{"/renew", "/clothes"},
 	})
 
 	clothesProcessor, err := ml.New(app.cfg.Rabbit.RequestQueue, rabbitChan)
@@ -145,7 +145,7 @@ func (app *App) registerRoutes(db *gorm.DB, rabbitChan *amqp.Channel) error {
 func errorHandler(ctx *fiber.Ctx, err error) error {
 	msg := "Internal Server Error"
 
-	var errorMsg app_errors.ErrorMsg
+	var errorMsg *app_errors.ErrorMsg
 	if errors.As(err, &errorMsg) {
 		return ctx.Status(errorMsg.Code).JSON(errorMsg)
 	}

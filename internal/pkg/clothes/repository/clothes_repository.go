@@ -67,7 +67,7 @@ func (c *ClothesRepository) Delete(id uuid.UUID) error {
 func (c *ClothesRepository) GetByUser(userID uuid.UUID, filters *domain.ClothesFilters) ([]domain.ClothesModel, error) {
 	clothes := make([]domain.ClothesModel, 0, initClothesNum)
 
-	result := c.db.Limit(initClothesNum).Find(clothes, "user_id = ?", userID)
+	result := c.db.Limit(initClothesNum).Find(&clothes, "user_id = ?", userID)
 
 	err := utils.GormError(result.Error)
 	if err != nil {
