@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
@@ -13,7 +14,9 @@ import (
 	"try-on/internal/pkg/domain"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
@@ -127,7 +130,31 @@ func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {
 	return ctx.JSON(clothes) // TODO: Make normal
 }
 
-func (h *ClothesHandler) ListenTryOnResults() {
+func (h *ClothesHandler) ListenTryOnResults(db *gorm.DB, logger *zap.SugaredLogger) {
+	go func() {
+		for {
+			log.Info("listening rabbit responses")
+
+			ch, err := h.model.GetTryOnResults()
+			if err != nil {
+				log.Errorw(err.Error())
+			}
+
+			for item := range ch {
+				fmt.Printf("%+v\n", item)
+				err := db.Create(&domain.TryOnResult{
+					UserID:         item.UserID,
+					ClothesModelID: item.ClothesID,
+					Image:          item.ResFileName,
+				}).Error
+				if err != nil {
+					log.Errorw(err.Error())
+				}
+			}
+
+			time.Sleep(500 * time.Millisecond)
+		}
+	}()
 }
 
 func (h *ClothesHandler) TryOn(ctx *fiber.Ctx) error {

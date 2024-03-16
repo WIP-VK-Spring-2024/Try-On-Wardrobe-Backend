@@ -28,6 +28,8 @@ func applyMigrations(cfg config.Sql, db *gorm.DB) error {
 		&domain.Style{},
 		&domain.Type{},
 		&domain.Subtype{},
+		&domain.UserPhoto{},
+		&domain.TryOnResult{},
 	)
 	if err != nil {
 		return errors.Join(errors.New("gorm migrations failed"), err)

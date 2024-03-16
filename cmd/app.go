@@ -122,7 +122,11 @@ func (app *App) registerRoutes(db *gorm.DB, rabbitChan *amqp.Channel) error {
 		// SecureRoutes: []string{"/renew", "/clothes"},
 	})
 
-	clothesProcessor, err := ml.New(app.cfg.Rabbit.RequestQueue, rabbitChan)
+	clothesProcessor, err := ml.New(
+		app.cfg.Rabbit.RequestQueue,
+		app.cfg.Rabbit.ResponseQueue,
+		rabbitChan,
+	)
 	if err != nil {
 		return err
 	}
@@ -141,6 +145,8 @@ func (app *App) registerRoutes(db *gorm.DB, rabbitChan *amqp.Channel) error {
 	app.api.Get("/user/:id/try_on", clothesHandler.TryOn)
 
 	app.api.Static("/static", "./images")
+
+	clothesHandler.ListenTryOnResults(db, app.logger)
 
 	return nil
 }

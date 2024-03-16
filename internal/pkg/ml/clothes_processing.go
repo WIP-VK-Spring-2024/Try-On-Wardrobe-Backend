@@ -2,6 +2,7 @@ package ml
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"try-on/internal/pkg/common"
@@ -12,11 +13,12 @@ import (
 )
 
 type ClothesProcessor struct {
-	ch    *amqp.Channel
-	queue amqp.Queue
+	ch           *amqp.Channel
+	queue        amqp.Queue
+	reponseQueue amqp.Queue
 }
 
-func New(queueName string, ch *amqp.Channel) (domain.ClothesProcessingModel, error) {
+func New(queueName string, reponseQueueName string, ch *amqp.Channel) (domain.ClothesProcessingModel, error) {
 	queue, err := ch.QueueDeclare(
 		queueName, // name
 		false,     // durable
@@ -29,9 +31,22 @@ func New(queueName string, ch *amqp.Channel) (domain.ClothesProcessingModel, err
 		return nil, err
 	}
 
+	reponseQueue, err := ch.QueueDeclare(
+		reponseQueueName, // name
+		false,            // durable
+		false,            // delete when unused
+		false,            // exclusive
+		false,            // no-wait
+		nil,              // arguments
+	)
+	if err != nil {
+		return nil, err
+	}
+
 	return &ClothesProcessor{
-		ch:    ch,
-		queue: queue,
+		ch:           ch,
+		queue:        queue,
+		reponseQueue: reponseQueue,
 	}, nil
 }
 
@@ -56,9 +71,34 @@ func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProce
 	)
 }
 
-func (p *ClothesProcessor) GetTryOnResults() (chan interface{}, error) {
-	// p.ch.Consume(p.queue.Name, )
-	return nil, nil
+func (p *ClothesProcessor) GetTryOnResults() (chan domain.TryOnResponse, error) {
+	ch, err := p.ch.Consume(
+		p.reponseQueue.Name,
+		"",    // consumer
+		true,  // auto-ack
+		false, // exclusive
+		false, // no-local
+		false, // no-wait
+		nil,   // args
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	respChan := make(chan domain.TryOnResponse, 3)
+
+	var resp domain.TryOnResponse
+	go func() {
+		for delivery := range ch {
+			err := easyjson.Unmarshal(delivery.Body, &resp)
+			if err != nil {
+				log.Println("ERROR:", err)
+			}
+			respChan <- resp
+		}
+	}()
+
+	return respChan, nil
 }
 
 func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnOpts) error {
