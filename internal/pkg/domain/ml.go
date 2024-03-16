@@ -8,6 +8,8 @@ import (
 
 type ClothesProcessingModel interface {
 	Process(ctx context.Context, opts ClothesProcessingOpts) error
+	TryOn(ctx context.Context, opts TryOnOpts) error
+	GetTryOnResults() (chan interface{}, error)
 }
 
 //easyjson:json
@@ -16,6 +18,15 @@ type ClothesProcessingOpts struct {
 	ImageID   uuid.UUID
 	FileName  string
 	ImageType string
+}
+
+//easyjson:json
+type TryOnOpts struct {
+	UserID          uuid.UUID
+	PersonFileName  string
+	PersonFilePath  string
+	ClothesFileName string
+	ClothesFilePath string
 }
 
 const (

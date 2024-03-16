@@ -3,6 +3,7 @@ package delivery
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
@@ -124,4 +125,52 @@ func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(clothes) // TODO: Make normal
+}
+
+func (h *ClothesHandler) ListenTryOnResults() {
+}
+
+func (h *ClothesHandler) TryOn(ctx *fiber.Ctx) error {
+	userID, err := uuid.Parse(ctx.Params("id"))
+	if err != nil {
+		middleware.LogError(ctx, err)
+		return &app_errors.ErrorMsg{
+			Code: http.StatusBadRequest,
+			Msg:  "userID should be a valid uuid",
+		}
+	}
+
+	clothingID, err := uuid.Parse(ctx.Query("clothing_id"))
+	if err != nil {
+		middleware.LogError(ctx, err)
+		return &app_errors.ErrorMsg{
+			Code: http.StatusBadRequest,
+			Msg:  "clothingID should be a valid uuid",
+		}
+	}
+
+	clothing, err := h.clothes.Get(clothingID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	curPath, err := os.Getwd()
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	personFileName := "person.jpg"
+
+	err = h.model.TryOn(ctx.UserContext(), domain.TryOnOpts{
+		UserID:          userID,
+		ClothesFileName: clothing.Image,
+		ClothesFilePath: curPath + "/stubs/clothes/" + clothing.Image,
+		PersonFileName:  personFileName,
+		PersonFilePath:  curPath + "/stubs/people/" + personFileName,
+	})
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
 }
