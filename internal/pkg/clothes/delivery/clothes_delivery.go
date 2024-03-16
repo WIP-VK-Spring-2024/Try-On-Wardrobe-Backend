@@ -141,11 +141,10 @@ func (h *ClothesHandler) ListenTryOnResults(db *gorm.DB, logger *zap.SugaredLogg
 			}
 
 			for item := range ch {
-				fmt.Printf("%+v\n", item)
 				err := db.Create(&domain.TryOnResult{
 					UserID:         item.UserID,
 					ClothesModelID: item.ClothesID,
-					Image:          item.ResFileName,
+					Image:          item.ResFilePath,
 				}).Error
 				if err != nil {
 					log.Errorw(err.Error())
@@ -222,10 +221,10 @@ func (c *ClothesHandler) GetTryOnResult(ctx *fiber.Ctx) error {
 		}
 	}
 
-	// _, err = c.clothes.GetTryOnResult(userID, clothingID)
+	// result, err := c.clothes.GetTryOnResult(userID, clothingID)
 	// if err != nil {
 	// 	return app_errors.New(err)
 	// }
 
-	return ctx.SendString("{'url':'result.jpg'}")
+	return ctx.SendString("{'url':'result.jpeg'}")
 }
