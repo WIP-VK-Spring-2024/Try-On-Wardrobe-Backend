@@ -158,7 +158,7 @@ func (h *ClothesHandler) ListenTryOnResults(db *gorm.DB, logger *zap.SugaredLogg
 }
 
 func (h *ClothesHandler) TryOn(ctx *fiber.Ctx) error {
-	userID, err := uuid.Parse(ctx.Params("id"))
+	userID, err := uuid.Parse(ctx.Params("user_id"))
 	if err != nil {
 		middleware.LogError(ctx, err)
 		return &app_errors.ErrorMsg{
@@ -167,7 +167,7 @@ func (h *ClothesHandler) TryOn(ctx *fiber.Ctx) error {
 		}
 	}
 
-	clothingID, err := uuid.Parse(ctx.Query("clothing_id"))
+	clothingID, err := uuid.Parse(ctx.Params("clothing_id"))
 	if err != nil {
 		middleware.LogError(ctx, err)
 		return &app_errors.ErrorMsg{
@@ -201,4 +201,31 @@ func (h *ClothesHandler) TryOn(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.SendString(common.EmptyJson)
+}
+
+func (c *ClothesHandler) GetTryOnResult(ctx *fiber.Ctx) error {
+	_, err := uuid.Parse(ctx.Params("user_id"))
+	if err != nil {
+		middleware.LogError(ctx, err)
+		return &app_errors.ErrorMsg{
+			Code: http.StatusBadRequest,
+			Msg:  "userID should be a valid uuid",
+		}
+	}
+
+	_, err = uuid.Parse(ctx.Params("clothing_id"))
+	if err != nil {
+		middleware.LogError(ctx, err)
+		return &app_errors.ErrorMsg{
+			Code: http.StatusBadRequest,
+			Msg:  "clothingID should be a valid uuid",
+		}
+	}
+
+	// _, err = c.clothes.GetTryOnResult(userID, clothingID)
+	// if err != nil {
+	// 	return app_errors.New(err)
+	// }
+
+	return ctx.SendString("{'url':'result.jpg'}")
 }

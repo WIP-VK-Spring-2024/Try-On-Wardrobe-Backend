@@ -67,6 +67,7 @@ type ClothesUsecase interface {
 	Create(clothes *Clothes) error
 	Update(clothes *Clothes) error
 	Get(id uuid.UUID) (*Clothes, error)
+	GetTryOnResult(userID uuid.UUID, clothesID uuid.UUID) (*TryOnResult, error)
 	Delete(id uuid.UUID) error
 	GetByUser(userId uuid.UUID, filters *ClothesFilters) ([]Clothes, error)
 }
@@ -77,4 +78,5 @@ type ClothesRepository interface {
 	Get(id uuid.UUID) (*ClothesModel, error)
 	Delete(id uuid.UUID) error
 	GetByUser(userId uuid.UUID, filters *ClothesFilters) ([]ClothesModel, error)
+	GetTryOnResult(userID uuid.UUID, clothesID uuid.UUID) (*TryOnResult, error)
 }

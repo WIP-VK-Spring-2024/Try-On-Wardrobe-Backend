@@ -78,6 +78,10 @@ func fromModel(clothesModel *domain.ClothesModel) *domain.Clothes {
 	return clothes
 }
 
+func (c *ClothesUsecase) GetTryOnResult(userID uuid.UUID, clothesID uuid.UUID) (*domain.TryOnResult, error) {
+	return c.repo.GetTryOnResult(userID, clothesID)
+}
+
 func toModel(clothes *domain.Clothes) *domain.ClothesModel {
 	model := &domain.ClothesModel{
 		UserID: clothes.UserID,

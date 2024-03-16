@@ -75,3 +75,9 @@ func (c *ClothesRepository) GetByUser(userID uuid.UUID, filters *domain.ClothesF
 	}
 	return clothes, nil
 }
+
+func (c *ClothesRepository) GetTryOnResult(userID uuid.UUID, clothesID uuid.UUID) (*domain.TryOnResult, error) {
+	res := &domain.TryOnResult{}
+	err := c.db.First(res, userID, clothesID).Error
+	return utils.TranslateGormError(res, err)
+}
