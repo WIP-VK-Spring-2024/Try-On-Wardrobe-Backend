@@ -16,8 +16,11 @@
 
     <br />
 
-    <form action="http://localhost:8001/clothes" method="post" id="form">
-      <input type="text" name="type" id="clothesName" />
+    <form action="http://localhost:8001/clothes" method="post" id="form" style="display:flex;flex-direction: column;width: 25%;gap: 10px;"">
+      <input type="text" name="name" id="clothesName" value="Джинсы" />
+      <input type="text" name="type" id="clothesType" value="Низ" />
+      <input type="text" name="subtype" id="clothesSubType" value="Джинсы" />
+      <textarea name="tags">деним,colins,кэжуал</textarea>
       <input type="file" name="img" />
       <button type="submit">Send image</button>
     </form>
@@ -65,13 +68,17 @@
 
       form.addEventListener("submit", (event) => {
         event.preventDefault();
-        request("clothes", method, new FormData(form));
+        request("clothes", "POST", new FormData(form));
       });
 
       document.getElementById("try-on").addEventListener("click", () => {
         request(
-          "user/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/try-on/62e29ffe-b3dd-4652-bc18-d4aebb76068f",
-          "POST"
+          "user/try-on",
+          "POST",
+          JSON.stringify({
+            clothes_id: "62e29ffe-b3dd-4652-bc18-d4aebb76068f",
+            user_image_id: "add893fb-d24d-4ee0-9976-03a6875cde8d",
+          })
         );
       });
     </script>

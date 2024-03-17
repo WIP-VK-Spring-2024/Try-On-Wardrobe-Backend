@@ -15,3 +15,5 @@ create unique index if not exists tags_name_idx on tags (name varchar_pattern_op
 create unique index if not exists styles_name_idx on styles (name varchar_pattern_ops);
 
 create unique index if not exists types_name_idx on types (name varchar_pattern_ops);
+
+create unique index if not exists subtypes_name_idx on subtypes (name varchar_pattern_ops);

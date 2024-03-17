@@ -17,14 +17,29 @@ var (
 )
 
 var (
-	ErrBadRequest = ErrorMsg{
+	ErrBadRequest = &ErrorMsg{
 		Msg:  "bad request",
 		Code: http.StatusBadRequest,
 	}
 
-	ErrUnauthorized = ErrorMsg{
+	ErrUnauthorized = &ErrorMsg{
 		Msg:  "credentials missing or invalid",
 		Code: http.StatusUnauthorized,
+	}
+
+	ErrUserIdInvalid = &ErrorMsg{
+		Code: http.StatusBadRequest,
+		Msg:  "user ID is missing or isn't a valid uuid",
+	}
+
+	ErrClothesIdInvalid = &ErrorMsg{
+		Code: http.StatusBadRequest,
+		Msg:  "clothes ID is missing or isn't a valid uuid",
+	}
+
+	ErrUserImageIdInvalid = &ErrorMsg{
+		Code: http.StatusBadRequest,
+		Msg:  "user image ID is missing or isn't a valid uuid",
 	}
 )
 

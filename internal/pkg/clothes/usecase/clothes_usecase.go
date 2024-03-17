@@ -3,7 +3,6 @@ package usecase
 import (
 	"database/sql"
 
-	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 
 	"github.com/google/uuid"
@@ -24,7 +23,7 @@ func (c *ClothesUsecase) Create(clothes *domain.Clothes) error {
 }
 
 func (c *ClothesUsecase) Update(clothes *domain.Clothes) error {
-	return app_errors.ErrUnimplemented
+	return c.repo.Update(toModel(clothes))
 }
 
 func (c *ClothesUsecase) Get(id uuid.UUID) (*domain.Clothes, error) {
@@ -91,6 +90,9 @@ func toModel(clothes *domain.Clothes) *domain.ClothesModel {
 		Image: clothes.Image,
 	}
 
+	model.Type.ID = uuid.Nil
+	model.Subtype.ID = uuid.Nil
+
 	if clothes.Color != "" {
 		model.Color = sql.NullString{String: clothes.Color, Valid: true}
 	}
@@ -101,6 +103,7 @@ func toModel(clothes *domain.Clothes) *domain.ClothesModel {
 
 	if clothes.Style != "" {
 		model.Style = &domain.Style{Name: clothes.Style}
+		model.Style.ID = uuid.Nil
 	}
 
 	model.Tags = make([]domain.Tag, 0, len(clothes.Tags))

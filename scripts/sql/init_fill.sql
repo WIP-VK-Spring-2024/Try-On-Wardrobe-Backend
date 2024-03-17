@@ -24,3 +24,7 @@ insert into clothes(id, name, type_id, subtype_id, image, user_id) values
     ('d7f12bdb-83ca-45c6-adc3-9142099f2816', 'Штаны', '99bfce00-b014-4458-9e26-a4675f72e352', '497dd9e7-6f3f-43e8-aa44-41716cb6d39c', '5.png', '2a78df8a-0277-4c72-a2d9-43fb8fef1d2c'),
     ('a5359bd0-7e92-4ce8-99b5-e4035b7881e2', 'Штаны', '99bfce00-b014-4458-9e26-a4675f72e352', '497dd9e7-6f3f-43e8-aa44-41716cb6d39c', '6.png', '2a78df8a-0277-4c72-a2d9-43fb8fef1d2c')
     on conflict do nothing;
+
+insert into user_images(id, user_id, image) values
+    ('add893fb-d24d-4ee0-9976-03a6875cde8d', '2a78df8a-0277-4c72-a2d9-43fb8fef1d2c', 'person.jpg')
+    on conflict do nothing;

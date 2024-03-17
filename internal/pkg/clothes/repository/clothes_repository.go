@@ -24,7 +24,10 @@ const initClothesNum = 15
 func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
 	err := c.db.Transaction(func(tx *gorm.DB) error {
 		clauses := func() *gorm.DB {
-			return tx.Clauses(clause.OnConflict{DoNothing: true})
+			return tx.Clauses(clause.OnConflict{
+				Columns:   []clause.Column{{Name: "name"}},
+				DoUpdates: clause.AssignmentColumns([]string{"name"}),
+			})
 		}
 
 		if clothes.Style != nil {
@@ -33,15 +36,25 @@ func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
 			}
 		}
 
-		if err := clauses().Create(&clothes.Subtype).Error; err != nil {
+		// if err := clauses().Create(&clothes.Subtype).Error; err != nil {
+		// 	return err
+		// }
+
+		// if err := clauses().Create(&clothes.Type).Error; err != nil {
+		// 	return err
+		// }
+
+		tagsTmp := make([]domain.Tag, 0, len(clothes.Tags))
+		copy(tagsTmp, clothes.Tags)
+		clothes.Tags = nil
+
+		err := tx.Debug().Create(clothes).Error
+		if err != nil {
 			return err
 		}
 
-		if err := clauses().Create(&clothes.Type).Error; err != nil {
-			return err
-		}
-
-		return tx.Create(clothes).Error
+		// return nil
+		return tx.Debug().Model(clothes).Association("Tags").Append(tagsTmp)
 	},
 	)
 
@@ -55,7 +68,7 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 
 func (c *ClothesRepository) Get(id uuid.UUID) (*domain.ClothesModel, error) {
 	clothes := &domain.ClothesModel{}
-	err := c.db.First(clothes, id).Error
+	err := c.db.Preload(clause.Associations).First(clothes, id).Error
 	return utils.TranslateGormError(clothes, err)
 }
 
@@ -72,7 +85,7 @@ func (c *ClothesRepository) GetByUser(userID uuid.UUID, limit int) ([]domain.Clo
 		query = query.Limit(limit)
 	}
 
-	result := query.Find(&clothes, "user_id = ?", userID)
+	result := query.Preload(clause.Associations).Find(&clothes, "user_id = ?", userID)
 
 	err := utils.GormError(result.Error)
 	if err != nil {

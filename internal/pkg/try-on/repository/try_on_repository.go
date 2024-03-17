@@ -52,13 +52,16 @@ func (c *TryOnResultRepository) GetByUserAndClothes(userID uuid.UUID, clothesID 
 	return results, nil
 }
 
-func (c *TryOnResultRepository) Get(ID uuid.UUID) (*domain.TryOnResult, error) {
+func (c *TryOnResultRepository) Get(id uuid.UUID) (*domain.TryOnResult, error) {
 	res := &domain.TryOnResult{}
-	err := c.db.First(res, ID).Error
+	err := c.db.First(res, id).Error
 	return utils.TranslateGormError(res, err)
 }
 
 func (repo *TryOnResultRepository) Rate(id uuid.UUID, rating int) error {
-	err := repo.db.Model(&domain.TryOnResult{}).Update("rating", rating).Error
+	err := repo.db.Model(&domain.TryOnResult{}).
+		Where("id = ?", id).
+		Update("rating", rating).Error
+
 	return utils.GormError(err)
 }

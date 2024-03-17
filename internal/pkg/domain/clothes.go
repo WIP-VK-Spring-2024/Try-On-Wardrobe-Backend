@@ -31,6 +31,11 @@ type ClothesModel struct {
 	Seasons []Season       `gorm:"type:season[]"`
 }
 
+func (*ClothesModel) TableName() string {
+	return "clothes"
+}
+
+//easyjson:json
 type Clothes struct {
 	ID   uuid.UUID
 	Name string
@@ -47,10 +52,6 @@ type Clothes struct {
 
 	Color   string
 	Seasons []Season
-}
-
-func (ClothesModel) TableName() string {
-	return "clothes"
 }
 
 type ClothesUsecase interface {

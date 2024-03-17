@@ -12,6 +12,6 @@ type Model struct {
 }
 
 type AutoTimestamp struct {
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }

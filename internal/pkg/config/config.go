@@ -46,7 +46,7 @@ type Rabbit struct {
 	ResponseQueue string
 }
 
-func (cfg *Rabbit) Addr() string {
+func (cfg *Rabbit) DSN() string {
 	return fmt.Sprintf("amqp://%s:%s@%s:%d/", cfg.User, cfg.Password, cfg.Host, cfg.Port)
 }
 

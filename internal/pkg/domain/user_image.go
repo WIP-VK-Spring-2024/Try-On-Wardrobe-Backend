@@ -4,7 +4,9 @@ import "github.com/google/uuid"
 
 type UserImage struct {
 	Model
-	Image string
+
+	UserID uuid.UUID
+	Image  string
 }
 
 type UserImageRepository interface {

@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"errors"
+
 	"try-on/internal/pkg/app_errors"
 
 	"gorm.io/gorm"
@@ -9,9 +11,11 @@ import (
 func GormError(err error) error {
 	switch err {
 	case gorm.ErrRecordNotFound:
-		return app_errors.ErrNotFound
+		return errors.Join(err, app_errors.ErrNotFound)
 	case gorm.ErrDuplicatedKey:
-		return app_errors.ErrAlreadyExists
+		return errors.Join(err, app_errors.ErrAlreadyExists)
+	case gorm.ErrInvalidField:
+		return errors.Join(err, app_errors.ErrBadRequest)
 	default:
 		return err
 	}

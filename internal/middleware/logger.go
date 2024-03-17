@@ -39,5 +39,5 @@ func LogError(ctx *fiber.Ctx, err error) {
 		values = append(values, "file", e.File, "line", e.Line)
 	}
 
-	logger.Errorw(err.Error(), values)
+	logger.Errorw(err.Error(), values...)
 }

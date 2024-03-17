@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 
 	"try-on/internal/pkg/config"
@@ -16,7 +15,7 @@ var configPath *string = flag.String("c", "config/config.json", "Specify config 
 func main() {
 	cfg, err := config.NewDynamicConfig(*configPath,
 		nil, func(err error) {
-			fmt.Println("Error parsing config:", err)
+			log.Println("Error parsing config:", err)
 		})
 	if err != nil {
 		log.Println(err)
@@ -44,5 +43,5 @@ func main() {
 
 	app := NewApp(cfg, logger.Sugar())
 
-	log.Fatal(app.Run())
+	log.Println(app.Run())
 }

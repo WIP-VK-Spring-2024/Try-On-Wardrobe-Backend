@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"net/http"
 	"os"
 
 	"try-on/internal/middleware"
@@ -76,22 +75,15 @@ type tryOnRequest struct {
 }
 
 func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
-	userID, err := uuid.Parse(ctx.Params("user_id"))
-	if err != nil {
-		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "user ID is missing or isn't a valid uuid",
-		}
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
 	}
 
 	var req tryOnRequest
 	if err := ctx.BodyParser(&req); err != nil {
 		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "body should contain clothes ID and user image ID",
-		}
+		return app_errors.ErrClothesIdInvalid
 	}
 
 	clothes, err := h.clothes.Get(req.ClothesID)
@@ -110,7 +102,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 	}
 
 	err = h.model.TryOn(ctx.UserContext(), domain.TryOnOpts{
-		UserID:          userID,
+		UserID:          session.UserID,
 		ClothesID:       req.ClothesID,
 		ClothesFileName: clothes.Image,
 		ClothesFilePath: curPath + "/stubs/clothes/" + clothes.Image,
@@ -125,25 +117,17 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 }
 
 func (c *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
-	userID, err := uuid.Parse(ctx.Params("user_id"))
-	if err != nil {
-		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "userID is missing or isn't a valid uuid",
-		}
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
 	}
 
 	clothingID, err := uuid.Parse(ctx.Params("clothing_id"))
 	if err != nil {
-		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "clothingID is missing or isn't a valid uuid",
-		}
+		return app_errors.ErrClothesIdInvalid
 	}
 
-	result, err := c.results.GetByUserAndClothes(userID, clothingID)
+	result, err := c.results.GetByUserAndClothes(session.UserID, clothingID)
 	if err != nil {
 		return app_errors.New(err)
 	}

@@ -11,7 +11,6 @@ import (
 	clothesRepo "try-on/internal/pkg/clothes/repository"
 	clothesUsecase "try-on/internal/pkg/clothes/usecase"
 	"try-on/internal/pkg/config"
-	"try-on/internal/pkg/file_manager/filesystem"
 	"try-on/internal/pkg/ml"
 	session "try-on/internal/pkg/session/delivery"
 	tryOn "try-on/internal/pkg/try-on/delivery"
@@ -45,8 +44,8 @@ func (app *App) Run() error {
 		return err
 	}
 
-	log.Println("Connecting to rabbit", app.cfg.Rabbit.Addr())
-	rabbitConn, err := rabbitmq.NewConn(app.cfg.Rabbit.Addr())
+	log.Println("Connecting to rabbit", app.cfg.Rabbit.DSN())
+	rabbitConn, err := rabbitmq.NewConn(app.cfg.Rabbit.DSN())
 	if err != nil {
 		return err
 	}
@@ -86,7 +85,7 @@ func (app *App) Run() error {
 
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(db))
 
-	clothesHandler := clothes.New(clothesUsecase, filesystem.New(app.cfg.Static.Dir), clothesProcessor)
+	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, &app.cfg.Static)
 
 	tryOnHandler := tryOn.New(db, clothesProcessor, clothesUsecase, app.logger, &app.cfg.Static)
 
@@ -97,11 +96,14 @@ func (app *App) Run() error {
 	app.api.Post("/renew", sessionHandler.Renew)
 
 	app.api.Post("/clothes", clothesHandler.Upload)
+	app.api.Get("/clothes", clothesHandler.GetOwn)
 	app.api.Get("/clothes/:id", clothesHandler.GetByID)
+	app.api.Delete("/clothes/:id", clothesHandler.Delete)
+	app.api.Put("/clothes/:id", clothesHandler.Update)
 	app.api.Get("/user/:id/clothes", clothesHandler.GetByUser)
 
-	app.api.Post("/user/:user_id/try-on/:clothing_id", tryOnHandler.TryOn)
-	app.api.Get("/user/:user_id/try-on/:clothing_id", tryOnHandler.GetTryOnResult)
+	app.api.Post("/user/try-on/:clothing_id", tryOnHandler.TryOn)
+	app.api.Get("/user/try-on/:clothing_id", tryOnHandler.GetTryOnResult)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 
@@ -134,8 +136,8 @@ func (app *App) getDB() (*gorm.DB, error) {
 		Conn: pg,
 	}), &gorm.Config{
 		// Logger: gormLogger.Discard,
-		FullSaveAssociations: false,
-		TranslateError:       true,
+		// FullSaveAssociations: true,
+		TranslateError: true,
 	})
 	if err != nil {
 		return nil, err

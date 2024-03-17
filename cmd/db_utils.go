@@ -21,7 +21,7 @@ func applyMigrations(cfg config.Sql, db *gorm.DB) error {
 		return err
 	}
 
-	err = db.AutoMigrate(
+	err = db.Debug().AutoMigrate(
 		&domain.User{},
 		&domain.ClothesModel{},
 		&domain.Tag{},
