@@ -24,8 +24,9 @@ func main() {
 	}
 
 	loggerConfig := zap.Config{
+		Development:       true,
 		Level:             zap.NewAtomicLevelAt(zap.DebugLevel),
-		DisableStacktrace: true,
+		DisableStacktrace: false,
 		DisableCaller:     true,
 		EncoderConfig: zapcore.EncoderConfig{
 			MessageKey:  "msg",

@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type ClothesProcessingModel interface {
 	Process(ctx context.Context, opts ClothesProcessingOpts) error
 	TryOn(ctx context.Context, opts TryOnOpts) error
-	GetTryOnResults() (chan TryOnResponse, error)
+	GetTryOnResults(logger *zap.SugaredLogger, handler func(*TryOnResponse) Result) error
+	Close()
 }
 
 //easyjson:json

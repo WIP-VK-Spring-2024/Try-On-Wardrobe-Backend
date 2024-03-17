@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -13,14 +12,14 @@ import (
 	"try-on/internal/pkg/file_manager/filesystem"
 	"try-on/internal/pkg/ml"
 	session "try-on/internal/pkg/session/delivery"
+	"try-on/internal/pkg/utils"
 
-	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/wagslane/go-rabbitmq"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -44,22 +43,63 @@ func (app *App) Run() error {
 	}
 
 	log.Println("Connecting to rabbit", app.cfg.Rabbit.Addr())
-	rabbitConn, err := amqp.Dial(app.cfg.Rabbit.Addr())
+	rabbitConn, err := rabbitmq.NewConn(app.cfg.Rabbit.Addr())
 	if err != nil {
 		return err
 	}
-	defer rabbitConn.Close()
 
-	rabbitChan, err := rabbitConn.Channel()
+	clothesProcessor, err := ml.New(
+		app.cfg.Rabbit.RequestQueue,
+		app.cfg.Rabbit.ResponseQueue,
+		rabbitConn,
+	)
 	if err != nil {
 		return err
 	}
-	defer rabbitChan.Close()
 
-	err = app.registerRoutes(db, rabbitChan)
-	if err != nil {
-		return err
-	}
+	recover := recover.New(recover.Config{
+		EnableStackTrace: true,
+	})
+
+	logger := logger.New(logger.Config{
+		Format:     config.JsonLogFormat,
+		TimeFormat: config.TimeFormat,
+	})
+
+	cors := cors.New(cors.Config{
+		AllowOrigins:     app.cfg.Cors.Domain,
+		AllowCredentials: app.cfg.Cors.AllowCredentials,
+		MaxAge:           app.cfg.Cors.MaxAge,
+	})
+
+	sessionHandler := session.New(db, &app.cfg.Session)
+
+	checkSession := middleware.CheckSession(middleware.SessionConfig{
+		TokenName:    app.cfg.Session.TokenName,
+		Sessions:     sessionHandler.Sessions,
+		NoAuthRoutes: []string{"/register", "/login"},
+		// SecureRoutes: []string{"/renew", "/clothes"},
+	})
+
+	clothesHandler := clothes.New(db, filesystem.New(app.cfg.ImageDir), clothesProcessor)
+
+	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
+
+	app.api.Post("/register", sessionHandler.Register)
+	app.api.Post("/login", sessionHandler.Login)
+	app.api.Post("/renew", sessionHandler.Renew)
+
+	app.api.Post("/clothes", clothesHandler.Upload)
+	app.api.Get("/clothes/:id", clothesHandler.GetByID)
+	app.api.Get("/user/:id/clothes", clothesHandler.GetByUser)
+
+	app.api.Post("/user/:user_id/try-on/:clothing_id", clothesHandler.TryOn)
+	app.api.Get("/user/:user_id/try-on/:clothing_id", clothesHandler.GetTryOnResult)
+
+	app.api.Static("/static", "./images")
+
+	clothesHandler.ListenTryOnResults(db, app.logger)
+
 	return app.api.Listen(app.cfg.Addr)
 }
 
@@ -68,8 +108,8 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 		api: fiber.New(
 			fiber.Config{
 				ErrorHandler: errorHandler,
-				JSONEncoder:  easyjsonMarshal,
-				JSONDecoder:  easyjsonUnmarshal,
+				JSONEncoder:  utils.EasyJsonMarshal,
+				JSONDecoder:  utils.EasyJsonUnmarshal,
 			},
 		),
 		cfg:    cfg,
@@ -97,63 +137,16 @@ func (app *App) getDB() (*gorm.DB, error) {
 	return db, nil
 }
 
-func (app *App) registerRoutes(db *gorm.DB, rabbitChan *amqp.Channel) error {
-	recover := recover.New(recover.Config{
-		EnableStackTrace: true,
-	})
-
-	logger := logger.New(logger.Config{
-		Format:     config.JsonLogFormat,
-		TimeFormat: config.TimeFormat,
-	})
-
-	cors := cors.New(cors.Config{
-		AllowOrigins:     app.cfg.Cors.Domain,
-		AllowCredentials: app.cfg.Cors.AllowCredentials,
-		MaxAge:           app.cfg.Cors.MaxAge,
-	})
-
-	sessionHandler := session.New(db, &app.cfg.Session)
-
-	checkSession := middleware.CheckSession(middleware.SessionConfig{
-		TokenName:    app.cfg.Session.TokenName,
-		Sessions:     sessionHandler.Sessions,
-		NoAuthRoutes: []string{"/register", "/login"},
-		// SecureRoutes: []string{"/renew", "/clothes"},
-	})
-
-	clothesProcessor, err := ml.New(
-		app.cfg.Rabbit.RequestQueue,
-		app.cfg.Rabbit.ResponseQueue,
-		rabbitChan,
-	)
-	if err != nil {
-		return err
+func errorHandler(ctx *fiber.Ctx, err error) error {
+	var e *fiber.Error
+	if errors.As(err, &e) {
+		return ctx.Status(e.Code).JSON(
+			&app_errors.ErrorMsg{
+				Msg: e.Message,
+			},
+		)
 	}
 
-	clothesHandler := clothes.New(db, filesystem.New(app.cfg.ImageDir), clothesProcessor)
-
-	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
-
-	app.api.Post("/register", sessionHandler.Register)
-	app.api.Post("/login", sessionHandler.Login)
-	app.api.Post("/renew", sessionHandler.Renew)
-
-	app.api.Post("/clothes", clothesHandler.Upload)
-	app.api.Get("/clothes/:id", clothesHandler.GetByID)
-	app.api.Get("/user/:id/clothes", clothesHandler.GetByUser)
-
-	app.api.Post("/user/:user_id/try_on/:clothing_id", clothesHandler.TryOn)
-	app.api.Get("/user/:user_id/try_on/:clothing_id", clothesHandler.GetTryOnResult)
-
-	app.api.Static("/static", "./images")
-
-	clothesHandler.ListenTryOnResults(db, app.logger)
-
-	return nil
-}
-
-func errorHandler(ctx *fiber.Ctx, err error) error {
 	msg := "Internal Server Error"
 
 	var errorMsg *app_errors.ErrorMsg
@@ -168,20 +161,4 @@ func errorHandler(ctx *fiber.Ctx, err error) error {
 			Msg: msg,
 		},
 	)
-}
-
-func easyjsonMarshal(value interface{}) ([]byte, error) {
-	marshaler, ok := value.(easyjson.Marshaler)
-	if ok {
-		return easyjson.Marshal(marshaler)
-	}
-	return json.Marshal(value)
-}
-
-func easyjsonUnmarshal(data []byte, value interface{}) error {
-	unmarshaler, ok := value.(easyjson.Unmarshaler)
-	if ok {
-		return easyjson.Unmarshal(data, unmarshaler)
-	}
-	return json.Unmarshal(data, value)
 }

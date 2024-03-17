@@ -2,122 +2,105 @@ package ml
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/domain"
 
 	"github.com/mailru/easyjson"
-	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/wagslane/go-rabbitmq"
+	"go.uber.org/zap"
 )
 
 type ClothesProcessor struct {
-	ch           *amqp.Channel
-	queue        amqp.Queue
-	reponseQueue amqp.Queue
+	publisher     *rabbitmq.Publisher
+	consumer      *rabbitmq.Consumer
+	requestQueue  string
+	responseQueue string
 }
 
-func New(queueName string, reponseQueueName string, ch *amqp.Channel) (domain.ClothesProcessingModel, error) {
-	queue, err := ch.QueueDeclare(
-		queueName, // name
-		false,     // durable
-		false,     // delete when unused
-		false,     // exclusive
-		false,     // no-wait
-		nil,       // arguments
+func (p *ClothesProcessor) Close() {
+	defer p.consumer.Close()
+	defer p.publisher.Close()
+}
+
+func New(requestQueue string, responseQueue string, rabbit *rabbitmq.Conn) (domain.ClothesProcessingModel, error) {
+	publisher, err := rabbitmq.NewPublisher(
+		rabbit,
+		rabbitmq.WithPublisherOptionsExchangeName(requestQueue),
+		rabbitmq.WithPublisherOptionsExchangeDeclare,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	reponseQueue, err := ch.QueueDeclare(
-		reponseQueueName, // name
-		false,            // durable
-		false,            // delete when unused
-		false,            // exclusive
-		false,            // no-wait
-		nil,              // arguments
+	consumer, err := rabbitmq.NewConsumer(
+		rabbit,
+		responseQueue,
+		rabbitmq.WithConsumerOptionsExchangeName(responseQueue),
+		rabbitmq.WithConsumerOptionsExchangeDeclare,
 	)
 	if err != nil {
+		publisher.Close()
 		return nil, err
 	}
 
 	return &ClothesProcessor{
-		ch:           ch,
-		queue:        queue,
-		reponseQueue: reponseQueue,
+		publisher:     publisher,
+		consumer:      consumer,
+		requestQueue:  requestQueue,
+		responseQueue: responseQueue,
 	}, nil
 }
 
 func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingOpts) error {
-	bytes, err := easyjson.Marshal(opts)
-	if err != nil {
-		return err
-	}
-
-	return p.ch.PublishWithContext(
-		ctx,
-		"",
-		p.queue.Name,
-		false, // mandatory
-		false, // immediate
-		amqp.Publishing{
-			ContentType:  common.ContentTypeJSON,
-			Body:         bytes,
-			DeliveryMode: amqp.Persistent,
-			Timestamp:    time.Now(),
-		},
-	)
+	return p.publish(ctx, opts, p.requestQueue)
 }
 
-func (p *ClothesProcessor) GetTryOnResults() (chan domain.TryOnResponse, error) {
-	ch, err := p.ch.Consume(
-		p.reponseQueue.Name,
-		"",    // consumer
-		true,  // auto-ack
-		false, // exclusive
-		false, // no-local
-		false, // no-wait
-		nil,   // args
-	)
-	if err != nil {
-		return nil, err
-	}
+func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
+	return p.consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
+		logger.Infow("rabbit", string(delivery.Body))
 
-	respChan := make(chan domain.TryOnResponse, 3)
-
-	var resp domain.TryOnResponse
-	go func() {
-		for delivery := range ch {
-			err := easyjson.Unmarshal(delivery.Body, &resp)
-			if err != nil {
-				log.Println("ERROR:", err)
-			}
-			respChan <- resp
+		var resp domain.TryOnResponse
+		err := easyjson.Unmarshal(delivery.Body, &resp)
+		if err != nil {
+			logger.Infow("rabbit", err)
+			return rabbitmq.NackDiscard
 		}
-	}()
 
-	return respChan, nil
+		res := handler(&resp)
+		switch res {
+		case domain.ResultOk:
+			return rabbitmq.Ack
+
+		case domain.ResultRetry:
+			return rabbitmq.NackRequeue
+
+		case domain.ResultDiscard:
+			fallthrough
+
+		default:
+			return rabbitmq.NackDiscard
+		}
+	})
 }
 
 func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnOpts) error {
-	bytes, err := easyjson.Marshal(opts)
+	return p.publish(ctx, opts, p.requestQueue)
+}
+
+func (p *ClothesProcessor) publish(ctx context.Context, payload easyjson.Marshaler, routingKeys ...string) error {
+	bytes, err := easyjson.Marshal(payload)
 	if err != nil {
 		return err
 	}
 
-	return p.ch.PublishWithContext(
+	return p.publisher.PublishWithContext(
 		ctx,
-		"",
-		p.queue.Name,
-		false, // mandatory
-		false, // immediate
-		amqp.Publishing{
-			ContentType:  common.ContentTypeJSON,
-			Body:         bytes,
-			DeliveryMode: amqp.Persistent,
-			Timestamp:    time.Now(),
-		},
+		bytes,
+		routingKeys,
+		rabbitmq.WithPublishOptionsContentType(common.ContentTypeJSON),
+		rabbitmq.WithPublishOptionsTimestamp(time.Now()),
+		rabbitmq.WithPublishOptionsPersistentDelivery,
 	)
 }

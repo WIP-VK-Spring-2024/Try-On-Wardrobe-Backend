@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
@@ -14,7 +13,6 @@ import (
 	"try-on/internal/pkg/domain"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -132,26 +130,21 @@ func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {
 
 func (h *ClothesHandler) ListenTryOnResults(db *gorm.DB, logger *zap.SugaredLogger) {
 	go func() {
-		for {
-			log.Info("listening rabbit responses")
-
-			ch, err := h.model.GetTryOnResults()
+		err := h.model.GetTryOnResults(logger, func(resp *domain.TryOnResponse) domain.Result {
+			err := db.Create(&domain.TryOnResult{
+				UserID:         resp.UserID,
+				ClothesModelID: resp.ClothesID,
+				Image:          resp.ResFilePath,
+			}).Error
 			if err != nil {
-				log.Errorw(err.Error())
+				logger.Errorw(err.Error())
+				return domain.ResultRetry
 			}
 
-			for item := range ch {
-				err := db.Create(&domain.TryOnResult{
-					UserID:         item.UserID,
-					ClothesModelID: item.ClothesID,
-					Image:          item.ResFilePath,
-				}).Error
-				if err != nil {
-					log.Errorw(err.Error())
-				}
-			}
-
-			time.Sleep(500 * time.Millisecond)
+			return domain.ResultOk
+		})
+		if err != nil {
+			logger.Errorw(err.Error())
 		}
 	}()
 }

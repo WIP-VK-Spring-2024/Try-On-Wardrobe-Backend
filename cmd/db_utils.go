@@ -76,7 +76,7 @@ func initPostgres(config *config.Postgres) (*sql.DB, error) {
 
 		err = db.Ping()
 		if err == nil {
-			log.Println("Ping sucessful")
+			log.Println("pg connection successfully opened")
 			break
 		}
 

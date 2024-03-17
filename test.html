@@ -22,6 +22,10 @@
       <button type="submit">Send image</button>
     </form>
 
+    <br />
+
+    <button id="try-on">Try On</button>
+
     <div id="body"></div>
     <script>
       let jwtToken = "";
@@ -32,40 +36,14 @@
         password: document.getElementById("password").value,
       });
 
-      const makeRequestBtn = (btn, route, method) => {
-        document.getElementById(btn).addEventListener("click", () => {
-          fetch("http://localhost:8001/" + route, {
-            method: method,
-            mode: "cors",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Session-ID": jwtToken,
-            },
-            body: method == "POST" ? JSON.stringify(getCredentials()) : null,
-          })
-            .then((resp) => resp.json())
-            .then((resp) => {
-              document.getElementById("body").textContent =
-                JSON.stringify(resp);
-              if (resp.token) {
-                jwtToken = resp.token;
-              }
-            });
-        });
-      };
-
-      makeRequestBtn("register-btn", "register", "POST");
-      makeRequestBtn("login-btn", "login", "POST");
-
-      form.addEventListener("submit", (event) => {
-        event.preventDefault();
-        fetch("http://localhost:8001/clothes", {
-          method: "POST",
+      const request = (route, method, body) => {
+        fetch("http://localhost:8001/" + route, {
+          method: method,
           mode: "cors",
           headers: {
             "X-Session-ID": jwtToken,
           },
-          body: new FormData(form),
+          body: method == "POST" ? body : null,
         })
           .then((resp) => resp.json())
           .then((resp) => {
@@ -74,6 +52,27 @@
               jwtToken = resp.token;
             }
           });
+      };
+
+      const makeRequestBtn = (btn, route, method) => {
+        document.getElementById(btn).addEventListener("click", () => {
+          request(route, method, JSON.stringify(getCredentials()));
+        });
+      };
+
+      makeRequestBtn("register-btn", "register", "POST");
+      makeRequestBtn("login-btn", "login", "POST");
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        request("clothes", method, new FormData(form));
+      });
+
+      document.getElementById("try-on").addEventListener("click", () => {
+        request(
+          "user/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/try-on/62e29ffe-b3dd-4652-bc18-d4aebb76068f",
+          "POST"
+        );
       });
     </script>
   </body>

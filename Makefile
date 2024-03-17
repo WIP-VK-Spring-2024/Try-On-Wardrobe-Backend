@@ -25,4 +25,5 @@ run: build
 	${ENV} ./${BUILD_DIR}/cmd
 
 docker: build_alpine
-	docker compose up --build
+	docker compose up --build -d
+	docker compose logs --follow

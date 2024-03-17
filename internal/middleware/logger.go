@@ -32,10 +32,12 @@ func GetLogger(ctx *fiber.Ctx) *zap.SugaredLogger {
 func LogError(ctx *fiber.Ctx, err error) {
 	logger := GetLogger(ctx)
 
+	values := []interface{}{"method", ctx.Method(), "path", ctx.Path(), "ip", ctx.IP()}
+
 	var e *app_errors.InternalError
 	if errors.As(err, &e) {
-		logger.Errorw(err.Error(), "method", ctx.Method(), "path", ctx.Path(), "file", e.File, "line", e.Line)
-	} else {
-		logger.Errorw(err.Error(), "method", ctx.Method(), "path", ctx.Path())
+		values = append(values, "file", e.File, "line", e.Line)
 	}
+
+	logger.Errorw(err.Error(), values)
 }
