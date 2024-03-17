@@ -3,19 +3,15 @@ package delivery
 import (
 	"fmt"
 	"net/http"
-	"os"
+	"strconv"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
-	clothesRepo "try-on/internal/pkg/clothes/repository"
-	clothesUsecase "try-on/internal/pkg/clothes/usecase"
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/domain"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type ClothesHandler struct {
@@ -24,15 +20,19 @@ type ClothesHandler struct {
 	model   domain.ClothesProcessingModel
 }
 
-func New(db *gorm.DB, file domain.FileManager, model domain.ClothesProcessingModel) *ClothesHandler {
+func New(clothes domain.ClothesUsecase, file domain.FileManager, model domain.ClothesProcessingModel) *ClothesHandler {
 	return &ClothesHandler{
-		clothes: clothesUsecase.New(clothesRepo.New(db)),
+		clothes: clothes,
 		file:    file,
 		model:   model,
 	}
 }
 
 func (h *ClothesHandler) GetByID(ctx *fiber.Ctx) error {
+	return app_errors.ErrUnimplemented
+}
+
+func (h *ClothesHandler) Delete(ctx *fiber.Ctx) error {
 	return app_errors.ErrUnimplemented
 }
 
@@ -110,114 +110,12 @@ func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {
 		}
 	}
 
-	var filters domain.ClothesFilters
+	limit, _ := strconv.Atoi(ctx.Query("limit"))
 
-	if err := ctx.QueryParser(&filters); err != nil {
-		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "invalid filters passed",
-		}
-	}
-
-	clothes, err := h.clothes.GetByUser(userID, &filters)
+	clothes, err := h.clothes.GetByUser(userID, limit)
 	if err != nil {
 		return app_errors.New(err)
 	}
 
 	return ctx.JSON(clothes) // TODO: Make normal
-}
-
-func (h *ClothesHandler) ListenTryOnResults(db *gorm.DB, logger *zap.SugaredLogger) {
-	go func() {
-		err := h.model.GetTryOnResults(logger, func(resp *domain.TryOnResponse) domain.Result {
-			err := db.Create(&domain.TryOnResult{
-				UserID:         resp.UserID,
-				ClothesModelID: resp.ClothesID,
-				Image:          resp.ResFilePath,
-			}).Error
-			if err != nil {
-				logger.Errorw(err.Error())
-				return domain.ResultRetry
-			}
-
-			return domain.ResultOk
-		})
-		if err != nil {
-			logger.Errorw(err.Error())
-		}
-	}()
-}
-
-func (h *ClothesHandler) TryOn(ctx *fiber.Ctx) error {
-	userID, err := uuid.Parse(ctx.Params("user_id"))
-	if err != nil {
-		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "userID should be a valid uuid",
-		}
-	}
-
-	clothingID, err := uuid.Parse(ctx.Params("clothing_id"))
-	if err != nil {
-		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "clothingID should be a valid uuid",
-		}
-	}
-
-	clothing, err := h.clothes.Get(clothingID)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	curPath, err := os.Getwd()
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	personFileName := "person.jpg"
-
-	err = h.model.TryOn(ctx.UserContext(), domain.TryOnOpts{
-		UserID:          userID,
-		ClothesID:       clothingID,
-		ClothesFileName: clothing.Image,
-		ClothesFilePath: curPath + "/stubs/clothes/" + clothing.Image,
-		PersonFileName:  personFileName,
-		PersonFilePath:  curPath + "/stubs/people/" + personFileName,
-	})
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	return ctx.SendString(common.EmptyJson)
-}
-
-func (c *ClothesHandler) GetTryOnResult(ctx *fiber.Ctx) error {
-	_, err := uuid.Parse(ctx.Params("user_id"))
-	if err != nil {
-		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "userID should be a valid uuid",
-		}
-	}
-
-	_, err = uuid.Parse(ctx.Params("clothing_id"))
-	if err != nil {
-		middleware.LogError(ctx, err)
-		return &app_errors.ErrorMsg{
-			Code: http.StatusBadRequest,
-			Msg:  "clothingID should be a valid uuid",
-		}
-	}
-
-	// result, err := c.clothes.GetTryOnResult(userID, clothingID)
-	// if err != nil {
-	// 	return app_errors.New(err)
-	// }
-
-	return ctx.SendString(`{"url":"result.jpeg"}`)
 }

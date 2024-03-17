@@ -12,13 +12,22 @@ import (
 
 type Config struct {
 	Addr     string
-	ImageDir string
+	Static   Static
 	Postgres Postgres
 	Session  Session
 	Cors     Cors
 	Sql      Sql
 	S3       S3
 	Rabbit   Rabbit
+}
+
+type Static struct {
+	Type     string
+	Dir      string
+	Clothes  string
+	Cut      string
+	FullBody string
+	TryOn    string
 }
 
 type Cors struct {

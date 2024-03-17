@@ -64,20 +64,19 @@ func (c *ClothesRepository) Delete(id uuid.UUID) error {
 	return utils.GormError(err)
 }
 
-func (c *ClothesRepository) GetByUser(userID uuid.UUID, filters *domain.ClothesFilters) ([]domain.ClothesModel, error) {
+func (c *ClothesRepository) GetByUser(userID uuid.UUID, limit int) ([]domain.ClothesModel, error) {
 	clothes := make([]domain.ClothesModel, 0, initClothesNum)
 
-	result := c.db.Limit(initClothesNum).Find(&clothes, "user_id = ?", userID)
+	query := c.db
+	if limit != 0 {
+		query = query.Limit(limit)
+	}
+
+	result := query.Find(&clothes, "user_id = ?", userID)
 
 	err := utils.GormError(result.Error)
 	if err != nil {
 		return nil, err
 	}
 	return clothes, nil
-}
-
-func (c *ClothesRepository) GetTryOnResult(userID uuid.UUID, clothesID uuid.UUID) (*domain.TryOnResult, error) {
-	res := &domain.TryOnResult{}
-	err := c.db.First(res, userID, clothesID).Error
-	return utils.TranslateGormError(res, err)
 }

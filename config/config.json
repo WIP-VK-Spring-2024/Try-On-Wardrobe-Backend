@@ -1,6 +1,14 @@
 {
   "addr": ":8001",
-  "imageDir": "images",
+
+  "static": {
+    "type": "fs",
+    "dir": "images",
+    "clothes": "clothes/raw",
+    "cut": "clothes/cut",
+    "fullBody": "full-body",
+    "tryOn": "try-on"
+  },
 
   "rabbit": {
     "host": "wardrobe-rabbitmq",

@@ -53,23 +53,12 @@ func (ClothesModel) TableName() string {
 	return "clothes"
 }
 
-type ClothesFilters struct {
-	Limit   int
-	Tags    []string
-	Style   string
-	Type    string
-	Subtype string
-	Color   uint32
-	Seasons []Season
-}
-
 type ClothesUsecase interface {
 	Create(clothes *Clothes) error
 	Update(clothes *Clothes) error
 	Get(id uuid.UUID) (*Clothes, error)
-	GetTryOnResult(userID uuid.UUID, clothesID uuid.UUID) (*TryOnResult, error)
 	Delete(id uuid.UUID) error
-	GetByUser(userId uuid.UUID, filters *ClothesFilters) ([]Clothes, error)
+	GetByUser(userId uuid.UUID, limit int) ([]Clothes, error)
 }
 
 type ClothesRepository interface {
@@ -77,6 +66,5 @@ type ClothesRepository interface {
 	Update(clothes *ClothesModel) error
 	Get(id uuid.UUID) (*ClothesModel, error)
 	Delete(id uuid.UUID) error
-	GetByUser(userId uuid.UUID, filters *ClothesFilters) ([]ClothesModel, error)
-	GetTryOnResult(userID uuid.UUID, clothesID uuid.UUID) (*TryOnResult, error)
+	GetByUser(userId uuid.UUID, limit int) ([]ClothesModel, error)
 }

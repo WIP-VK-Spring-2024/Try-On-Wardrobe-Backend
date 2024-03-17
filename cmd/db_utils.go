@@ -28,7 +28,7 @@ func applyMigrations(cfg config.Sql, db *gorm.DB) error {
 		&domain.Style{},
 		&domain.Type{},
 		&domain.Subtype{},
-		&domain.UserPhoto{},
+		&domain.UserImage{},
 		&domain.TryOnResult{},
 	)
 	if err != nil {

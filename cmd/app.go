@@ -8,10 +8,13 @@ import (
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	clothes "try-on/internal/pkg/clothes/delivery"
+	clothesRepo "try-on/internal/pkg/clothes/repository"
+	clothesUsecase "try-on/internal/pkg/clothes/usecase"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/file_manager/filesystem"
 	"try-on/internal/pkg/ml"
 	session "try-on/internal/pkg/session/delivery"
+	tryOn "try-on/internal/pkg/try-on/delivery"
 	"try-on/internal/pkg/utils"
 
 	"github.com/wagslane/go-rabbitmq"
@@ -81,7 +84,11 @@ func (app *App) Run() error {
 		// SecureRoutes: []string{"/renew", "/clothes"},
 	})
 
-	clothesHandler := clothes.New(db, filesystem.New(app.cfg.ImageDir), clothesProcessor)
+	clothesUsecase := clothesUsecase.New(clothesRepo.New(db))
+
+	clothesHandler := clothes.New(clothesUsecase, filesystem.New(app.cfg.Static.Dir), clothesProcessor)
+
+	tryOnHandler := tryOn.New(db, clothesProcessor, clothesUsecase, app.logger, &app.cfg.Static)
 
 	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
 
@@ -93,12 +100,12 @@ func (app *App) Run() error {
 	app.api.Get("/clothes/:id", clothesHandler.GetByID)
 	app.api.Get("/user/:id/clothes", clothesHandler.GetByUser)
 
-	app.api.Post("/user/:user_id/try-on/:clothing_id", clothesHandler.TryOn)
-	app.api.Get("/user/:user_id/try-on/:clothing_id", clothesHandler.GetTryOnResult)
+	app.api.Post("/user/:user_id/try-on/:clothing_id", tryOnHandler.TryOn)
+	app.api.Get("/user/:user_id/try-on/:clothing_id", tryOnHandler.GetTryOnResult)
 
-	app.api.Static("/static", "./images")
+	app.api.Static("/static", app.cfg.Static.Dir)
 
-	clothesHandler.ListenTryOnResults(db, app.logger)
+	tryOnHandler.ListenTryOnResults()
 
 	return app.api.Listen(app.cfg.Addr)
 }

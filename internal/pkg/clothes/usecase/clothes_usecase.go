@@ -40,8 +40,8 @@ func (c *ClothesUsecase) Delete(id uuid.UUID) error {
 	return c.repo.Delete(id)
 }
 
-func (c *ClothesUsecase) GetByUser(userID uuid.UUID, filters *domain.ClothesFilters) ([]domain.Clothes, error) {
-	clothes, err := c.repo.GetByUser(userID, filters)
+func (c *ClothesUsecase) GetByUser(userID uuid.UUID, limit int) ([]domain.Clothes, error) {
+	clothes, err := c.repo.GetByUser(userID, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -76,10 +76,6 @@ func fromModel(clothesModel *domain.ClothesModel) *domain.Clothes {
 	}
 
 	return clothes
-}
-
-func (c *ClothesUsecase) GetTryOnResult(userID uuid.UUID, clothesID uuid.UUID) (*domain.TryOnResult, error) {
-	return c.repo.GetTryOnResult(userID, clothesID)
 }
 
 func toModel(clothes *domain.Clothes) *domain.ClothesModel {
