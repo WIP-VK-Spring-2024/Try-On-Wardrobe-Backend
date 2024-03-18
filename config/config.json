@@ -38,7 +38,7 @@
   "postgres": {
     "user": "try-on-admin",
     "db": "try-on",
-    "addr": "postgres",
+    "host": "postgres",
     "port": 5432,
     "maxConn": 100,
     "initTimeout": 10
