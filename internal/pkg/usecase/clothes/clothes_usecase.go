@@ -4,6 +4,11 @@ import (
 	"database/sql"
 
 	"try-on/internal/pkg/domain"
+<<<<<<< Updated upstream
+=======
+	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/translate"
+>>>>>>> Stashed changes
 
 	"github.com/google/uuid"
 )
@@ -69,10 +74,7 @@ func fromModel(clothesModel *domain.ClothesModel) *domain.Clothes {
 		clothes.Style = clothesModel.Style.Name
 	}
 
-	clothes.Tags = make([]string, 0, len(clothesModel.Tags))
-	for _, tag := range clothesModel.Tags {
-		clothes.Tags = append(clothes.Tags, tag.Name)
-	}
+	clothes.Tags = translate.TagsToString(clothesModel.Tags)
 
 	return clothes
 }
@@ -106,10 +108,7 @@ func toModel(clothes *domain.Clothes) *domain.ClothesModel {
 		model.Style.ID = uuid.Nil
 	}
 
-	model.Tags = make([]domain.Tag, 0, len(clothes.Tags))
-	for _, tag := range clothes.Tags {
-		model.Tags = append(model.Tags, domain.Tag{Name: tag})
-	}
+	model.Tags = translate.TagsFromString(clothes.Tags)
 
 	return model
 }

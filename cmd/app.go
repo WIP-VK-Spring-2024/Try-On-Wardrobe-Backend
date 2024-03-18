@@ -13,7 +13,7 @@ import (
 	tryOn "try-on/internal/pkg/delivery/try_on"
 	"try-on/internal/pkg/delivery/user_images"
 	"try-on/internal/pkg/ml"
-	clothesRepo "try-on/internal/pkg/repository/gorm/clothes"
+	clothesRepo "try-on/internal/pkg/repository/sqlc/clothes"
 	clothesUsecase "try-on/internal/pkg/usecase/clothes"
 	"try-on/internal/pkg/utils"
 
@@ -23,6 +23,12 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+<<<<<<< Updated upstream
+=======
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/wagslane/go-rabbitmq"
+>>>>>>> Stashed changes
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -35,7 +41,7 @@ type App struct {
 }
 
 func (app *App) Run() error {
-	db, err := app.getDB()
+	db, pg, err := app.getDB()
 	if err != nil {
 		return err
 	}
@@ -84,7 +90,11 @@ func (app *App) Run() error {
 		// SecureRoutes: []string{"/renew", "/clothes"},
 	})
 
+<<<<<<< Updated upstream
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(db))
+=======
+	clothesUsecase := clothesUsecase.New(clothesRepo.New(pg))
+>>>>>>> Stashed changes
 
 	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, &app.cfg.Static)
 
@@ -92,6 +102,11 @@ func (app *App) Run() error {
 
 	userImageHandler := user_images.New(db, &app.cfg.Static)
 
+<<<<<<< Updated upstream
+=======
+	typeHandler := types.New(pg)
+
+>>>>>>> Stashed changes
 	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
 
 	app.api.Post("/register", sessionHandler.Register)
@@ -134,24 +149,24 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 	}
 }
 
-func (app *App) getDB() (*gorm.DB, error) {
+func (app *App) getDB() (*gorm.DB, *pgxpool.Pool, error) {
 	pg, err := initPostgres(&app.cfg.Postgres)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: pg,
+		Conn: stdlib.OpenDBFromPool(pg),
 	}), &gorm.Config{
 		// Logger: gormLogger.Discard,
 		// FullSaveAssociations: true,
 		TranslateError: true,
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return db, nil
+	return db, pg, nil
 }
 
 func errorHandler(ctx *fiber.Ctx, err error) error {

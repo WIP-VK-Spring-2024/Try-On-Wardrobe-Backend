@@ -61,8 +61,8 @@ type Postgres struct {
 }
 
 func (cfg *Postgres) DSN() string {
-	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
-		cfg.Host, cfg.User, cfg.Password, cfg.DB, cfg.Port)
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable pool_max_conns=%d",
+		cfg.Host, cfg.User, cfg.Password, cfg.DB, cfg.Port, cfg.MaxConn)
 }
 
 type Sql struct {

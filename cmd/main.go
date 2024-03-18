@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
 	"try-on/internal/pkg/config"
@@ -13,6 +14,8 @@ import (
 var configPath *string = flag.String("c", "config/config.json", "Specify config path")
 
 func main() {
+	fmt.Println("Hello world!")
+
 	cfg, err := config.NewDynamicConfig(*configPath,
 		nil, func(err error) {
 			log.Println("Error parsing config:", err)

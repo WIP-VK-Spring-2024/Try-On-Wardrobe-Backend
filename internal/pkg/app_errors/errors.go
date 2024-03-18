@@ -7,13 +7,15 @@ import (
 )
 
 var (
-	ErrNotFound           = errors.New("requested resource does not exist")
-	ErrInvalidCredentials = errors.New("invalid credentials")
-	ErrAlreadyExists      = errors.New("resource already exists")
-	ErrTokenMalformed     = errors.New("token malformed or missing")
-	ErrInvalidSignature   = errors.New("token has invalid signature")
-	ErrTokenExpired       = errors.New("token has expired")
-	ErrUnimplemented      = errors.New("method unimplemented")
+	ErrNotFound            = errors.New("requested resource does not exist")
+	ErrInvalidCredentials  = errors.New("invalid credentials")
+	ErrAlreadyExists       = errors.New("resource already exists")
+	ErrTokenMalformed      = errors.New("token malformed or missing")
+	ErrInvalidSignature    = errors.New("token has invalid signature")
+	ErrTokenExpired        = errors.New("token has expired")
+	ErrUnimplemented       = errors.New("method unimplemented")
+	ErrNoRelatedEntity     = errors.New("related resource not found")
+	ErrConstraintViolation = errors.New("constraint violated")
 )
 
 var (
@@ -72,6 +74,18 @@ func New(err error) error {
 	var code int
 
 	switch {
+	case errors.Is(err, ErrAlreadyExists):
+		code = http.StatusConflict
+
+	case errors.Is(err, ErrNotFound) || errors.Is(err, ErrNoRelatedEntity):
+		code = http.StatusNotFound
+
+	case errors.Is(err, ErrInvalidCredentials):
+		code = http.StatusForbidden
+
+	case errors.Is(err, ErrConstraintViolation):
+		code = http.StatusBadRequest
+
 	default:
 		_, file, line, _ := runtime.Caller(1)
 		return &InternalError{
@@ -79,14 +93,6 @@ func New(err error) error {
 			File: file,
 			Line: line,
 		}
-	case errors.Is(err, ErrAlreadyExists):
-		code = http.StatusConflict
-
-	case errors.Is(err, ErrNotFound):
-		code = http.StatusNotFound
-
-	case errors.Is(err, ErrInvalidCredentials):
-		code = http.StatusForbidden
 	}
 
 	return ResponseError{

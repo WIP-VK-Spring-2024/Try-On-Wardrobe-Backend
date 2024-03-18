@@ -8,8 +8,14 @@ require (
 	github.com/gofiber/fiber/v2 v2.52.2
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
+<<<<<<< Updated upstream
+=======
+	github.com/jackc/pgerrcode v0.0.0-20240316143900-6e2875d9b438
+	github.com/jackc/pgx/v5 v5.5.5
+>>>>>>> Stashed changes
 	github.com/mailru/easyjson v0.7.7
 	github.com/minio/minio-go/v7 v7.0.69
+	github.com/rubenv/sql-migrate v1.6.1
 	github.com/spf13/viper v1.18.2
 	github.com/wagslane/go-rabbitmq v0.13.0
 	go.uber.org/zap v1.27.0

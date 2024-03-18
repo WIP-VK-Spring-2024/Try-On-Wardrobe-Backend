@@ -1,7 +1,7 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +12,11 @@ import (
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 
+<<<<<<< Updated upstream
+=======
+	"github.com/jackc/pgx/v5/pgxpool"
+	migrate "github.com/rubenv/sql-migrate"
+>>>>>>> Stashed changes
 	"gorm.io/gorm"
 )
 
@@ -48,6 +53,7 @@ func execMultipleScripts(db *gorm.DB, prefix string, paths []string) error {
 	return nil
 }
 
+<<<<<<< Updated upstream
 func execSqlScript(db *gorm.DB, path string) error {
 	file, err := os.Open(path)
 	if err != nil {
@@ -63,10 +69,18 @@ func execSqlScript(db *gorm.DB, path string) error {
 }
 
 func initPostgres(config *config.Postgres) (*sql.DB, error) {
+=======
+func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
+>>>>>>> Stashed changes
 	till := time.Now().Add(time.Second * config.InitTimeout)
 	log.Println("Connecting to postgres:", config.DSN())
 
-	db, err := sql.Open("pgx", config.DSN())
+	cfg, err := pgxpool.ParseConfig(config.DSN())
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := pgxpool.NewWithConfig(context.Background(), cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +88,7 @@ func initPostgres(config *config.Postgres) (*sql.DB, error) {
 	for time.Now().Before(till) {
 		log.Println("Trying to open pg connection")
 
-		err = db.Ping()
+		err = db.Ping(context.Background())
 		if err == nil {
 			log.Println("pg connection successfully opened")
 			break
@@ -87,6 +101,5 @@ func initPostgres(config *config.Postgres) (*sql.DB, error) {
 		return nil, errors.New("connection to postgres timed out")
 	}
 
-	db.SetMaxOpenConns(config.MaxConn)
 	return db, nil
 }
