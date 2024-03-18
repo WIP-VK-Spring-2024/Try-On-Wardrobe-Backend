@@ -89,23 +89,6 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
-	var clothes domain.Clothes
-	if err := ctx.BodyParser(&clothes); err != nil {
-		middleware.LogError(ctx, err)
-		return app_errors.ErrBadRequest
-	}
-
-	if len(clothes.Tags) == 1 {
-		clothes.Tags = strings.Split(clothes.Tags[0], ",")
-	}
-
-	clothes.UserID = session.UserID
-
-	err := h.clothes.Create(&clothes)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
 	fileHeader, err := ctx.FormFile("img")
 	if err != nil {
 		middleware.LogError(ctx, err)
@@ -118,6 +101,23 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	}
 	defer file.Close()
 
+	var clothes domain.Clothes
+	if err := ctx.BodyParser(&clothes); err != nil {
+		middleware.LogError(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+
+	if len(clothes.Tags) == 1 {
+		clothes.Tags = strings.Split(clothes.Tags[0], ",")
+	}
+
+	clothes.UserID = session.UserID
+
+	err = h.clothes.Create(&clothes)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
 	err = h.file.Save(
 		ctx.UserContext(),
 		h.cfg.Clothes,
@@ -125,6 +125,8 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 		file,
 	)
 	if err != nil {
+		deleteErr := h.clothes.Delete(clothes.ID)
+		middleware.LogError(ctx, deleteErr)
 		return app_errors.New(err)
 	}
 

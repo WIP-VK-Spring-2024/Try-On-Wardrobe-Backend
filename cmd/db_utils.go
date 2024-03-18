@@ -12,6 +12,7 @@ import (
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 
+	_ "github.com/jackc/pgx/v5"
 	"gorm.io/gorm"
 )
 
