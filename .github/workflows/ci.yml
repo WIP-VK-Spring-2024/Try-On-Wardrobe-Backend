@@ -12,7 +12,7 @@ jobs:
 
       - name: Run golangci-lint
         env:
-          GOFLAGS: “-buildvcs=false”
+          GOFLAGS: "-buildvcs=false"
         uses: golangci/golangci-lint-action@v4.0.0
 
   deploy:
