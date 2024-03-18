@@ -7,13 +7,14 @@ import (
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
-	clothes "try-on/internal/pkg/clothes/delivery"
-	clothesRepo "try-on/internal/pkg/clothes/repository"
-	clothesUsecase "try-on/internal/pkg/clothes/usecase"
 	"try-on/internal/pkg/config"
+	clothes "try-on/internal/pkg/delivery/clothes"
+	session "try-on/internal/pkg/delivery/session"
+	tryOn "try-on/internal/pkg/delivery/try_on"
+	"try-on/internal/pkg/delivery/user_images"
 	"try-on/internal/pkg/ml"
-	session "try-on/internal/pkg/session/delivery"
-	tryOn "try-on/internal/pkg/try-on/delivery"
+	clothesRepo "try-on/internal/pkg/repository/gorm/clothes"
+	clothesUsecase "try-on/internal/pkg/usecase/clothes"
 	"try-on/internal/pkg/utils"
 
 	"github.com/wagslane/go-rabbitmq"
@@ -89,6 +90,8 @@ func (app *App) Run() error {
 
 	tryOnHandler := tryOn.New(db, clothesProcessor, clothesUsecase, app.logger, &app.cfg.Static)
 
+	userImageHandler := user_images.New(db, &app.cfg.Static)
+
 	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
 
 	app.api.Post("/register", sessionHandler.Register)
@@ -102,8 +105,13 @@ func (app *App) Run() error {
 	app.api.Put("/clothes/:id", clothesHandler.Update)
 	app.api.Get("/user/:id/clothes", clothesHandler.GetByUser)
 
-	app.api.Post("/user/try-on/:clothing_id", tryOnHandler.TryOn)
-	app.api.Get("/user/try-on/:clothing_id", tryOnHandler.GetTryOnResult)
+	app.api.Get("/photos", userImageHandler.GetByUser)
+	app.api.Get("/photos/:id", userImageHandler.GetByID)
+	app.api.Post("/photos", userImageHandler.Upload)
+	app.api.Delete("/photos/:id", userImageHandler.Delete)
+
+	app.api.Post("/try-on", tryOnHandler.TryOn)
+	app.api.Get("/try-on/:id", tryOnHandler.GetTryOnResult)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 

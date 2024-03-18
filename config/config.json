@@ -3,10 +3,10 @@
 
   "static": {
     "type": "fs",
-    "dir": "images",
-    "clothes": "clothes/raw",
+    "dir": "static",
+    "clothes": "clothes",
     "cut": "clothes/cut",
-    "fullBody": "full-body",
+    "fullBody": "people",
     "tryOn": "try-on"
   },
 

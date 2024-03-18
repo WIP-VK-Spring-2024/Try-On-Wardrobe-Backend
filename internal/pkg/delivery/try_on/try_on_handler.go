@@ -1,4 +1,4 @@
-package delivery
+package try_on
 
 import (
 	"os"
@@ -8,8 +8,8 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/try-on/repository"
-	userImages "try-on/internal/pkg/user_images/repository"
+	"try-on/internal/pkg/repository/gorm/try_on"
+	user_images "try-on/internal/pkg/repository/gorm/user_images"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -36,8 +36,8 @@ func New(
 	return &TryOnHandler{
 		model:      model,
 		clothes:    clothes,
-		userImages: userImages.New(db),
-		results:    repository.New(db),
+		userImages: user_images.New(db),
+		results:    try_on.New(db),
 		logger:     logger,
 		cfg:        cfg,
 	}
@@ -117,17 +117,12 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 }
 
 func (c *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
-	session := middleware.Session(ctx)
-	if session == nil {
-		return app_errors.ErrUnauthorized
-	}
-
-	clothingID, err := uuid.Parse(ctx.Params("clothing_id"))
+	id, err := uuid.Parse(ctx.Params("id"))
 	if err != nil {
-		return app_errors.ErrClothesIdInvalid
+		return app_errors.ErrTryOnIdInvalid
 	}
 
-	result, err := c.results.GetByUserAndClothes(session.UserID, clothingID)
+	result, err := c.results.Get(id)
 	if err != nil {
 		return app_errors.New(err)
 	}

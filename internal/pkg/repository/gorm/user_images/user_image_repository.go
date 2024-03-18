@@ -1,4 +1,4 @@
-package repository
+package user_images
 
 import (
 	"try-on/internal/pkg/domain"

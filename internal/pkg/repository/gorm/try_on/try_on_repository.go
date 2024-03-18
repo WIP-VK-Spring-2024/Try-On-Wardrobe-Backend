@@ -1,4 +1,4 @@
-package repository
+package try_on
 
 import (
 	"try-on/internal/pkg/domain"

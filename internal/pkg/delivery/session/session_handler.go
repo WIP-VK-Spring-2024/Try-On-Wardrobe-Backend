@@ -1,13 +1,13 @@
-package delivery
+package session
 
 import (
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	sessionUsecase "try-on/internal/pkg/session/usecase"
-	userRepo "try-on/internal/pkg/users/repository"
-	userUsecase "try-on/internal/pkg/users/usecase"
+	userRepo "try-on/internal/pkg/repository/gorm/users"
+	sessionUsecase "try-on/internal/pkg/usecase/session"
+	userUsecase "try-on/internal/pkg/usecase/users"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"

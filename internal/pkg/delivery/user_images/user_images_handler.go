@@ -1,4 +1,4 @@
-package delivery
+package user_images
 
 import (
 	"try-on/internal/middleware"
@@ -7,7 +7,7 @@ import (
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/file_manager/filesystem"
-	"try-on/internal/pkg/user_images/repository"
+	"try-on/internal/pkg/repository/gorm/user_images"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -17,19 +17,16 @@ import (
 type UserImageHandler struct {
 	userImages domain.UserImageRepository
 	file       domain.FileManager
-	model      domain.ClothesProcessingModel
 	cfg        *config.Static
 }
 
 func New(
 	db *gorm.DB,
-	model domain.ClothesProcessingModel,
 	cfg *config.Static,
 ) *UserImageHandler {
 	return &UserImageHandler{
-		userImages: repository.New(db),
+		userImages: user_images.New(db),
 		file:       filesystem.New(cfg.Dir),
-		model:      model,
 		cfg:        cfg,
 	}
 }
@@ -73,7 +70,34 @@ func (h *UserImageHandler) Upload(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	// TODO
+	userImage.UserID = session.UserID
+
+	err := h.userImages.Create(&userImage)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	fileHeader, err := ctx.FormFile("img")
+	if err != nil {
+		middleware.LogError(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		return app_errors.New(err)
+	}
+	defer file.Close()
+
+	err = h.file.Save(
+		ctx.UserContext(),
+		h.cfg.FullBody,
+		userImage.ID.String(),
+		file,
+	)
+	if err != nil {
+		return app_errors.New(err)
+	}
 
 	return ctx.SendString(common.EmptyJson)
 }

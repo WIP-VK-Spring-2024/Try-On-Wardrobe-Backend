@@ -1,4 +1,4 @@
-package usecase
+package clothes
 
 import (
 	"database/sql"

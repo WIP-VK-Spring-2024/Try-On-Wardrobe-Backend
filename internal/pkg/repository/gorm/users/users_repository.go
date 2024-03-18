@@ -1,4 +1,4 @@
-package repository
+package users
 
 import (
 	"try-on/internal/pkg/domain"

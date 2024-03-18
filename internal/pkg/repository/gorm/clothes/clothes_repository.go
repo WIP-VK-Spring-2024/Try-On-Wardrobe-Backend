@@ -1,4 +1,4 @@
-package repository
+package clothes
 
 import (
 	"try-on/internal/pkg/domain"

@@ -41,6 +41,11 @@ var (
 		Code: http.StatusBadRequest,
 		Msg:  "user image ID is missing or isn't a valid uuid",
 	}
+
+	ErrTryOnIdInvalid = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "try on result ID is missing or isn't a valid uuid",
+	}
 )
 
 type InternalError struct {
