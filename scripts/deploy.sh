@@ -1,4 +1,4 @@
-#!/bin/bach
+#!/bin/bash
 
-docker network create shared-api-network || true
-docker compose up --build -d
+sudo docker network create shared-api-network || true
+sudo docker compose up --build -d
