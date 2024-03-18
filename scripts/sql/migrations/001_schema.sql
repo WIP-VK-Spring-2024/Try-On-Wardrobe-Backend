@@ -1,3 +1,5 @@
+-- +migrate Up
+
 CREATE TABLE "users" (
     "id" uuid DEFAULT gen_random_uuid(),
     "created_at" timestamptz,
@@ -18,6 +20,14 @@ CREATE TABLE "types" (
 );
 
 CREATE TABLE "subtypes" (
+    "id" uuid DEFAULT gen_random_uuid(),
+    "created_at" timestamptz,
+    "updated_at" timestamptz,
+    "name" varchar(64),
+    PRIMARY KEY ("id")
+);
+
+CREATE TABLE "styles" (
     "id" uuid DEFAULT gen_random_uuid(),
     "created_at" timestamptz,
     "updated_at" timestamptz,
@@ -82,3 +92,22 @@ CREATE TABLE "try_on_results" (
     CONSTRAINT "fk_try_on_results_user" FOREIGN KEY ("user_id") REFERENCES "users"("id"),
     CONSTRAINT "fk_try_on_results_clothes_model" FOREIGN KEY ("clothes_model_id") REFERENCES "clothes"("id")
 );
+
+-- +migrate Down
+DROP TABLE "users";
+
+DROP TABLE "types";
+
+DROP TABLE "subtypes";
+
+DROP TABLE "styles";
+
+DROP TABLE "clothes";
+
+DROP TABLE "tags";
+
+DROP TABLE "clothes_tags";
+
+DROP TABLE "user_images";
+
+DROP TABLE "try_on_results";

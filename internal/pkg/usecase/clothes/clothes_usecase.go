@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/utils"
 
 	"github.com/google/uuid"
 )
@@ -45,12 +46,7 @@ func (c *ClothesUsecase) GetByUser(userID uuid.UUID, limit int) ([]domain.Clothe
 		return nil, err
 	}
 
-	result := make([]domain.Clothes, 0, len(clothes))
-	for _, clothing := range clothes {
-		result = append(result, *fromModel(&clothing))
-	}
-
-	return result, nil
+	return utils.Map(clothes, fromModel), nil
 }
 
 func fromModel(clothesModel *domain.ClothesModel) *domain.Clothes {

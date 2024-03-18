@@ -5,6 +5,8 @@ import (
 
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/sqlc/subtypes"
+	"try-on/internal/pkg/repository/sqlc/types"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -16,8 +18,8 @@ type TypesHandler struct {
 
 func New(db *sql.DB) *TypesHandler {
 	return &TypesHandler{
-		types:    nil,
-		subtypes: nil,
+		types:    types.New(db),
+		subtypes: subtypes.New(db),
 	}
 }
 

@@ -11,18 +11,18 @@ import (
 	clothes "try-on/internal/pkg/delivery/clothes"
 	session "try-on/internal/pkg/delivery/session"
 	tryOn "try-on/internal/pkg/delivery/try_on"
+	"try-on/internal/pkg/delivery/types"
 	"try-on/internal/pkg/delivery/user_images"
 	"try-on/internal/pkg/ml"
 	clothesRepo "try-on/internal/pkg/repository/gorm/clothes"
 	clothesUsecase "try-on/internal/pkg/usecase/clothes"
 	"try-on/internal/pkg/utils"
 
-	"github.com/wagslane/go-rabbitmq"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/wagslane/go-rabbitmq"
 	"go.uber.org/zap"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -84,6 +84,11 @@ func (app *App) Run() error {
 		// SecureRoutes: []string{"/renew", "/clothes"},
 	})
 
+	sqlDB, err := db.DB()
+	if err != nil {
+		return err
+	}
+
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(db))
 
 	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, &app.cfg.Static)
@@ -91,6 +96,8 @@ func (app *App) Run() error {
 	tryOnHandler := tryOn.New(db, clothesProcessor, clothesUsecase, app.logger, &app.cfg.Static)
 
 	userImageHandler := user_images.New(db, &app.cfg.Static)
+
+	typeHandler := types.New(sqlDB)
 
 	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
 
@@ -104,6 +111,9 @@ func (app *App) Run() error {
 	app.api.Delete("/clothes/:id", clothesHandler.Delete)
 	app.api.Put("/clothes/:id", clothesHandler.Update)
 	app.api.Get("/user/:id/clothes", clothesHandler.GetByUser)
+
+	app.api.Get("/types", typeHandler.GetTypes)
+	app.api.Get("/subtypes", typeHandler.GetSubtypes)
 
 	app.api.Get("/photos", userImageHandler.GetByUser)
 	app.api.Get("/photos/:id", userImageHandler.GetByID)

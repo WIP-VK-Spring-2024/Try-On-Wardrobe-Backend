@@ -4,63 +4,32 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"io"
 	"log"
-	"os"
 	"time"
 
 	"try-on/internal/pkg/config"
-	"try-on/internal/pkg/domain"
 
-	_ "github.com/jackc/pgx/v5"
+	migrate "github.com/rubenv/sql-migrate"
 	"gorm.io/gorm"
 )
 
 func applyMigrations(cfg config.Sql, db *gorm.DB) error {
-	err := execMultipleScripts(db, cfg.Dir+"/", cfg.BeforeGorm)
+	migrations := &migrate.FileMigrationSource{
+		Dir: cfg.Dir,
+	}
+
+	sqlDB, err := db.DB()
 	if err != nil {
 		return err
 	}
 
-	err = db.Debug().AutoMigrate(
-		&domain.User{},
-		&domain.ClothesModel{},
-		&domain.Tag{},
-		&domain.Style{},
-		&domain.Type{},
-		&domain.Subtype{},
-		&domain.UserImage{},
-		&domain.TryOnResult{},
-	)
+	n, err := migrate.Exec(sqlDB, "postgres", migrations, migrate.Up)
 	if err != nil {
-		return errors.Join(errors.New("gorm migrations failed"), err)
+		errors.Join(errors.New("sql-migrate migrations failed"), err)
 	}
+	fmt.Printf("Applied %d migrations\n", n)
 
-	return execMultipleScripts(db, cfg.Dir+"/", cfg.AfterGorm)
-}
-
-func execMultipleScripts(db *gorm.DB, prefix string, paths []string) error {
-	for _, fileName := range paths {
-		err := execSqlScript(db, prefix+fileName)
-		if err != nil {
-			return errors.Join(fmt.Errorf("failed applying migration '%s'", fileName), err)
-		}
-	}
 	return nil
-}
-
-func execSqlScript(db *gorm.DB, path string) error {
-	file, err := os.Open(path)
-	if err != nil {
-		return err
-	}
-
-	bytes, err := io.ReadAll(file)
-	if err != nil {
-		return err
-	}
-
-	return db.Exec(string(bytes)).Error
 }
 
 func initPostgres(config *config.Postgres) (*sql.DB, error) {

@@ -22,7 +22,7 @@ jobs:
           username: ubuntu
           overwrite: true
           key: ${{ secrets.BACKEND_SSH_KEY }}
-          source: "build,config,scripts,Dockerfile,docker-compose.yml"
+          source: "build,config,scripts,static,Dockerfile,docker-compose.yml"
           target: ~/app/backend
 
       - name: Deploy

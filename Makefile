@@ -11,6 +11,7 @@ ERRORS_PKG=${INTERNAL}/app_errors
 
 gen:
 	easyjson -snake_case -omit_empty -pkg ${DOMAIN_PKG} ${DELIVERY_PKG} ${ERRORS_PKG}
+	sqlc generate
 	${GO} generate ./...
 
 build:
