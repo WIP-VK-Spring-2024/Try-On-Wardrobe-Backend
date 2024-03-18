@@ -16,7 +16,7 @@ jobs:
         run: make build_alpine
 
       - name: Push build data
-        uses: appleboy/scp-action@v0.1.4
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ vars.BACKEND_IP_ADDR }}
           username: ubuntu
@@ -26,9 +26,12 @@ jobs:
           target: ~/app/backend
 
       - name: Deploy
-        uses: appleboy/ssh-action@v0.1.10
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ vars.BACKEND_IP_ADDR }}
           username: ubuntu
           key: ${{ secrets.BACKEND_SSH_KEY }}
-          script: cd ~/app/backend && ./scripts/deploy.sh
+          script: |
+            cd ~/app/backend
+            chmod 700 ./scripts/deploy.sh
+            ./scripts/deploy.sh
