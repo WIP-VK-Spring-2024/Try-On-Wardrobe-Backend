@@ -8,7 +8,7 @@ jobs:
     container: golang
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Run golangci-lint
         env:
@@ -22,7 +22,7 @@ jobs:
     container: golang
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build
         env:
@@ -32,7 +32,7 @@ jobs:
       - name: Push build data
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: ${{ env.BACKEND_IP_ADDR }}
+          host: $BACKEND_IP_ADDR
           username: ubuntu
           overwrite: true
           key: ${{ secrets.BACKEND_SSH_KEY }}
@@ -42,7 +42,7 @@ jobs:
       - name: Deploy
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ env.BACKEND_IP_ADDR }}
+          host: $BACKEND_IP_ADDR
           username: ubuntu
           key: ${{ secrets.BACKEND_SSH_KEY }}
           script: cd ~/app/backend && ./scripts/deploy.sh
