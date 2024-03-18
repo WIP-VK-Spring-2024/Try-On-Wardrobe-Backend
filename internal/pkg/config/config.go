@@ -87,13 +87,16 @@ type S3 struct {
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {
 	viper.SetConfigFile(configPath)
 
-	viper.BindEnv("postgres.host")
-	viper.BindEnv("postgres.port")
-	viper.BindEnv("postgres.password")
-	viper.BindEnv("session.secret")
-	viper.BindEnv("s3.accessKey")
-	viper.BindEnv("s3.secretKey")
-	viper.BindEnv("rabbit.password")
+	//nolint:errcheck
+	{
+		viper.BindEnv("postgres.host")
+		viper.BindEnv("postgres.port")
+		viper.BindEnv("postgres.password")
+		viper.BindEnv("session.secret")
+		viper.BindEnv("s3.accessKey")
+		viper.BindEnv("s3.secretKey")
+		viper.BindEnv("rabbit.password")
+	}
 
 	cfg := Config{}
 

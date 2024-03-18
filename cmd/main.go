@@ -39,7 +39,7 @@ func main() {
 	}
 
 	logger := zap.Must(loggerConfig.Build())
-	defer logger.Sync()
+	defer logger.Sync() //nolint:errcheck
 
 	app := NewApp(cfg, logger.Sugar())
 

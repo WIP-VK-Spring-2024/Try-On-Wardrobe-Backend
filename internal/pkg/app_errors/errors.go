@@ -17,27 +17,27 @@ var (
 )
 
 var (
-	ErrBadRequest = &ErrorMsg{
+	ErrBadRequest = &ResponseError{
 		Msg:  "bad request",
 		Code: http.StatusBadRequest,
 	}
 
-	ErrUnauthorized = &ErrorMsg{
+	ErrUnauthorized = &ResponseError{
 		Msg:  "credentials missing or invalid",
 		Code: http.StatusUnauthorized,
 	}
 
-	ErrUserIdInvalid = &ErrorMsg{
+	ErrUserIdInvalid = &ResponseError{
 		Code: http.StatusBadRequest,
 		Msg:  "user ID is missing or isn't a valid uuid",
 	}
 
-	ErrClothesIdInvalid = &ErrorMsg{
+	ErrClothesIdInvalid = &ResponseError{
 		Code: http.StatusBadRequest,
 		Msg:  "clothes ID is missing or isn't a valid uuid",
 	}
 
-	ErrUserImageIdInvalid = &ErrorMsg{
+	ErrUserImageIdInvalid = &ResponseError{
 		Code: http.StatusBadRequest,
 		Msg:  "user image ID is missing or isn't a valid uuid",
 	}
@@ -54,17 +54,17 @@ func (err *InternalError) Error() string {
 }
 
 //easyjson:json
-type ErrorMsg struct {
+type ResponseError struct {
 	Code int `json:"-"`
 	Msg  string
 }
 
-func (err ErrorMsg) Error() string {
+func (err ResponseError) Error() string {
 	return err.Msg
 }
 
 func New(err error) error {
-	code := http.StatusInternalServerError
+	var code int
 
 	switch {
 	default:
@@ -84,7 +84,7 @@ func New(err error) error {
 		code = http.StatusForbidden
 	}
 
-	return ErrorMsg{
+	return ResponseError{
 		Code: code,
 		Msg:  err.Error(),
 	}

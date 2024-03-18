@@ -150,7 +150,7 @@ func errorHandler(ctx *fiber.Ctx, err error) error {
 	var e *fiber.Error
 	if errors.As(err, &e) {
 		return ctx.Status(e.Code).JSON(
-			&app_errors.ErrorMsg{
+			&app_errors.ResponseError{
 				Msg: e.Message,
 			},
 		)
@@ -158,7 +158,7 @@ func errorHandler(ctx *fiber.Ctx, err error) error {
 
 	msg := "Internal Server Error"
 
-	var errorMsg *app_errors.ErrorMsg
+	var errorMsg *app_errors.ResponseError
 	if errors.As(err, &errorMsg) {
 		return ctx.Status(errorMsg.Code).JSON(errorMsg)
 	}
@@ -166,7 +166,7 @@ func errorHandler(ctx *fiber.Ctx, err error) error {
 	middleware.LogError(ctx, err)
 
 	return ctx.Status(http.StatusInternalServerError).JSON(
-		&app_errors.ErrorMsg{
+		&app_errors.ResponseError{
 			Msg: msg,
 		},
 	)

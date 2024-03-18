@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson5d450e75DecodeTryOnInternalPkgAppErrors(in *jlexer.Lexer, out *ErrorMsg) {
+func easyjson5d450e75DecodeTryOnInternalPkgAppErrors(in *jlexer.Lexer, out *ResponseError) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -48,7 +48,7 @@ func easyjson5d450e75DecodeTryOnInternalPkgAppErrors(in *jlexer.Lexer, out *Erro
 		in.Consumed()
 	}
 }
-func easyjson5d450e75EncodeTryOnInternalPkgAppErrors(out *jwriter.Writer, in ErrorMsg) {
+func easyjson5d450e75EncodeTryOnInternalPkgAppErrors(out *jwriter.Writer, in ResponseError) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -66,25 +66,25 @@ func easyjson5d450e75EncodeTryOnInternalPkgAppErrors(out *jwriter.Writer, in Err
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v ErrorMsg) MarshalJSON() ([]byte, error) {
+func (v ResponseError) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	easyjson5d450e75EncodeTryOnInternalPkgAppErrors(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v ErrorMsg) MarshalEasyJSON(w *jwriter.Writer) {
+func (v ResponseError) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjson5d450e75EncodeTryOnInternalPkgAppErrors(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *ErrorMsg) UnmarshalJSON(data []byte) error {
+func (v *ResponseError) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjson5d450e75DecodeTryOnInternalPkgAppErrors(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *ErrorMsg) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *ResponseError) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson5d450e75DecodeTryOnInternalPkgAppErrors(l, v)
 }

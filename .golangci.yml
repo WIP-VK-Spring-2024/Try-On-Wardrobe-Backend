@@ -1,0 +1,12 @@
+linters:
+  enable:
+    - asciicheck
+    - errname
+    - exportloopref
+    - goconst
+    - gocritic
+    - prealloc
+    - sqlclosecheck
+    - unparam
+    - asasalint
+    - dupl

@@ -41,8 +41,8 @@ func (repo *UserImageRepository) GetByUser(userID uuid.UUID) ([]domain.UserImage
 	return userImages, nil
 }
 
-func (c *UserImageRepository) Get(ID uuid.UUID) (*domain.UserImage, error) {
+func (c *UserImageRepository) Get(id uuid.UUID) (*domain.UserImage, error) {
 	userImage := &domain.UserImage{}
-	err := c.db.First(userImage, ID).Error
+	err := c.db.First(userImage, id).Error
 	return utils.TranslateGormError(userImage, err)
 }

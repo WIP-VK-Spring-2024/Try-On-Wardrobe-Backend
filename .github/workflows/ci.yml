@@ -1,0 +1,44 @@
+on:
+  push:
+    branches: [dev, ci]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container: golang
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v4.0.0
+
+  deploy:
+    needs: [lint]
+
+    runs-on: ubuntu-latest
+    container: golang
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build
+        run: make build_alpine
+
+      - name: Push build data
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ env.BACKEND_IP_ADDR }}
+          username: ubuntu
+          overwrite: true
+          key: ${{ secrets.BACKEND_SSH_KEY }}
+          source: "build,config,scripts,Dockerfile,docker-compose.yml"
+          target: ~/app/backend
+
+      - name: Deploy
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ env.BACKEND_IP_ADDR }}
+          username: ubuntu
+          key: ${{ secrets.BACKEND_SSH_KEY }}
+          script: cd ~/app/backend && ./scripts/deploy.sh
