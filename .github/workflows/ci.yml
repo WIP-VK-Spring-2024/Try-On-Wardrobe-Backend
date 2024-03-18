@@ -11,6 +11,8 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Run golangci-lint
+        env:
+          GOFLAGS: “-buildvcs=false”
         uses: golangci/golangci-lint-action@v4.0.0
 
   deploy:
