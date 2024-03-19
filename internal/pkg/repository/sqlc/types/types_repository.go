@@ -2,7 +2,6 @@ package types
 
 import (
 	"context"
-
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"

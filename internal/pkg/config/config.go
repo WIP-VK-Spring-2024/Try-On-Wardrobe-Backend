@@ -66,9 +66,7 @@ func (cfg *Postgres) DSN() string {
 }
 
 type Sql struct {
-	Dir        string
-	BeforeGorm []string
-	AfterGorm  []string
+	Dir string
 }
 
 type Session struct {

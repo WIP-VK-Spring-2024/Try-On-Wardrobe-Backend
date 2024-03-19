@@ -24,8 +24,6 @@ func GormError(err error) error {
 	}
 }
 
-<<<<<<< Updated upstream
-=======
 func PgxError(err error) error {
 	if err == pgx.ErrNoRows {
 		return app_errors.ErrNotFound
@@ -52,7 +50,6 @@ func PgxError(err error) error {
 	return errors.Join(err, appError)
 }
 
->>>>>>> Stashed changes
 func TranslateGormError[T any](item *T, err error) (*T, error) {
 	err = GormError(err)
 	if err != nil {

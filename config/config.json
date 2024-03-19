@@ -19,9 +19,7 @@
   },
 
   "sql": {
-    "dir": "scripts/sql",
-    "beforeGorm": ["data_types.sql"],
-    "afterGorm": ["indeces.sql", "init_fill.sql"]
+    "dir": "scripts/sql/migrations"
   },
 
   "s3": {

@@ -65,17 +65,7 @@ func (h *UserImageHandler) Upload(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
-	var userImage domain.UserImage
-	if err := ctx.BodyParser(&userImage); err != nil {
-		return app_errors.ErrBadRequest
-	}
-
-	userImage.UserID = session.UserID
-
-	err := h.userImages.Create(&userImage)
-	if err != nil {
-		return app_errors.New(err)
-	}
+	userImage := domain.UserImage{UserID: session.UserID}
 
 	fileHeader, err := ctx.FormFile("img")
 	if err != nil {
@@ -89,6 +79,11 @@ func (h *UserImageHandler) Upload(ctx *fiber.Ctx) error {
 	}
 	defer file.Close()
 
+	err = h.userImages.Create(&userImage)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
 	err = h.file.Save(
 		ctx.UserContext(),
 		h.cfg.FullBody,
@@ -96,6 +91,8 @@ func (h *UserImageHandler) Upload(ctx *fiber.Ctx) error {
 		file,
 	)
 	if err != nil {
+		deleteErr := h.userImages.Delete(userImage.ID)
+		middleware.LogError(ctx, deleteErr)
 		return app_errors.New(err)
 	}
 
