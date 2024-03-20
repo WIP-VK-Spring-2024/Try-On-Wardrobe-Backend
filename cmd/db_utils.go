@@ -6,22 +6,20 @@ import (
 	"fmt"
 	"log"
 	"time"
+
 	"try-on/internal/pkg/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	migrate "github.com/rubenv/sql-migrate"
-	"gorm.io/gorm"
 )
 
-func applyMigrations(cfg config.Sql, db *gorm.DB) error {
+func applyMigrations(cfg config.Sql, pg *pgxpool.Pool) error {
 	migrations := &migrate.FileMigrationSource{
 		Dir: cfg.Dir,
 	}
 
-	sqlDB, err := db.DB()
-	if err != nil {
-		return err
-	}
+	sqlDB := stdlib.OpenDBFromPool(pg)
 
 	n, err := migrate.Exec(sqlDB, "postgres", migrations, migrate.Up)
 	if err != nil {

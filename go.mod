@@ -1,6 +1,6 @@
 module try-on
 
-go 1.22.1
+go 1.22
 
 require (
 	atomicgo.dev/constraints v0.0.1
@@ -17,8 +17,6 @@ require (
 	github.com/wagslane/go-rabbitmq v0.13.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.21.0
-	gorm.io/driver/postgres v1.5.7
-	gorm.io/gorm v1.25.7
 )
 
 require (
@@ -29,8 +27,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
-	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.6 // indirect

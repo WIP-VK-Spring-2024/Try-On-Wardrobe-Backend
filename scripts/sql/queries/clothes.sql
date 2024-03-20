@@ -1,9 +1,3 @@
--- name: GetTypes :many
-select * from types;
-
--- name: GetSubtypes :many
-select * from subtypes;
-
 -- name: GetClothesById :one
 select
     clothes.*,
@@ -29,7 +23,6 @@ group by
     clothes.seasons,
     clothes.created_at,
     clothes.updated_at,
-    clothes.image,
     type,
     subtype,
     style;
@@ -59,7 +52,6 @@ group by
     clothes.seasons,
     clothes.created_at,
     clothes.updated_at,
-    clothes.image,
     type,
     subtype,
     style;
@@ -74,10 +66,9 @@ insert into clothes(
     user_id,
     type_id,
     subtype_id,
-    image,
     color
 )
-values ($1, $2, $3, $4, $5, $6)
+values ($1, $2, $3, $4, $5)
 returning id;
 
 -- name: UpdateClothes :exec
@@ -99,7 +90,7 @@ insert into tags (name) values (
 
 -- name: CreateClothesTagLinks :exec
 insert into clothes_tags (clothes_id, tag_id)
-    select sqlc.arg(clothes_id), tag_id
+    select sqlc.arg(clothes_id), id
     from tags where name = any(sqlc.arg(tags)::text[]);
 
 -- name: CreateStyle :one

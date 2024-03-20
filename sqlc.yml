@@ -13,5 +13,8 @@ sql:
             go_type:
               import: "github.com/google/uuid"
               type: "UUID"
+          - db_type: int
+            go_type: int
+        query_parameter_limit: 2
         rename:
           clothe: Clothes

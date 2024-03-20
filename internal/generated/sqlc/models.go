@@ -106,11 +106,10 @@ type Clothes struct {
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 	Note      pgtype.Text
-	Image     pgtype.Text
 	UserID    uuid.UUID
 	StyleID   pgtype.UUID
-	TypeID    uuid.UUID
-	SubtypeID uuid.UUID
+	TypeID    pgtype.UUID
+	SubtypeID pgtype.UUID
 	Color     pgtype.Text
 	Seasons   []Season
 }
@@ -143,13 +142,13 @@ type Tag struct {
 }
 
 type TryOnResult struct {
-	ID        uuid.UUID
-	CreatedAt pgtype.Timestamptz
-	UpdatedAt pgtype.Timestamptz
-	Image     string
-	Rating    pgtype.Int8
-	UserID    uuid.UUID
-	ClothesID uuid.UUID
+	ID          uuid.UUID
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+	Rating      pgtype.Int4
+	Image       pgtype.Text
+	UserImageID uuid.UUID
+	ClothesID   uuid.UUID
 }
 
 type Type struct {
@@ -163,9 +162,9 @@ type User struct {
 	ID        uuid.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
-	Name      pgtype.Text
+	Name      string
 	Email     pgtype.Text
-	Password  pgtype.Text
+	Password  string
 	Gender    NullGender
 }
 
@@ -174,5 +173,4 @@ type UserImage struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	UserID    uuid.UUID
-	Image     pgtype.Text
 }

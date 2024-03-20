@@ -5,12 +5,12 @@ import (
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	userRepo "try-on/internal/pkg/repository/gorm/users"
+	userRepo "try-on/internal/pkg/repository/sqlc/users"
 	sessionUsecase "try-on/internal/pkg/usecase/session"
 	userUsecase "try-on/internal/pkg/usecase/users"
 
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type SessionHandler struct {
@@ -24,7 +24,7 @@ type tokenResponse struct {
 	Token string
 }
 
-func New(db *gorm.DB, cfg *config.Session) *SessionHandler {
+func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
 	userRepo := userRepo.New(db)
 
 	return &SessionHandler{

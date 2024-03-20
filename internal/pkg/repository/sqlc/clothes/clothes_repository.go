@@ -39,8 +39,8 @@ func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
 	createParams := sqlc.CreateClothesParams{
 		UserID:    clothes.UserID,
 		Name:      clothes.Name,
-		TypeID:    clothes.TypeID,
-		SubtypeID: clothes.SubtypeID,
+		TypeID:    translate.ToPgUUID(clothes.TypeID),
+		SubtypeID: translate.ToPgUUID(clothes.SubtypeID),
 		Color:     pgtype.Text(clothes.Color),
 	}
 
@@ -51,19 +51,16 @@ func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
 		return utils.PgxError(err)
 	}
 
-	if clothes.Image != "" {
-		createParams.Image = pgtype.Text{String: clothes.Image, Valid: true}
-	}
-
-	clothes.ID, err = queries.CreateClothes(ctx, createParams)
+	clothesId, err := queries.CreateClothes(ctx, createParams)
 	if err != nil {
 		return utils.PgxError(err)
 	}
 
-	err = queries.CreateClothesTagLinks(ctx, sqlc.CreateClothesTagLinksParams{
-		ClothesID: clothes.ID,
-		Tags:      tags,
-	})
+	clothes.ID = clothesId
+
+	err = queries.CreateClothesTagLinks(ctx, clothes.ID,
+		tags,
+	)
 	if err != nil {
 		return utils.PgxError(err)
 	}
@@ -85,8 +82,8 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 		ID:        clothes.ID,
 		Name:      clothes.Name,
 		Note:      pgtype.Text(clothes.Note),
-		TypeID:    clothes.TypeID,
-		SubtypeID: clothes.SubtypeID,
+		TypeID:    translate.ToPgUUID(clothes.TypeID),
+		SubtypeID: translate.ToPgUUID(clothes.SubtypeID),
 		Color:     pgtype.Text(clothes.Color),
 		Seasons: utils.Map(clothes.Seasons, func(t *domain.Season) *sqlc.Season {
 			tmp := sqlc.Season(*t)
@@ -102,6 +99,11 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 		updateParams.StyleID = pgtype.UUID{Bytes: styleId, Valid: true}
 	}
 
+	err = c.queries.UpdateClothes(ctx, updateParams)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
 	tags := translate.TagsToString(clothes.Tags)
 
 	err = queries.CreateTags(ctx, tags)
@@ -109,10 +111,10 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 		return utils.PgxError(err)
 	}
 
-	err = queries.CreateClothesTagLinks(ctx, sqlc.CreateClothesTagLinksParams{
-		ClothesID: clothes.ID,
-		Tags:      tags,
-	})
+	err = queries.CreateClothesTagLinks(ctx,
+		clothes.ID,
+		tags,
+	)
 	if err != nil {
 		return utils.PgxError(err)
 	}
@@ -152,8 +154,8 @@ func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.ClothesModel {
 				UpdatedAt: model.UpdatedAt.Time,
 			},
 		},
-		TypeID:    model.TypeID,
-		SubtypeID: model.SubtypeID,
+		TypeID:    model.TypeID.Bytes,
+		SubtypeID: model.SubtypeID.Bytes,
 		UserID:    model.UserID,
 		StyleID:   model.StyleID.Bytes,
 		Color:     sql.NullString(model.Color),

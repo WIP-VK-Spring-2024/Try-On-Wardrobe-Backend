@@ -22,8 +22,11 @@ type ClothesProcessingOpts struct {
 	ImageType string
 }
 
+type ClothesProcessingResponse struct{}
+
 //easyjson:json
 type TryOnOpts struct {
+	UserImageID     uuid.UUID
 	UserID          uuid.UUID
 	ClothesID       uuid.UUID
 	PersonFileName  string
@@ -36,6 +39,7 @@ type TryOnOpts struct {
 type TryOnResponse struct {
 	UserID      uuid.UUID
 	ClothesID   uuid.UUID
+	UserImageID uuid.UUID
 	ResFileName string
 	ResFilePath string
 }

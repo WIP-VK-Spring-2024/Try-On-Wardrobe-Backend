@@ -21,7 +21,14 @@ func New(repo domain.ClothesRepository) domain.ClothesUsecase {
 }
 
 func (c *ClothesUsecase) Create(clothes *domain.Clothes) error {
-	return c.repo.Create(toModel(clothes))
+	model := toModel(clothes)
+	err := c.repo.Create(model)
+	if err != nil {
+		return err
+	}
+
+	clothes.ID = model.ID
+	return nil
 }
 
 func (c *ClothesUsecase) Update(clothes *domain.Clothes) error {

@@ -22,12 +22,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/wagslane/go-rabbitmq"
 	"go.uber.org/zap"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
 )
 
 type App struct {
@@ -37,12 +33,12 @@ type App struct {
 }
 
 func (app *App) Run() error {
-	db, pg, err := app.getDB()
+	pg, err := initPostgres(&app.cfg.Postgres)
 	if err != nil {
 		return err
 	}
 
-	err = applyMigrations(app.cfg.Sql, db)
+	err = applyMigrations(app.cfg.Sql, pg)
 	if err != nil {
 		return err
 	}
@@ -77,7 +73,7 @@ func (app *App) Run() error {
 		MaxAge:           app.cfg.Cors.MaxAge,
 	})
 
-	sessionHandler := session.New(db, &app.cfg.Session)
+	sessionHandler := session.New(pg, &app.cfg.Session)
 
 	checkSession := middleware.CheckSession(middleware.SessionConfig{
 		TokenName:    app.cfg.Session.TokenName,
@@ -90,9 +86,9 @@ func (app *App) Run() error {
 
 	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, &app.cfg.Static)
 
-	tryOnHandler := tryOn.New(db, clothesProcessor, clothesUsecase, app.logger, &app.cfg.Static)
+	tryOnHandler := tryOn.New(pg, clothesProcessor, clothesUsecase, app.logger, &app.cfg.Static)
 
-	userImageHandler := user_images.New(db, &app.cfg.Static)
+	userImageHandler := user_images.New(pg, &app.cfg.Static)
 
 	typeHandler := types.New(pg)
 
@@ -139,26 +135,6 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 		cfg:    cfg,
 		logger: logger,
 	}
-}
-
-func (app *App) getDB() (*gorm.DB, *pgxpool.Pool, error) {
-	pg, err := initPostgres(&app.cfg.Postgres)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: stdlib.OpenDBFromPool(pg),
-	}), &gorm.Config{
-		// Logger: gormLogger.Discard,
-		// FullSaveAssociations: true,
-		TranslateError: true,
-	})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return db, pg, nil
 }
 
 func errorHandler(ctx *fiber.Ctx, err error) error {

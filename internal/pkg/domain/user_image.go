@@ -2,6 +2,7 @@ package domain
 
 import "github.com/google/uuid"
 
+//easyjson:json
 type UserImage struct {
 	Model
 

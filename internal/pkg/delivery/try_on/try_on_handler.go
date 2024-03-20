@@ -8,13 +8,13 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/repository/gorm/try_on"
-	user_images "try-on/internal/pkg/repository/gorm/user_images"
+	"try-on/internal/pkg/repository/sqlc/try_on"
+	"try-on/internal/pkg/repository/sqlc/user_images"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type TryOnHandler struct {
@@ -27,7 +27,7 @@ type TryOnHandler struct {
 }
 
 func New(
-	db *gorm.DB,
+	db *pgxpool.Pool,
 	model domain.ClothesProcessingModel,
 	clothes domain.ClothesUsecase,
 	logger *zap.SugaredLogger,
@@ -54,9 +54,9 @@ func (h *TryOnHandler) ListenTryOnResults() {
 
 func (h *TryOnHandler) handleResult(resp *domain.TryOnResponse) domain.Result {
 	tryOnRes := &domain.TryOnResult{
-		UserID:         resp.UserID,
-		ClothesModelID: resp.ClothesID,
-		Image:          resp.ResFilePath,
+		UserImageID: resp.UserImageID,
+		ClothesID:   resp.ClothesID,
+		Image:       resp.ResFilePath,
 	}
 
 	err := h.results.Create(tryOnRes)
@@ -117,12 +117,12 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 }
 
 func (c *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
-	id, err := uuid.Parse(ctx.Params("id"))
-	if err != nil {
-		return app_errors.ErrTryOnIdInvalid
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
 	}
 
-	result, err := c.results.Get(id)
+	result, err := c.results.GetLast(session.UserID)
 	if err != nil {
 		return app_errors.New(err)
 	}

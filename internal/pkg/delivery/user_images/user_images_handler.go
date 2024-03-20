@@ -7,11 +7,11 @@ import (
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/file_manager/filesystem"
-	"try-on/internal/pkg/repository/gorm/user_images"
+	"try-on/internal/pkg/repository/sqlc/user_images"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type UserImageHandler struct {
@@ -21,7 +21,7 @@ type UserImageHandler struct {
 }
 
 func New(
-	db *gorm.DB,
+	db *pgxpool.Pool,
 	cfg *config.Static,
 ) *UserImageHandler {
 	return &UserImageHandler{
