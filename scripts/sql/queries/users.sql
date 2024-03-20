@@ -3,7 +3,7 @@ insert into users(
     name,
     email,
     password
-) values ($1, $2, $3)
+) values (sqlc.arg(name), sqlc.arg(email), sqlc.arg(password))
 returning id;
 
 -- name: GetUserByID :one

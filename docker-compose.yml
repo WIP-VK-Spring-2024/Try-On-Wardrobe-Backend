@@ -1,9 +1,12 @@
+version: "3.9"
+
 services:
-  backend:
+  app:
     build: .
     restart: unless-stopped
     depends_on:
       - postgres
+      - centrifugo
     ports:
       - 8001:8001
     volumes:
@@ -14,7 +17,24 @@ services:
       - POSTGRES.PORT
       - SESSION.SECRET
       - RABBIT.PASSWORD
+      - STATIC.HTTPAPI.TOKEN
 
+  centrifugo:
+    image: centrifugo/centrifugo:v5
+    restart: unless-stopped
+    volumes:
+      - ./config/centrifugo.json:/centrifugo/config.json
+    command: centrifugo -c config.json
+    ports:
+      - 8002:8002
+    environment:
+      - CENTRIFUGO_ADMIN_PASSWORD
+      - CENTRIFUGO_ADMIN_SECRET
+      - CENTRIFUGO_TOKEN_HMAC_SECRET_KEY
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
 
   postgres:
     image: postgres:16.2-alpine
@@ -29,9 +49,9 @@ services:
 
 secrets:
   postgres_password:
-      environment: "POSTGRES.PASSWORD"
+    environment: "POSTGRES.PASSWORD"
 
 networks:
   default:
-      external: true
-      name: shared-api-network
+    external: true
+    name: shared-api-network

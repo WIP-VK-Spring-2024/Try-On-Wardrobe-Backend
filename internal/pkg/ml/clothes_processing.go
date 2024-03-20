@@ -20,11 +20,14 @@ type ClothesProcessor struct {
 }
 
 func (p *ClothesProcessor) Close() {
-	defer p.consumer.Close()
-	defer p.publisher.Close()
+	p.publisher.Close()
 }
 
-func New(requestQueue string, responseQueue string, rabbit *rabbitmq.Conn) (domain.ClothesProcessingModel, error) {
+func New(
+	requestQueue string,
+	responseQueue string,
+	rabbit *rabbitmq.Conn,
+) (domain.ClothesProcessingModel, error) {
 	publisher, err := rabbitmq.NewPublisher(
 		rabbit,
 		rabbitmq.WithPublisherOptionsExchangeName(requestQueue),
@@ -58,13 +61,15 @@ func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProce
 }
 
 func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
+	defer p.consumer.Close()
+
 	return p.consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
-		logger.Infow("rabbit", string(delivery.Body))
+		logger.Infow("rabbit", "got", string(delivery.Body))
 
 		var resp domain.TryOnResponse
 		err := easyjson.Unmarshal(delivery.Body, &resp)
 		if err != nil {
-			logger.Infow("rabbit", err)
+			logger.Infow("rabbit", "error", err)
 			return rabbitmq.NackDiscard
 		}
 

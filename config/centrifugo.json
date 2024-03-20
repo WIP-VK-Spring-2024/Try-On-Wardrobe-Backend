@@ -1,0 +1,17 @@
+{
+  "admin": true,
+  "admin_secret": "f408a325-31d2-4252-8292-f7f54c407541",
+  "allowed_origins": [],
+  "port": 8002,
+  "grpc_api": true,
+  "log_level": "debug",
+  "namespaces": [
+    {
+      "name": "try-on",
+      "history_size": 10,
+      "history_ttl": "300s",
+      "force_recovery": true,
+      "allow_user_limited_channels": true
+    }
+  ]
+}

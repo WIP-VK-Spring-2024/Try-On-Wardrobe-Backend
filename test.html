@@ -16,13 +16,21 @@
 
     <br />
 
-    <form action="http://localhost:8001/clothes" method="post" id="form" style="display:flex;flex-direction: column;width: 25%;gap: 10px;"">
+    <form id="form" style="display:flex;flex-direction: column;width: 25%;gap: 10px;"">
       <input type="text" name="name" id="clothesName" value="Джинсы" />
       <input type="text" name="type" id="clothesType" value="Низ" />
       <input type="text" name="subtype" id="clothesSubType" value="Джинсы" />
       <textarea name="tags">деним,colins,кэжуал</textarea>
       <input type="file" name="img" />
-      <button type="submit">Send image</button>
+      <button type="submit">Upload clothes</button>
+    </form>
+
+    <br />
+    <br />
+
+    <form id="photo-form" style="display:flex;flex-direction: column;width: 25%;gap: 10px;"">
+      <input type="file" name="img" />
+      <button type="submit">Upload user photo</button>
     </form>
 
     <br />
@@ -33,6 +41,7 @@
     <script>
       let jwtToken = "";
       const form = document.getElementById("form");
+      const photoForm = document.getElementById("photo-form");
 
       const getCredentials = () => ({
         name: document.getElementById("name").value,
@@ -71,9 +80,14 @@
         request("clothes", "POST", new FormData(form));
       });
 
+      photoForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        request("photos", "POST", new FormData(photoForm));
+      });
+
       document.getElementById("try-on").addEventListener("click", () => {
         request(
-          "user/try-on",
+          "try-on",
           "POST",
           JSON.stringify({
             clothes_id: "62e29ffe-b3dd-4652-bc18-d4aebb76068f",

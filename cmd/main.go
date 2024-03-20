@@ -28,9 +28,10 @@ func main() {
 		DisableStacktrace: false,
 		DisableCaller:     true,
 		EncoderConfig: zapcore.EncoderConfig{
-			MessageKey:  "msg",
-			LevelKey:    "level",
-			TimeKey:     "time",
+			MessageKey: "msg",
+			LevelKey:   "level",
+			TimeKey:    "time",
+			// StacktraceKey: "stacktrace",
 			EncodeTime:  zapcore.TimeEncoderOfLayout(config.TimeFormat),
 			EncodeLevel: zapcore.LowercaseLevelEncoder,
 		},

@@ -8,15 +8,18 @@ import (
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
+	"try-on/internal/pkg/delivery/types"
+	"try-on/internal/pkg/delivery/user_images"
+	"try-on/internal/pkg/file_manager"
+	"try-on/internal/pkg/ml"
+	"try-on/internal/pkg/utils"
+
 	clothes "try-on/internal/pkg/delivery/clothes"
 	session "try-on/internal/pkg/delivery/session"
 	tryOn "try-on/internal/pkg/delivery/try_on"
-	"try-on/internal/pkg/delivery/types"
-	"try-on/internal/pkg/delivery/user_images"
-	"try-on/internal/pkg/ml"
+
 	clothesRepo "try-on/internal/pkg/repository/sqlc/clothes"
 	clothesUsecase "try-on/internal/pkg/usecase/clothes"
-	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -24,6 +27,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/wagslane/go-rabbitmq"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type App struct {
@@ -45,6 +50,15 @@ func (app *App) Run() error {
 
 	log.Println("Connecting to rabbit", app.cfg.Rabbit.DSN())
 	rabbitConn, err := rabbitmq.NewConn(app.cfg.Rabbit.DSN())
+	if err != nil {
+		return err
+	}
+
+	log.Println("Connecting to centrifugo", app.cfg.Centrifugo.Url)
+	centrifugoConn, err := grpc.Dial(
+		app.cfg.Centrifugo.Url,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
 		return err
 	}
@@ -82,13 +96,22 @@ func (app *App) Run() error {
 		// SecureRoutes: []string{"/renew", "/clothes"},
 	})
 
+	fileManager, err := file_manager.New(&app.cfg.Static)
+	if err != nil {
+		return err
+	}
+
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(pg))
 
-	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, &app.cfg.Static)
+	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, fileManager, &app.cfg.Static)
 
-	tryOnHandler := tryOn.New(pg, clothesProcessor, clothesUsecase, app.logger, &app.cfg.Static)
+	tryOnHandler := tryOn.New(
+		pg, clothesProcessor,
+		clothesUsecase, app.logger,
+		centrifugoConn, &app.cfg.Centrifugo,
+	)
 
-	userImageHandler := user_images.New(pg, &app.cfg.Static)
+	userImageHandler := user_images.New(pg, fileManager, &app.cfg.Static)
 
 	typeHandler := types.New(pg)
 

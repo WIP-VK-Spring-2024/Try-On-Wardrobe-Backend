@@ -11,6 +11,7 @@ type TryOnResultRepository interface {
 	Rate(id uuid.UUID, rating int) error
 }
 
+//easyjson:json
 type TryOnResult struct {
 	Model
 

@@ -6,7 +6,6 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/file_manager/filesystem"
 	"try-on/internal/pkg/repository/sqlc/user_images"
 
 	"github.com/gofiber/fiber/v2"
@@ -22,11 +21,12 @@ type UserImageHandler struct {
 
 func New(
 	db *pgxpool.Pool,
+	fileManager domain.FileManager,
 	cfg *config.Static,
 ) *UserImageHandler {
 	return &UserImageHandler{
 		userImages: user_images.New(db),
-		file:       filesystem.New(cfg.Dir),
+		file:       fileManager,
 		cfg:        cfg,
 	}
 }

@@ -1,4 +1,4 @@
-package cloud
+package s3
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"try-on/internal/pkg/app_errors"
+	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 
 	"github.com/minio/minio-go/v7"
@@ -17,9 +18,9 @@ type FileManager struct {
 	client *minio.Client
 }
 
-func New(endpoint, id, secretKey string) (domain.FileManager, error) {
-	client, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(id, secretKey, ""),
+func New(cfg *config.S3) (domain.FileManager, error) {
+	client, err := minio.New(cfg.Endpoint, &minio.Options{
+		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
 		Secure: false,
 	})
 	if err != nil {
@@ -50,19 +51,6 @@ func (fm *FileManager) Save(ctx context.Context, bucket, name string, input io.R
 	}
 
 	return err
-}
-
-func (fm *FileManager) Get(ctx context.Context, bucket, name string) (io.ReadCloser, error) {
-	obj, err := fm.client.GetObject(ctx, bucket, name, minio.GetObjectOptions{})
-	if err != nil {
-		resp := minio.ToErrorResponse(err)
-		if resp.StatusCode == http.StatusNotFound {
-			err = app_errors.ErrNotFound
-		}
-		return nil, err
-	}
-
-	return obj, nil
 }
 
 func (fm *FileManager) Delete(ctx context.Context, bucket, name string) error {

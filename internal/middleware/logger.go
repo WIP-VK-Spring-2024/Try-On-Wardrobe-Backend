@@ -30,6 +30,10 @@ func GetLogger(ctx *fiber.Ctx) *zap.SugaredLogger {
 }
 
 func LogError(ctx *fiber.Ctx, err error) {
+	if err == nil {
+		return
+	}
+
 	logger := GetLogger(ctx)
 
 	values := []interface{}{"method", ctx.Method(), "path", ctx.Path(), "ip", ctx.IP()}

@@ -9,7 +9,6 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/file_manager/filesystem"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -25,11 +24,12 @@ type ClothesHandler struct {
 func New(
 	clothes domain.ClothesUsecase,
 	model domain.ClothesProcessingModel,
+	fileManager domain.FileManager,
 	cfg *config.Static,
 ) *ClothesHandler {
 	return &ClothesHandler{
 		clothes: clothes,
-		file:    filesystem.New(cfg.Dir),
+		file:    fileManager,
 		model:   model,
 		cfg:     cfg,
 	}

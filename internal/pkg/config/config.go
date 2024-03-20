@@ -11,23 +11,39 @@ import (
 )
 
 type Config struct {
-	Addr     string
-	Static   Static
-	Postgres Postgres
-	Session  Session
-	Cors     Cors
-	Sql      Sql
-	S3       S3
-	Rabbit   Rabbit
+	Addr       string
+	Static     Static
+	Centrifugo Centrifugo
+	Postgres   Postgres
+	Session    Session
+	Cors       Cors
+	Sql        Sql
+	S3         S3
+	Rabbit     Rabbit
 }
 
 type Static struct {
+	HttpApi  HttpApi
 	Type     string
 	Dir      string
 	Clothes  string
 	Cut      string
 	FullBody string
 	TryOn    string
+	S3       S3
+}
+
+type HttpApi struct {
+	Endpoint    string
+	Token       string
+	TokenHeader string
+	UploadUrl   string
+	DeleteUrl   string
+}
+
+type Centrifugo struct {
+	Url          string
+	TryOnChannel string
 }
 
 type Cors struct {
@@ -77,7 +93,6 @@ type Session struct {
 
 type S3 struct {
 	Endpoint  string
-	Bucket    string
 	AccessKey string
 	SecretKey string
 }
@@ -85,16 +100,14 @@ type S3 struct {
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {
 	viper.SetConfigFile(configPath)
 
-	//nolint:errcheck
-	{
-		viper.BindEnv("postgres.host")
-		viper.BindEnv("postgres.port")
-		viper.BindEnv("postgres.password")
-		viper.BindEnv("session.secret")
-		viper.BindEnv("s3.accessKey")
-		viper.BindEnv("s3.secretKey")
-		viper.BindEnv("rabbit.password")
-	}
+	viper.BindEnv("postgres.host")
+	viper.BindEnv("postgres.port")
+	viper.BindEnv("postgres.password")
+	viper.BindEnv("session.secret")
+	viper.BindEnv("static.s3.accessKey")
+	viper.BindEnv("static.s3.secretKey")
+	viper.BindEnv("rabbit.password")
+	viper.BindEnv("static.httpapi.token")
 
 	cfg := Config{}
 

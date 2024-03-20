@@ -1,13 +1,28 @@
 {
   "addr": ":8001",
 
+  "centrifugo": {
+    "url": "centrifugo:10000",
+    "tryOnChannel": "try-on:user#"
+  },
+
   "static": {
-    "type": "fs",
+    "type": "http",
     "dir": "static",
     "clothes": "clothes",
     "cut": "clothes/cut",
     "fullBody": "people",
-    "tryOn": "try-on"
+    "tryOn": "try-on",
+    "s3": {
+      "endpoint": "https://hb.ru-msk.vkcs.cloud",
+      "bucket": "try_on_wardrobe_images"
+    },
+    "httpApi": {
+      "endpoint": "http://model-api:8000/aws",
+      "uploadUrl": "/upload",
+      "deleteUrl": "/delete",
+      "tokenHeader": "X-ACCESS-TOKEN"
+    }
   },
 
   "rabbit": {
@@ -20,11 +35,6 @@
 
   "sql": {
     "dir": "scripts/sql/migrations"
-  },
-
-  "s3": {
-    "endpoint": "https://hb.ru-msk.vkcs.cloud",
-    "bucket": "try_on_wardrobe_images"
   },
 
   "session": {

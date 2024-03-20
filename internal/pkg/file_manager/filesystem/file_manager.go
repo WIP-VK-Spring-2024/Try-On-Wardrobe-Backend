@@ -41,17 +41,6 @@ func (fm *FileManager) Save(_ context.Context, dir, name string, input io.Reader
 	return nil
 }
 
-func (fm *FileManager) Get(_ context.Context, dir, name string) (io.ReadCloser, error) {
-	file, err := os.Open(fm.fullName(dir, name))
-	if err != nil {
-		if errors.Is(err, fs.ErrNotExist) {
-			err = app_errors.ErrNotFound
-		}
-		return nil, err
-	}
-	return file, nil
-}
-
 func (fm *FileManager) Delete(_ context.Context, dir, name string) error {
 	err := os.Remove(fm.fullName(dir, name))
 	if err != nil && errors.Is(err, fs.ErrNotExist) {
