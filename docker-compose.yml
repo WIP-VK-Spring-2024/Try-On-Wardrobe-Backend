@@ -46,6 +46,13 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
     secrets:
       - postgres_password
+  
+  nginx:
+    image: nginx:1.25.4-alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf
 
 secrets:
   postgres_password:
