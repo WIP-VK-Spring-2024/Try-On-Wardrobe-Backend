@@ -92,10 +92,3 @@ insert into tags (name) values (
 insert into clothes_tags (clothes_id, tag_id)
     select sqlc.arg(clothes_id), id
     from tags where name = any(sqlc.arg(tags)::text[]);
-
--- name: CreateStyle :one
-insert into styles(name, created_at)
-values ($1, now())
-on conflict(name) do update
-set name = excluded.name
-returning id;

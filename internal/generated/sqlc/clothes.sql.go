@@ -56,21 +56,6 @@ func (q *Queries) CreateClothesTagLinks(ctx context.Context, clothesID utils.UUI
 	return err
 }
 
-const createStyle = `-- name: CreateStyle :one
-insert into styles(name, created_at)
-values ($1, now())
-on conflict(name) do update
-set name = excluded.name
-returning id
-`
-
-func (q *Queries) CreateStyle(ctx context.Context, name string) (utils.UUID, error) {
-	row := q.db.QueryRow(ctx, createStyle, name)
-	var id utils.UUID
-	err := row.Scan(&id)
-	return id, err
-}
-
 const createTags = `-- name: CreateTags :exec
 insert into tags (name) values (  
   unnest($1::varchar[])
