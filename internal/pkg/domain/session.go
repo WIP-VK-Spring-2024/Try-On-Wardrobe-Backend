@@ -1,10 +1,10 @@
 package domain
 
-import "github.com/google/uuid"
+import "try-on/internal/pkg/utils"
 
 type Session struct {
 	ID     string
-	UserID uuid.UUID
+	UserID utils.UUID
 }
 
 //easyjson:json
@@ -16,7 +16,7 @@ type Credentials struct {
 type SessionUsecase interface {
 	Login(Credentials) (*Session, error)
 	IsLoggedIn(*Session) (bool, error)
-	IssueToken(id uuid.UUID) (string, error)
+	IssueToken(id utils.UUID) (string, error)
 }
 
 type SessionRepository interface {

@@ -9,9 +9,9 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 )
 
 type ClothesHandler struct {
@@ -36,7 +36,7 @@ func New(
 }
 
 func (h *ClothesHandler) GetByID(ctx *fiber.Ctx) error {
-	clothesID, err := uuid.Parse(ctx.Params("id"))
+	clothesID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrClothesIdInvalid
 	}
@@ -50,7 +50,7 @@ func (h *ClothesHandler) GetByID(ctx *fiber.Ctx) error {
 }
 
 func (h *ClothesHandler) Delete(ctx *fiber.Ctx) error {
-	clothesID, err := uuid.Parse(ctx.Params("id"))
+	clothesID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrClothesIdInvalid
 	}
@@ -64,7 +64,7 @@ func (h *ClothesHandler) Delete(ctx *fiber.Ctx) error {
 }
 
 func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
-	clothesID, err := uuid.Parse(ctx.Params("id"))
+	clothesID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrClothesIdInvalid
 	}
@@ -143,7 +143,7 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	return ctx.SendString(common.EmptyJson)
 }
 
-func (h *ClothesHandler) getClothes(userID uuid.UUID, ctx *fiber.Ctx) error {
+func (h *ClothesHandler) getClothes(userID utils.UUID, ctx *fiber.Ctx) error {
 	limit, _ := strconv.Atoi(ctx.Query("limit"))
 
 	clothes, err := h.clothes.GetByUser(userID, limit)
@@ -155,7 +155,7 @@ func (h *ClothesHandler) getClothes(userID uuid.UUID, ctx *fiber.Ctx) error {
 }
 
 func (h *ClothesHandler) GetByUser(ctx *fiber.Ctx) error {
-	userID, err := uuid.Parse(ctx.Params("id"))
+	userID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrUserIdInvalid
 	}

@@ -8,8 +8,8 @@ import (
 	"database/sql/driver"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"try-on/internal/pkg/utils"
 )
 
 type Gender string
@@ -101,65 +101,65 @@ func (ns NullSeason) Value() (driver.Value, error) {
 }
 
 type Clothes struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 	Note      pgtype.Text
-	UserID    uuid.UUID
-	StyleID   pgtype.UUID
-	TypeID    pgtype.UUID
-	SubtypeID pgtype.UUID
+	UserID    utils.UUID
+	StyleID   utils.UUID
+	TypeID    utils.UUID
+	SubtypeID utils.UUID
 	Color     pgtype.Text
 	Seasons   []Season
 }
 
 type ClothesTag struct {
-	ClothesID uuid.UUID
-	TagID     uuid.UUID
+	ClothesID utils.UUID
+	TagID     utils.UUID
 }
 
 type Style struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 }
 
 type Subtype struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
-	TypeID    uuid.UUID
+	TypeID    utils.UUID
 }
 
 type Tag struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 }
 
 type TryOnResult struct {
-	ID          uuid.UUID
+	ID          utils.UUID
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 	Rating      pgtype.Int4
 	Image       pgtype.Text
-	UserImageID uuid.UUID
-	ClothesID   uuid.UUID
+	UserImageID utils.UUID
+	ClothesID   utils.UUID
 }
 
 type Type struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 }
 
 type User struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
@@ -169,8 +169,8 @@ type User struct {
 }
 
 type UserImage struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
-	UserID    uuid.UUID
+	UserID    utils.UUID
 }

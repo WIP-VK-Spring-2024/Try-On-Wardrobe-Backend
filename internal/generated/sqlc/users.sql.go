@@ -8,8 +8,8 @@ package sqlc
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"try-on/internal/pkg/utils"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -27,9 +27,9 @@ type CreateUserParams struct {
 	Password string
 }
 
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (uuid.UUID, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (utils.UUID, error) {
 	row := q.db.QueryRow(ctx, createUser, arg.Name, arg.Email, arg.Password)
-	var id uuid.UUID
+	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
 }
@@ -39,7 +39,7 @@ select id, created_at, updated_at, name, email, password, gender from users
 where id = $1
 `
 
-func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
+func (q *Queries) GetUserByID(ctx context.Context, id utils.UUID) (User, error) {
 	row := q.db.QueryRow(ctx, getUserByID, id)
 	var i User
 	err := row.Scan(

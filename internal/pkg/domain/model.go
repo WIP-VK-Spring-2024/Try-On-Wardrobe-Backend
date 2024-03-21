@@ -3,11 +3,11 @@ package domain
 import (
 	"time"
 
-	"github.com/google/uuid"
+	"try-on/internal/pkg/utils"
 )
 
 type Model struct {
-	ID uuid.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	ID utils.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	AutoTimestamp
 }
 

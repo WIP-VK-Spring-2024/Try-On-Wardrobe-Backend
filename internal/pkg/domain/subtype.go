@@ -1,14 +1,12 @@
 package domain
 
-import "github.com/google/uuid"
+import "try-on/internal/pkg/utils"
 
 //easyjson:json
 type Subtype struct {
 	Model
-	Name string `gorm:"type:varchar(64)"`
-
-	TypeID uuid.UUID
-	Type   *Type
+	Name   string `gorm:"type:varchar(64)"`
+	TypeID utils.UUID
 }
 
 type SubtypeRepository interface {

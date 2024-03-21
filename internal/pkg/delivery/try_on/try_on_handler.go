@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+
 	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
@@ -13,9 +14,9 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/try_on"
 	"try-on/internal/pkg/repository/sqlc/user_images"
+	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
@@ -114,8 +115,8 @@ func (h *TryOnHandler) handleQueueResponse(resp *domain.TryOnResponse) domain.Re
 
 //easyjson:json
 type tryOnRequest struct {
-	ClothesID   uuid.UUID
-	UserImageID uuid.UUID
+	ClothesID   utils.UUID
+	UserImageID utils.UUID
 }
 
 func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {

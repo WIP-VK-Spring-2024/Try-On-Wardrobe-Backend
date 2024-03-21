@@ -8,7 +8,7 @@ package sqlc
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"try-on/internal/pkg/utils"
 )
 
 const createTryOnResult = `-- name: CreateTryOnResult :one
@@ -19,9 +19,9 @@ insert into try_on_results(
 returning id
 `
 
-func (q *Queries) CreateTryOnResult(ctx context.Context, clothesID uuid.UUID, userImageID uuid.UUID) (uuid.UUID, error) {
+func (q *Queries) CreateTryOnResult(ctx context.Context, clothesID utils.UUID, userImageID utils.UUID) (utils.UUID, error) {
 	row := q.db.QueryRow(ctx, createTryOnResult, clothesID, userImageID)
-	var id uuid.UUID
+	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
 }
@@ -31,7 +31,7 @@ delete from try_on_results
 where id = $1
 `
 
-func (q *Queries) DeleteTryOnResult(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteTryOnResult(ctx context.Context, id utils.UUID) error {
 	_, err := q.db.Exec(ctx, deleteTryOnResult, id)
 	return err
 }
@@ -45,7 +45,7 @@ order by try_on_results.created_at desc
 limit 1
 `
 
-func (q *Queries) GetLastTryOnResult(ctx context.Context, userID uuid.UUID) (TryOnResult, error) {
+func (q *Queries) GetLastTryOnResult(ctx context.Context, userID utils.UUID) (TryOnResult, error) {
 	row := q.db.QueryRow(ctx, getLastTryOnResult, userID)
 	var i TryOnResult
 	err := row.Scan(
@@ -66,7 +66,7 @@ from try_on_results
 where clothes_id = $1
 `
 
-func (q *Queries) GetTryOnResultsByClothes(ctx context.Context, clothesID uuid.UUID) ([]TryOnResult, error) {
+func (q *Queries) GetTryOnResultsByClothes(ctx context.Context, clothesID utils.UUID) ([]TryOnResult, error) {
 	rows, err := q.db.Query(ctx, getTryOnResultsByClothes, clothesID)
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ join user_images u on u.id = try_on_results.user_image_id
 where u.user_id = $1
 `
 
-func (q *Queries) GetTryOnResultsByUser(ctx context.Context, userID uuid.UUID) ([]TryOnResult, error) {
+func (q *Queries) GetTryOnResultsByUser(ctx context.Context, userID utils.UUID) ([]TryOnResult, error) {
 	rows, err := q.db.Query(ctx, getTryOnResultsByUser, userID)
 	if err != nil {
 		return nil, err
@@ -135,7 +135,7 @@ set rating = $2::int
 where id = $1
 `
 
-func (q *Queries) RateTryOnResult(ctx context.Context, iD uuid.UUID, rating int32) error {
+func (q *Queries) RateTryOnResult(ctx context.Context, iD utils.UUID, rating int32) error {
 	_, err := q.db.Exec(ctx, rateTryOnResult, iD, rating)
 	return err
 }

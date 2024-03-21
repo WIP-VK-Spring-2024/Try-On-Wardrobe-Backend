@@ -8,8 +8,8 @@ package sqlc
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
+	"try-on/internal/pkg/utils"
 )
 
 const createClothes = `-- name: CreateClothes :one
@@ -26,13 +26,13 @@ returning id
 
 type CreateClothesParams struct {
 	Name      string
-	UserID    uuid.UUID
-	TypeID    pgtype.UUID
-	SubtypeID pgtype.UUID
+	UserID    utils.UUID
+	TypeID    utils.UUID
+	SubtypeID utils.UUID
 	Color     pgtype.Text
 }
 
-func (q *Queries) CreateClothes(ctx context.Context, arg CreateClothesParams) (uuid.UUID, error) {
+func (q *Queries) CreateClothes(ctx context.Context, arg CreateClothesParams) (utils.UUID, error) {
 	row := q.db.QueryRow(ctx, createClothes,
 		arg.Name,
 		arg.UserID,
@@ -40,7 +40,7 @@ func (q *Queries) CreateClothes(ctx context.Context, arg CreateClothesParams) (u
 		arg.SubtypeID,
 		arg.Color,
 	)
-	var id uuid.UUID
+	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
 }
@@ -51,7 +51,7 @@ insert into clothes_tags (clothes_id, tag_id)
     from tags where name = any($2::text[])
 `
 
-func (q *Queries) CreateClothesTagLinks(ctx context.Context, clothesID uuid.UUID, tags []string) error {
+func (q *Queries) CreateClothesTagLinks(ctx context.Context, clothesID utils.UUID, tags []string) error {
 	_, err := q.db.Exec(ctx, createClothesTagLinks, clothesID, tags)
 	return err
 }
@@ -64,9 +64,9 @@ set name = excluded.name
 returning id
 `
 
-func (q *Queries) CreateStyle(ctx context.Context, name string) (uuid.UUID, error) {
+func (q *Queries) CreateStyle(ctx context.Context, name string) (utils.UUID, error) {
 	row := q.db.QueryRow(ctx, createStyle, name)
-	var id uuid.UUID
+	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
 }
@@ -87,7 +87,7 @@ delete from clothes
 where id = $1
 `
 
-func (q *Queries) DeleteClothes(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteClothes(ctx context.Context, id utils.UUID) error {
 	_, err := q.db.Exec(ctx, deleteClothes, id)
 	return err
 }
@@ -123,15 +123,15 @@ group by
 `
 
 type GetClothesByIdRow struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 	Note      pgtype.Text
-	UserID    uuid.UUID
-	StyleID   pgtype.UUID
-	TypeID    pgtype.UUID
-	SubtypeID pgtype.UUID
+	UserID    utils.UUID
+	StyleID   utils.UUID
+	TypeID    utils.UUID
+	SubtypeID utils.UUID
 	Color     pgtype.Text
 	Seasons   []Season
 	Type      string
@@ -140,7 +140,7 @@ type GetClothesByIdRow struct {
 	Tags      []string
 }
 
-func (q *Queries) GetClothesById(ctx context.Context, id uuid.UUID) (GetClothesByIdRow, error) {
+func (q *Queries) GetClothesById(ctx context.Context, id utils.UUID) (GetClothesByIdRow, error) {
 	row := q.db.QueryRow(ctx, getClothesById, id)
 	var i GetClothesByIdRow
 	err := row.Scan(
@@ -194,15 +194,15 @@ group by
 `
 
 type GetClothesByUserRow struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 	Note      pgtype.Text
-	UserID    uuid.UUID
-	StyleID   pgtype.UUID
-	TypeID    pgtype.UUID
-	SubtypeID pgtype.UUID
+	UserID    utils.UUID
+	StyleID   utils.UUID
+	TypeID    utils.UUID
+	SubtypeID utils.UUID
 	Color     pgtype.Text
 	Seasons   []Season
 	Type      string
@@ -211,7 +211,7 @@ type GetClothesByUserRow struct {
 	Tags      []string
 }
 
-func (q *Queries) GetClothesByUser(ctx context.Context, userID uuid.UUID) ([]GetClothesByUserRow, error) {
+func (q *Queries) GetClothesByUser(ctx context.Context, userID utils.UUID) ([]GetClothesByUserRow, error) {
 	rows, err := q.db.Query(ctx, getClothesByUser, userID)
 	if err != nil {
 		return nil, err
@@ -261,12 +261,12 @@ where id = $1
 `
 
 type UpdateClothesParams struct {
-	ID        uuid.UUID
+	ID        utils.UUID
 	Name      string
 	Note      pgtype.Text
-	TypeID    pgtype.UUID
-	SubtypeID pgtype.UUID
-	StyleID   pgtype.UUID
+	TypeID    utils.UUID
+	SubtypeID utils.UUID
+	StyleID   utils.UUID
 	Color     pgtype.Text
 	Seasons   []Season
 }

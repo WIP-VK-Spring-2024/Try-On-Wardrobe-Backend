@@ -8,7 +8,7 @@ package sqlc
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"try-on/internal/pkg/utils"
 )
 
 const createUserImage = `-- name: CreateUserImage :one
@@ -17,9 +17,9 @@ values ($1)
 returning id
 `
 
-func (q *Queries) CreateUserImage(ctx context.Context, userID uuid.UUID) (uuid.UUID, error) {
+func (q *Queries) CreateUserImage(ctx context.Context, userID utils.UUID) (utils.UUID, error) {
 	row := q.db.QueryRow(ctx, createUserImage, userID)
-	var id uuid.UUID
+	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
 }
@@ -29,7 +29,7 @@ delete from user_images
 where id = $1
 `
 
-func (q *Queries) DeleteUserImage(ctx context.Context, id uuid.UUID) error {
+func (q *Queries) DeleteUserImage(ctx context.Context, id utils.UUID) error {
 	_, err := q.db.Exec(ctx, deleteUserImage, id)
 	return err
 }
@@ -39,7 +39,7 @@ select id, created_at, updated_at, user_id from user_images
 where id = $1
 `
 
-func (q *Queries) GetUserImageByID(ctx context.Context, id uuid.UUID) (UserImage, error) {
+func (q *Queries) GetUserImageByID(ctx context.Context, id utils.UUID) (UserImage, error) {
 	row := q.db.QueryRow(ctx, getUserImageByID, id)
 	var i UserImage
 	err := row.Scan(
@@ -56,7 +56,7 @@ select id, created_at, updated_at, user_id from user_images
 where user_id = $1
 `
 
-func (q *Queries) GetUserImageByUser(ctx context.Context, userID uuid.UUID) ([]UserImage, error) {
+func (q *Queries) GetUserImageByUser(ctx context.Context, userID utils.UUID) ([]UserImage, error) {
 	rows, err := q.db.Query(ctx, getUserImageByUser, userID)
 	if err != nil {
 		return nil, err

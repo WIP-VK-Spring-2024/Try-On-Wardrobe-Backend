@@ -7,7 +7,6 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -30,12 +29,12 @@ func (repo *UserImageRepository) Create(userImage *domain.UserImage) error {
 	return nil
 }
 
-func (repo *UserImageRepository) Delete(id uuid.UUID) error {
+func (repo *UserImageRepository) Delete(id utils.UUID) error {
 	err := repo.queries.DeleteTryOnResult(context.Background(), id)
 	return utils.PgxError(err)
 }
 
-func (repo *UserImageRepository) GetByUser(userID uuid.UUID) ([]domain.UserImage, error) {
+func (repo *UserImageRepository) GetByUser(userID utils.UUID) ([]domain.UserImage, error) {
 	userImages, err := repo.queries.GetUserImageByUser(context.Background(), userID)
 	if err != nil {
 		return nil, err
@@ -43,7 +42,7 @@ func (repo *UserImageRepository) GetByUser(userID uuid.UUID) ([]domain.UserImage
 	return utils.Map(userImages, fromSqlc), nil
 }
 
-func (repo *UserImageRepository) Get(id uuid.UUID) (*domain.UserImage, error) {
+func (repo *UserImageRepository) Get(id utils.UUID) (*domain.UserImage, error) {
 	userImage, err := repo.queries.GetUserImageByID(context.Background(), id)
 	if err != nil {
 		return nil, err

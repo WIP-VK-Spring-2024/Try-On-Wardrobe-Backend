@@ -7,9 +7,9 @@ import (
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/user_images"
+	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -32,7 +32,7 @@ func New(
 }
 
 func (h *UserImageHandler) GetByID(ctx *fiber.Ctx) error {
-	userImageID, err := uuid.Parse(ctx.Params("id"))
+	userImageID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrClothesIdInvalid
 	}
@@ -46,7 +46,7 @@ func (h *UserImageHandler) GetByID(ctx *fiber.Ctx) error {
 }
 
 func (h *UserImageHandler) Delete(ctx *fiber.Ctx) error {
-	userImageID, err := uuid.Parse(ctx.Params("id"))
+	userImageID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrUserImageIdInvalid
 	}

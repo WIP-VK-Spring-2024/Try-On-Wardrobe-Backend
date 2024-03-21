@@ -6,8 +6,8 @@ import (
 
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/utils"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -44,7 +44,7 @@ func (repo UserRepository) GetByName(name string) (*domain.User, error) {
 	return fromSqlc(&user), nil
 }
 
-func (repo UserRepository) GetByID(id uuid.UUID) (*domain.User, error) {
+func (repo UserRepository) GetByID(id utils.UUID) (*domain.User, error) {
 	user, err := repo.queries.GetUserByID(context.Background(), id)
 	if err != nil {
 		return nil, err

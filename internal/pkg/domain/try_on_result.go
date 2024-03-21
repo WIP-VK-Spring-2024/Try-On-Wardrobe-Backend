@@ -1,14 +1,14 @@
 package domain
 
-import "github.com/google/uuid"
+import "try-on/internal/pkg/utils"
 
 type TryOnResultRepository interface {
 	Create(res *TryOnResult) error
-	Delete(id uuid.UUID) error
-	GetByUser(userID uuid.UUID) ([]TryOnResult, error)
-	GetLast(userID uuid.UUID) (*TryOnResult, error)
-	GetByClothes(clothesID uuid.UUID) ([]TryOnResult, error)
-	Rate(id uuid.UUID, rating int) error
+	Delete(id utils.UUID) error
+	GetByUser(userID utils.UUID) ([]TryOnResult, error)
+	GetLast(userID utils.UUID) (*TryOnResult, error)
+	GetByClothes(clothesID utils.UUID) ([]TryOnResult, error)
+	Rate(id utils.UUID, rating int) error
 }
 
 //easyjson:json
@@ -17,6 +17,6 @@ type TryOnResult struct {
 
 	Image       string
 	Rating      int
-	UserImageID uuid.UUID
-	ClothesID   uuid.UUID
+	UserImageID utils.UUID
+	ClothesID   utils.UUID
 }

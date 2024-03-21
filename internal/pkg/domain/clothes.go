@@ -3,7 +3,7 @@ package domain
 import (
 	"database/sql"
 
-	"github.com/google/uuid"
+	"try-on/internal/pkg/utils"
 )
 
 type ClothesModel struct {
@@ -15,16 +15,16 @@ type ClothesModel struct {
 
 	Image string `gorm:"type:varchar(256)"`
 
-	UserID uuid.UUID
+	UserID utils.UUID
 	User   User
 
-	StyleID uuid.UUID `gorm:"default:null"`
+	StyleID utils.UUID `gorm:"default:null"`
 	Style   *Style
 
-	TypeID uuid.UUID `gorm:"default:null"`
+	TypeID utils.UUID `gorm:"default:null"`
 	Type   Type
 
-	SubtypeID uuid.UUID `gorm:"default:null"`
+	SubtypeID utils.UUID `gorm:"default:null"`
 	Subtype   Subtype
 
 	Color   sql.NullString `gorm:"type:char(7)"`
@@ -37,14 +37,14 @@ func (*ClothesModel) TableName() string {
 
 //easyjson:json
 type Clothes struct {
-	ID   uuid.UUID
+	ID   utils.UUID
 	Name string
 	Note string
 	Tags []string
 
 	Image string
 
-	UserID uuid.UUID
+	UserID utils.UUID
 
 	Style   string
 	Type    string
@@ -57,15 +57,15 @@ type Clothes struct {
 type ClothesUsecase interface {
 	Create(clothes *Clothes) error
 	Update(clothes *Clothes) error
-	Get(id uuid.UUID) (*Clothes, error)
-	Delete(id uuid.UUID) error
-	GetByUser(userId uuid.UUID, limit int) ([]Clothes, error)
+	Get(id utils.UUID) (*Clothes, error)
+	Delete(id utils.UUID) error
+	GetByUser(userId utils.UUID, limit int) ([]Clothes, error)
 }
 
 type ClothesRepository interface {
 	Create(clothes *ClothesModel) error
 	Update(clothes *ClothesModel) error
-	Get(id uuid.UUID) (*ClothesModel, error)
-	Delete(id uuid.UUID) error
-	GetByUser(userId uuid.UUID, limit int) ([]ClothesModel, error)
+	Get(id utils.UUID) (*ClothesModel, error)
+	Delete(id utils.UUID) error
+	GetByUser(userId utils.UUID, limit int) ([]ClothesModel, error)
 }

@@ -7,6 +7,9 @@ package sqlc
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
+	"try-on/internal/pkg/utils"
 )
 
 const getSubtypes = `-- name: GetSubtypes :many
@@ -40,23 +43,44 @@ func (q *Queries) GetSubtypes(ctx context.Context) ([]Subtype, error) {
 }
 
 const getTypes = `-- name: GetTypes :many
-select id, created_at, updated_at, name from types
+select
+    types.id, types.created_at, types.updated_at, types.name,
+    array_agg(subtypes.id)::uuid[] as subtype_ids,
+    array_agg(subtypes.name)::text[] as subtype_names
+from types
+left join subtypes on types.id = subtypes.type_id
+group by
+    types.id,
+    types.name,
+    types.created_at,
+    types.updated_at
 `
 
-func (q *Queries) GetTypes(ctx context.Context) ([]Type, error) {
+type GetTypesRow struct {
+	ID           utils.UUID
+	CreatedAt    pgtype.Timestamptz
+	UpdatedAt    pgtype.Timestamptz
+	Name         string
+	SubtypeIds   []utils.UUID
+	SubtypeNames []string
+}
+
+func (q *Queries) GetTypes(ctx context.Context) ([]GetTypesRow, error) {
 	rows, err := q.db.Query(ctx, getTypes)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Type
+	var items []GetTypesRow
 	for rows.Next() {
-		var i Type
+		var i GetTypesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Name,
+			&i.SubtypeIds,
+			&i.SubtypeNames,
 		); err != nil {
 			return nil, err
 		}

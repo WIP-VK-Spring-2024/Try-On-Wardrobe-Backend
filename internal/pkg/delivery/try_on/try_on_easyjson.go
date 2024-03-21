@@ -58,13 +58,13 @@ func easyjson569002f9EncodeTryOnInternalPkgDeliveryTryOn(out *jwriter.Writer, in
 	out.RawByte('{')
 	first := true
 	_ = first
-	if true {
+	if (in.ClothesID).IsDefined() {
 		const prefix string = ",\"clothes_id\":"
 		first = false
 		out.RawString(prefix[1:])
 		out.RawText((in.ClothesID).MarshalText())
 	}
-	if true {
+	if (in.UserImageID).IsDefined() {
 		const prefix string = ",\"user_image_id\":"
 		if first {
 			first = false

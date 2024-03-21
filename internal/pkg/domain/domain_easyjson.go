@@ -60,7 +60,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain(out *jwriter.Writer, in UserIm
 	out.RawByte('{')
 	first := true
 	_ = first
-	if true {
+	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
 		first = false
 		out.RawString(prefix[1:])
@@ -76,7 +76,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain(out *jwriter.Writer, in UserIm
 		}
 		out.String(string(in.Image))
 	}
-	if true {
+	if (in.ID).IsDefined() {
 		const prefix string = ",\"id\":"
 		if first {
 			first = false
@@ -133,6 +133,29 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain1(in *jlexer.Lexer, out *Type) 
 		switch key {
 		case "name":
 			out.Name = string(in.String())
+		case "subtypes":
+			if in.IsNull() {
+				in.Skip()
+				out.Subtypes = nil
+			} else {
+				in.Delim('[')
+				if out.Subtypes == nil {
+					if !in.IsDelim(']') {
+						out.Subtypes = make([]Subtype, 0, 0)
+					} else {
+						out.Subtypes = []Subtype{}
+					}
+				} else {
+					out.Subtypes = (out.Subtypes)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v1 Subtype
+					(v1).UnmarshalEasyJSON(in)
+					out.Subtypes = append(out.Subtypes, v1)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		case "id":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
@@ -157,7 +180,26 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain1(out *jwriter.Writer, in Type)
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	if true {
+	if len(in.Subtypes) != 0 {
+		const prefix string = ",\"subtypes\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v2, v3 := range in.Subtypes {
+				if v2 > 0 {
+					out.RawByte(',')
+				}
+				(v3).MarshalEasyJSON(out)
+			}
+			out.RawByte(']')
+		}
+	}
+	if (in.ID).IsDefined() {
 		const prefix string = ",\"id\":"
 		if first {
 			first = false
@@ -258,7 +300,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain2(out *jwriter.Writer, in TryOn
 		}
 		out.Int(int(in.Rating))
 	}
-	if true {
+	if (in.UserImageID).IsDefined() {
 		const prefix string = ",\"user_image_id\":"
 		if first {
 			first = false
@@ -268,7 +310,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain2(out *jwriter.Writer, in TryOn
 		}
 		out.RawText((in.UserImageID).MarshalText())
 	}
-	if true {
+	if (in.ClothesID).IsDefined() {
 		const prefix string = ",\"clothes_id\":"
 		if first {
 			first = false
@@ -278,7 +320,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain2(out *jwriter.Writer, in TryOn
 		}
 		out.RawText((in.ClothesID).MarshalText())
 	}
-	if true {
+	if (in.ID).IsDefined() {
 		const prefix string = ",\"id\":"
 		if first {
 			first = false
@@ -363,13 +405,13 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain3(out *jwriter.Writer, in TryOn
 	out.RawByte('{')
 	first := true
 	_ = first
-	if true {
+	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
 		first = false
 		out.RawString(prefix[1:])
 		out.RawText((in.UserID).MarshalText())
 	}
-	if true {
+	if (in.ClothesID).IsDefined() {
 		const prefix string = ",\"clothes_id\":"
 		if first {
 			first = false
@@ -379,7 +421,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain3(out *jwriter.Writer, in TryOn
 		}
 		out.RawText((in.ClothesID).MarshalText())
 	}
-	if true {
+	if (in.UserImageID).IsDefined() {
 		const prefix string = ",\"user_image_id\":"
 		if first {
 			first = false
@@ -488,13 +530,13 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain4(out *jwriter.Writer, in TryOn
 	out.RawByte('{')
 	first := true
 	_ = first
-	if true {
+	if (in.UserImageID).IsDefined() {
 		const prefix string = ",\"user_image_id\":"
 		first = false
 		out.RawString(prefix[1:])
 		out.RawText((in.UserImageID).MarshalText())
 	}
-	if true {
+	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
 		if first {
 			first = false
@@ -504,7 +546,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain4(out *jwriter.Writer, in TryOn
 		}
 		out.RawText((in.UserID).MarshalText())
 	}
-	if true {
+	if (in.ClothesID).IsDefined() {
 		const prefix string = ",\"clothes_id\":"
 		if first {
 			first = false
@@ -605,16 +647,6 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain5(in *jlexer.Lexer, out *Subtyp
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.TypeID).UnmarshalText(data))
 			}
-		case "type":
-			if in.IsNull() {
-				in.Skip()
-				out.Type = nil
-			} else {
-				if out.Type == nil {
-					out.Type = new(Type)
-				}
-				(*out.Type).UnmarshalEasyJSON(in)
-			}
 		case "id":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
@@ -639,7 +671,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain5(out *jwriter.Writer, in Subty
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	if true {
+	if (in.TypeID).IsDefined() {
 		const prefix string = ",\"type_id\":"
 		if first {
 			first = false
@@ -649,17 +681,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain5(out *jwriter.Writer, in Subty
 		}
 		out.RawText((in.TypeID).MarshalText())
 	}
-	if in.Type != nil {
-		const prefix string = ",\"type\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		(*in.Type).MarshalEasyJSON(out)
-	}
-	if true {
+	if (in.ID).IsDefined() {
 		const prefix string = ",\"id\":"
 		if first {
 			first = false
@@ -819,13 +841,13 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain7(out *jwriter.Writer, in Cloth
 	out.RawByte('{')
 	first := true
 	_ = first
-	if true {
+	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
 		first = false
 		out.RawString(prefix[1:])
 		out.RawText((in.UserID).MarshalText())
 	}
-	if true {
+	if (in.ImageID).IsDefined() {
 		const prefix string = ",\"image_id\":"
 		if first {
 			first = false
@@ -924,9 +946,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain8(in *jlexer.Lexer, out *Clothe
 					out.Tags = (out.Tags)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v1 string
-					v1 = string(in.String())
-					out.Tags = append(out.Tags, v1)
+					var v4 string
+					v4 = string(in.String())
+					out.Tags = append(out.Tags, v4)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -961,9 +983,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain8(in *jlexer.Lexer, out *Clothe
 					out.Seasons = (out.Seasons)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v2 Season
-					v2 = Season(in.String())
-					out.Seasons = append(out.Seasons, v2)
+					var v5 Season
+					v5 = Season(in.String())
+					out.Seasons = append(out.Seasons, v5)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -982,7 +1004,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain8(out *jwriter.Writer, in Cloth
 	out.RawByte('{')
 	first := true
 	_ = first
-	if true {
+	if (in.ID).IsDefined() {
 		const prefix string = ",\"id\":"
 		first = false
 		out.RawString(prefix[1:])
@@ -1018,11 +1040,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain8(out *jwriter.Writer, in Cloth
 		}
 		{
 			out.RawByte('[')
-			for v3, v4 := range in.Tags {
-				if v3 > 0 {
+			for v6, v7 := range in.Tags {
+				if v6 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v4))
+				out.String(string(v7))
 			}
 			out.RawByte(']')
 		}
@@ -1037,7 +1059,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain8(out *jwriter.Writer, in Cloth
 		}
 		out.String(string(in.Image))
 	}
-	if true {
+	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
 		if first {
 			first = false
@@ -1097,11 +1119,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain8(out *jwriter.Writer, in Cloth
 		}
 		{
 			out.RawByte('[')
-			for v5, v6 := range in.Seasons {
-				if v5 > 0 {
+			for v8, v9 := range in.Seasons {
+				if v8 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v6))
+				out.String(string(v9))
 			}
 			out.RawByte(']')
 		}

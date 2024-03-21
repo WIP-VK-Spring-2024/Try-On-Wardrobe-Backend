@@ -9,12 +9,18 @@ ERRORS_PKG=${INTERNAL}/app_errors
 PROTO_FILES=$$(find . -name *.proto)
 GENERATED_DIR=internal/generated
 
-.PHONY: gen build build_alpine run docker
+.PHONY: easyjson sqlc gen build build_alpine run docker
 
-gen:
-	easyjson -snake_case -omit_empty -pkg ${DOMAIN_PKG} ${DELIVERY_PKG} ${ERRORS_PKG}
+easyjson:
+		easyjson -snake_case -omit_empty -pkg ${DOMAIN_PKG} ${DELIVERY_PKG} ${ERRORS_PKG}
+
+sqlc:
 	sqlc generate
+
+protoc:
 	protoc --go-grpc_opt=paths=source_relative --go-grpc_out=${GENERATED_DIR} --go_opt=paths=source_relative --go_out=${GENERATED_DIR} ${PROTO_FILES}
+
+gen: protoc sqlc easyjson 
 	${GO} generate ./...
 
 build:

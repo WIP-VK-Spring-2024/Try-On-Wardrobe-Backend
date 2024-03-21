@@ -9,7 +9,6 @@ import (
 	"try-on/internal/pkg/utils"
 	"try-on/internal/pkg/utils/translate"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -39,8 +38,8 @@ func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
 	createParams := sqlc.CreateClothesParams{
 		UserID:    clothes.UserID,
 		Name:      clothes.Name,
-		TypeID:    translate.ToPgUUID(clothes.TypeID),
-		SubtypeID: translate.ToPgUUID(clothes.SubtypeID),
+		TypeID:    clothes.TypeID,
+		SubtypeID: clothes.SubtypeID,
 		Color:     pgtype.Text(clothes.Color),
 	}
 
@@ -82,8 +81,8 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 		ID:        clothes.ID,
 		Name:      clothes.Name,
 		Note:      pgtype.Text(clothes.Note),
-		TypeID:    translate.ToPgUUID(clothes.TypeID),
-		SubtypeID: translate.ToPgUUID(clothes.SubtypeID),
+		TypeID:    clothes.TypeID,
+		SubtypeID: clothes.SubtypeID,
 		Color:     pgtype.Text(clothes.Color),
 		Seasons: utils.Map(clothes.Seasons, func(t *domain.Season) *sqlc.Season {
 			tmp := sqlc.Season(*t)
@@ -96,7 +95,7 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 		if err != nil {
 			return utils.PgxError(err)
 		}
-		updateParams.StyleID = pgtype.UUID{Bytes: styleId, Valid: true}
+		updateParams.StyleID = styleId
 	}
 
 	err = c.queries.UpdateClothes(ctx, updateParams)
@@ -122,7 +121,7 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 	return tx.Commit(ctx)
 }
 
-func (c *ClothesRepository) Get(id uuid.UUID) (*domain.ClothesModel, error) {
+func (c *ClothesRepository) Get(id utils.UUID) (*domain.ClothesModel, error) {
 	clothes, err := c.queries.GetClothesById(context.Background(), id)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -132,11 +131,11 @@ func (c *ClothesRepository) Get(id uuid.UUID) (*domain.ClothesModel, error) {
 	return fromSqlc(&clothesCompat), nil
 }
 
-func (c *ClothesRepository) Delete(id uuid.UUID) error {
+func (c *ClothesRepository) Delete(id utils.UUID) error {
 	return utils.PgxError(c.queries.DeleteClothes(context.Background(), id))
 }
 
-func (c *ClothesRepository) GetByUser(userID uuid.UUID, _ int) ([]domain.ClothesModel, error) {
+func (c *ClothesRepository) GetByUser(userID utils.UUID, _ int) ([]domain.ClothesModel, error) {
 	clothes, err := c.queries.GetClothesByUser(context.Background(), userID)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -154,10 +153,10 @@ func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.ClothesModel {
 				UpdatedAt: model.UpdatedAt.Time,
 			},
 		},
-		TypeID:    model.TypeID.Bytes,
-		SubtypeID: model.SubtypeID.Bytes,
+		TypeID:    model.TypeID,
+		SubtypeID: model.SubtypeID,
 		UserID:    model.UserID,
-		StyleID:   model.StyleID.Bytes,
+		StyleID:   model.StyleID,
 		Color:     sql.NullString(model.Color),
 		Name:      model.Name,
 		Note:      sql.NullString(model.Note),

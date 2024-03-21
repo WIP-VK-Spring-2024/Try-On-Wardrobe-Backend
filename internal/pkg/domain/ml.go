@@ -3,7 +3,8 @@ package domain
 import (
 	"context"
 
-	"github.com/google/uuid"
+	"try-on/internal/pkg/utils"
+
 	"go.uber.org/zap"
 )
 
@@ -16,8 +17,8 @@ type ClothesProcessingModel interface {
 
 //easyjson:json
 type ClothesProcessingOpts struct {
-	UserID    uuid.UUID
-	ImageID   uuid.UUID
+	UserID    utils.UUID
+	ImageID   utils.UUID
 	FileName  string
 	ImageType string
 }
@@ -26,9 +27,9 @@ type ClothesProcessingResponse struct{}
 
 //easyjson:json
 type TryOnOpts struct {
-	UserImageID     uuid.UUID
-	UserID          uuid.UUID
-	ClothesID       uuid.UUID
+	UserImageID     utils.UUID
+	UserID          utils.UUID
+	ClothesID       utils.UUID
 	PersonFileName  string
 	PersonFilePath  string
 	ClothesFileName string
@@ -37,9 +38,9 @@ type TryOnOpts struct {
 
 //easyjson:json
 type TryOnResponse struct {
-	UserID      uuid.UUID
-	ClothesID   uuid.UUID
-	UserImageID uuid.UUID
+	UserID      utils.UUID
+	ClothesID   utils.UUID
+	UserImageID utils.UUID
 	ResFileName string
 	ResFilePath string
 }

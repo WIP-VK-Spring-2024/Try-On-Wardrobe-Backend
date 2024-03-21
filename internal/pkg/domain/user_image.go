@@ -1,18 +1,18 @@
 package domain
 
-import "github.com/google/uuid"
+import "try-on/internal/pkg/utils"
 
 //easyjson:json
 type UserImage struct {
 	Model
 
-	UserID uuid.UUID
+	UserID utils.UUID
 	Image  string
 }
 
 type UserImageRepository interface {
 	Create(img *UserImage) error
-	Get(id uuid.UUID) (*UserImage, error)
-	Delete(id uuid.UUID) error
-	GetByUser(userId uuid.UUID) ([]UserImage, error)
+	Get(id utils.UUID) (*UserImage, error)
+	Delete(id utils.UUID) error
+	GetByUser(userId utils.UUID) ([]UserImage, error)
 }

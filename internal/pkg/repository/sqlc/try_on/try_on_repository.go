@@ -7,7 +7,6 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -35,12 +34,12 @@ func (repo *TryOnResultRepository) Create(res *domain.TryOnResult) error {
 	return nil
 }
 
-func (repo *TryOnResultRepository) Delete(id uuid.UUID) error {
+func (repo *TryOnResultRepository) Delete(id utils.UUID) error {
 	err := repo.queries.DeleteTryOnResult(context.Background(), id)
 	return utils.PgxError(err)
 }
 
-func (repo *TryOnResultRepository) GetByUser(userID uuid.UUID) ([]domain.TryOnResult, error) {
+func (repo *TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnResult, error) {
 	results, err := repo.queries.GetTryOnResultsByUser(context.Background(), userID)
 	if err != nil {
 		return nil, err
@@ -48,7 +47,7 @@ func (repo *TryOnResultRepository) GetByUser(userID uuid.UUID) ([]domain.TryOnRe
 	return utils.Map(results, fromSqlc), nil
 }
 
-func (repo *TryOnResultRepository) GetByClothes(clothesID uuid.UUID) ([]domain.TryOnResult, error) {
+func (repo *TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.TryOnResult, error) {
 	results, err := repo.queries.GetTryOnResultsByClothes(context.Background(), clothesID)
 	if err != nil {
 		return nil, err
@@ -56,7 +55,7 @@ func (repo *TryOnResultRepository) GetByClothes(clothesID uuid.UUID) ([]domain.T
 	return utils.Map(results, fromSqlc), nil
 }
 
-func (repo *TryOnResultRepository) GetLast(userID uuid.UUID) (*domain.TryOnResult, error) {
+func (repo *TryOnResultRepository) GetLast(userID utils.UUID) (*domain.TryOnResult, error) {
 	result, err := repo.queries.GetLastTryOnResult(context.Background(), userID)
 	if err != nil {
 		return nil, err
@@ -64,7 +63,7 @@ func (repo *TryOnResultRepository) GetLast(userID uuid.UUID) (*domain.TryOnResul
 	return fromSqlc(&result), nil
 }
 
-func (repo *TryOnResultRepository) Rate(id uuid.UUID, rating int) error {
+func (repo *TryOnResultRepository) Rate(id utils.UUID, rating int) error {
 	err := repo.queries.RateTryOnResult(context.Background(), id, int32(rating))
 	return utils.PgxError(err)
 }

@@ -13,7 +13,6 @@ import (
 	"try-on/internal/pkg/utils"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/google/uuid"
 )
 
 type JwtSessionUsecase struct {
@@ -64,7 +63,7 @@ func (s JwtSessionUsecase) IsLoggedIn(session *domain.Session) (bool, error) {
 			return false, err
 		}
 
-		session.UserID, err = uuid.Parse(subject)
+		session.UserID, err = utils.ParseUUID(subject)
 		if err != nil {
 			return false, err
 		}
@@ -84,7 +83,7 @@ func (s JwtSessionUsecase) IsLoggedIn(session *domain.Session) (bool, error) {
 	}
 }
 
-func (s JwtSessionUsecase) IssueToken(userID uuid.UUID) (string, error) {
+func (s JwtSessionUsecase) IssueToken(userID utils.UUID) (string, error) {
 	issuedAt := time.Now()
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

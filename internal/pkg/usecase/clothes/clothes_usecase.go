@@ -6,8 +6,6 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 	"try-on/internal/pkg/utils/translate"
-
-	"github.com/google/uuid"
 )
 
 type ClothesUsecase struct {
@@ -35,7 +33,7 @@ func (c *ClothesUsecase) Update(clothes *domain.Clothes) error {
 	return c.repo.Update(toModel(clothes))
 }
 
-func (c *ClothesUsecase) Get(id uuid.UUID) (*domain.Clothes, error) {
+func (c *ClothesUsecase) Get(id utils.UUID) (*domain.Clothes, error) {
 	clothesModel, err := c.repo.Get(id)
 	if err != nil {
 		return nil, err
@@ -44,11 +42,11 @@ func (c *ClothesUsecase) Get(id uuid.UUID) (*domain.Clothes, error) {
 	return fromModel(clothesModel), nil
 }
 
-func (c *ClothesUsecase) Delete(id uuid.UUID) error {
+func (c *ClothesUsecase) Delete(id utils.UUID) error {
 	return c.repo.Delete(id)
 }
 
-func (c *ClothesUsecase) GetByUser(userID uuid.UUID, limit int) ([]domain.Clothes, error) {
+func (c *ClothesUsecase) GetByUser(userID utils.UUID, limit int) ([]domain.Clothes, error) {
 	clothes, err := c.repo.GetByUser(userID, limit)
 	if err != nil {
 		return nil, err
@@ -91,8 +89,8 @@ func toModel(clothes *domain.Clothes) *domain.ClothesModel {
 		Image: clothes.Image,
 	}
 
-	model.Type.ID = uuid.Nil
-	model.Subtype.ID = uuid.Nil
+	model.Type.ID = utils.NilUUID
+	model.Subtype.ID = utils.NilUUID
 
 	if clothes.Color != "" {
 		model.Color = sql.NullString{String: clothes.Color, Valid: true}
@@ -104,7 +102,7 @@ func toModel(clothes *domain.Clothes) *domain.ClothesModel {
 
 	if clothes.Style != "" {
 		model.Style = &domain.Style{Name: clothes.Style}
-		model.Style.ID = uuid.Nil
+		model.Style.ID = utils.NilUUID
 	}
 
 	model.Tags = translate.TagsFromString(clothes.Tags)
