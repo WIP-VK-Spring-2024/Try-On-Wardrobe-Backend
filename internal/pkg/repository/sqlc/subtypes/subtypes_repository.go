@@ -2,6 +2,7 @@ package subtypes
 
 import (
 	"context"
+
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
@@ -10,17 +11,17 @@ import (
 )
 
 type SubtypeRepository struct {
-	db *sqlc.Queries
+	queries *sqlc.Queries
 }
 
 func New(db *pgxpool.Pool) domain.SubtypeRepository {
 	return &SubtypeRepository{
-		db: sqlc.New(db),
+		queries: sqlc.New(db),
 	}
 }
 
 func (repo *SubtypeRepository) GetAll() ([]domain.Subtype, error) {
-	types, err := repo.db.GetSubtypes(context.Background())
+	types, err := repo.queries.GetSubtypes(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}

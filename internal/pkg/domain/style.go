@@ -3,7 +3,7 @@ package domain
 //easyjson:json
 type Style struct {
 	Model
-	Name string `gorm:"type:varchar(64)"`
+	Name string
 }
 
 type StylesRepository interface {

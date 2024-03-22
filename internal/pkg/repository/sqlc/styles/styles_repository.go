@@ -11,17 +11,17 @@ import (
 )
 
 type StylesRepository struct {
-	db *sqlc.Queries
+	queries *sqlc.Queries
 }
 
 func New(db *pgxpool.Pool) domain.StylesRepository {
 	return &StylesRepository{
-		db: sqlc.New(db),
+		queries: sqlc.New(db),
 	}
 }
 
 func (repo *StylesRepository) GetAll() ([]domain.Style, error) {
-	types, err := repo.db.GetStyles(context.Background())
+	types, err := repo.queries.GetStyles(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}

@@ -9,26 +9,26 @@ import (
 type ClothesModel struct {
 	Model
 
-	Name string         `gorm:"type:varchar(128)"`
-	Note sql.NullString `gorm:"type:varchar(512)"`
-	Tags []Tag          `gorm:"many2many:clothes_tags;"`
+	Name string
+	Note sql.NullString
+	Tags []Tag
 
-	Image string `gorm:"type:varchar(256)"`
+	Image string
 
 	UserID utils.UUID
 	User   User
 
-	StyleID utils.UUID `gorm:"default:null"`
+	StyleID utils.UUID
 	Style   *Style
 
-	TypeID utils.UUID `gorm:"default:null"`
+	TypeID utils.UUID
 	Type   Type
 
-	SubtypeID utils.UUID `gorm:"default:null"`
+	SubtypeID utils.UUID
 	Subtype   Subtype
 
-	Color   sql.NullString `gorm:"type:char(7)"`
-	Seasons []Season       `gorm:"type:season[]"`
+	Color   sql.NullString
+	Seasons []Season
 }
 
 func (*ClothesModel) TableName() string {

@@ -9,6 +9,7 @@ import (
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/delivery/styles"
+	"try-on/internal/pkg/delivery/tags"
 	"try-on/internal/pkg/delivery/types"
 	"try-on/internal/pkg/delivery/user_images"
 	"try-on/internal/pkg/file_manager"
@@ -118,6 +119,8 @@ func (app *App) Run() error {
 
 	styleHandler := styles.New(pg)
 
+	tagsHandler := tags.New(pg)
+
 	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
 
 	app.api.Post("/register", sessionHandler.Register)
@@ -134,6 +137,7 @@ func (app *App) Run() error {
 	app.api.Get("/types", typeHandler.GetTypes)
 	app.api.Get("/subtypes", typeHandler.GetSubtypes)
 	app.api.Get("/styles", styleHandler.GetAll)
+	app.api.Get("/tags", tagsHandler.Get)
 
 	app.api.Get("/photos", userImageHandler.GetByUser)
 	app.api.Get("/photos/:id", userImageHandler.GetByID)

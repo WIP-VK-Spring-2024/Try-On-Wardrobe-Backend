@@ -1,6 +1,12 @@
 package domain
 
+//easyjson:json
 type Tag struct {
 	Model
-	Name string `gorm:"type:varchar(64)"`
+	Name     string
+	UseCount int32
+}
+
+type TagRepository interface {
+	Get(limit, offset int) ([]Tag, error)
 }

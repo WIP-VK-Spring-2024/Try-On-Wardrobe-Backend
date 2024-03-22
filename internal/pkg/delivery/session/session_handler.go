@@ -8,6 +8,7 @@ import (
 	userRepo "try-on/internal/pkg/repository/sqlc/users"
 	sessionUsecase "try-on/internal/pkg/usecase/session"
 	userUsecase "try-on/internal/pkg/usecase/users"
+	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -21,7 +22,8 @@ type SessionHandler struct {
 
 //easyjson:json
 type tokenResponse struct {
-	Token string
+	Token  string
+	UserID utils.UUID
 }
 
 func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
@@ -54,7 +56,8 @@ func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(tokenResponse{
-		Token: token,
+		Token:  token,
+		UserID: user.ID,
 	})
 }
 
@@ -69,7 +72,8 @@ func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 	return ctx.JSON(tokenResponse{
-		Token: session.ID,
+		Token:  session.ID,
+		UserID: session.UserID,
 	})
 }
 
@@ -85,6 +89,7 @@ func (h *SessionHandler) Renew(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(tokenResponse{
-		Token: token,
+		Token:  token,
+		UserID: session.UserID,
 	})
 }

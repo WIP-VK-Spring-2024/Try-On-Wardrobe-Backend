@@ -7,7 +7,7 @@ import (
 )
 
 type Model struct {
-	ID utils.UUID `gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
+	ID utils.UUID
 	AutoTimestamp
 }
 

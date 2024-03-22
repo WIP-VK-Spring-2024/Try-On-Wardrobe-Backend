@@ -11,17 +11,17 @@ import (
 )
 
 type TypeRepository struct {
-	db *sqlc.Queries
+	queries *sqlc.Queries
 }
 
 func New(db *pgxpool.Pool) domain.TypeRepository {
 	return &TypeRepository{
-		db: sqlc.New(db),
+		queries: sqlc.New(db),
 	}
 }
 
 func (repo *TypeRepository) GetAll() ([]domain.Type, error) {
-	types, err := repo.db.GetTypes(context.Background())
+	types, err := repo.queries.GetTypes(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}

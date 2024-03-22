@@ -45,28 +45,6 @@ func (q *Queries) CreateClothes(ctx context.Context, arg CreateClothesParams) (u
 	return id, err
 }
 
-const createClothesTagLinks = `-- name: CreateClothesTagLinks :exec
-insert into clothes_tags (clothes_id, tag_id)
-    select $1, id
-    from tags where name = any($2::text[])
-`
-
-func (q *Queries) CreateClothesTagLinks(ctx context.Context, clothesID utils.UUID, tags []string) error {
-	_, err := q.db.Exec(ctx, createClothesTagLinks, clothesID, tags)
-	return err
-}
-
-const createTags = `-- name: CreateTags :exec
-insert into tags (name) values (  
-  unnest($1::varchar[])
-) on conflict do nothing
-`
-
-func (q *Queries) CreateTags(ctx context.Context, names []string) error {
-	_, err := q.db.Exec(ctx, createTags, names)
-	return err
-}
-
 const deleteClothes = `-- name: DeleteClothes :exec
 delete from clothes
 where id = $1

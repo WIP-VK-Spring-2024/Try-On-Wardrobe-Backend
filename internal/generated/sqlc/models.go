@@ -139,6 +139,7 @@ type Tag struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
+	UseCount  int32
 }
 
 type TryOnResult struct {

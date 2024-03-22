@@ -82,13 +82,3 @@ set name = coalesce($2, name),
     seasons = coalesce($8, seasons),
     updated_at = now()
 where id = $1;
-
--- name: CreateTags :exec
-insert into tags (name) values (  
-  unnest(sqlc.arg(names)::varchar[])
-) on conflict do nothing;
-
--- name: CreateClothesTagLinks :exec
-insert into clothes_tags (clothes_id, tag_id)
-    select sqlc.arg(clothes_id), id
-    from tags where name = any(sqlc.arg(tags)::text[]);
