@@ -26,7 +26,7 @@ services:
       - ./config/centrifugo.json:/centrifugo/config.json
     command: centrifugo -c config.json
     ports:
-      - 8002:8002
+      - 8002:8000
     environment:
       - CENTRIFUGO_ADMIN_PASSWORD
       - CENTRIFUGO_ADMIN_SECRET
@@ -49,6 +49,9 @@ services:
   
   nginx:
     image: nginx:1.25.4-alpine
+    depends_on:
+      - app
+      - centrifugo
     ports:
       - 80:80
     volumes:

@@ -1,10 +1,14 @@
 {
   "admin": true,
   "admin_secret": "f408a325-31d2-4252-8292-f7f54c407541",
-  "allowed_origins": [],
-  "port": 8002,
   "grpc_api": true,
   "log_level": "debug",
+
+  "allowed_origins": ["*"],
+  "allow_anonymous_connect_without_token": true,
+  "allow_subscribe_for_anonymous": true,
+
+  "allow_subscribe_for_client": true,
   "namespaces": [
     {
       "name": "try-on",
