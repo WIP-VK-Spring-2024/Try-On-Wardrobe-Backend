@@ -9,43 +9,40 @@ import (
 )
 
 type ClothesProcessingModel interface {
-	Process(ctx context.Context, opts ClothesProcessingOpts) error
-	TryOn(ctx context.Context, opts TryOnOpts) error
+	Process(ctx context.Context, opts ClothesProcessingRequest) error
+	TryOn(ctx context.Context, opts TryOnRequest) error
 	GetTryOnResults(logger *zap.SugaredLogger, handler func(*TryOnResponse) Result) error
 	Close()
 }
 
 //easyjson:json
-type ClothesProcessingOpts struct {
-	UserID    utils.UUID
-	ImageID   utils.UUID
-	FileName  string
-	ImageType string
+type ClothesProcessingRequest struct {
+	UserID     utils.UUID
+	ClothesID  utils.UUID
+	ClothesDir string
 }
 
-type ClothesProcessingResponse struct{}
+//easyjson:json
+type ClothesProcessingResponse struct {
+	UserID       utils.UUID
+	ClothesID    utils.UUID
+	ProcessedDir string
+}
 
 //easyjson:json
-type TryOnOpts struct {
-	UserImageID     utils.UUID
-	UserID          utils.UUID
-	ClothesID       utils.UUID
-	PersonFileName  string
-	PersonFilePath  string
-	ClothesFileName string
-	ClothesFilePath string
+type TryOnRequest struct {
+	UserID       utils.UUID
+	UserImageID  utils.UUID
+	ClothesID    utils.UUID
+	UserImageDir string
+	ClothesDir   string
 }
 
 //easyjson:json
 type TryOnResponse struct {
-	UserID      utils.UUID
-	ClothesID   utils.UUID
-	UserImageID utils.UUID
-	ResFileName string
-	ResFilePath string
+	UserID         utils.UUID
+	ClothesID      utils.UUID
+	UserImageID    utils.UUID
+	TryOnResultID  string
+	TryOnResultDir string
 }
-
-const (
-	ImageTypeCloth    = "cloth"
-	ImageTypeFullBody = "full-body"
-)

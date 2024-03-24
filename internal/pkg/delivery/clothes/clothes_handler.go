@@ -130,11 +130,10 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	err = h.model.Process(ctx.UserContext(), domain.ClothesProcessingOpts{
-		UserID:    session.UserID,
-		ImageID:   clothes.ID,
-		FileName:  clothes.ID.String(),
-		ImageType: domain.ImageTypeCloth,
+	err = h.model.Process(ctx.UserContext(), domain.ClothesProcessingRequest{
+		UserID:     session.UserID,
+		ClothesID:  clothes.ID,
+		ClothesDir: h.cfg.Clothes,
 	})
 	if err != nil {
 		return app_errors.New(err)

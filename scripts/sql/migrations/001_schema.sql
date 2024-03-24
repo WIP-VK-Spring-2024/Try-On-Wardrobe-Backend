@@ -70,7 +70,7 @@ create table try_on_results (
     created_at timestamptz not null default now(),
     updated_at timestamptz,
     rating int default 0,
-    image text,
+    image text not null,
     user_image_id uuid not null references user_images(id),
     clothes_id uuid not null references clothes(id)
 );

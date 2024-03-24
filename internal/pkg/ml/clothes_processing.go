@@ -56,7 +56,7 @@ func New(
 	}, nil
 }
 
-func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingOpts) error {
+func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingRequest) error {
 	return p.publish(ctx, opts, p.requestQueue)
 }
 
@@ -90,7 +90,7 @@ func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler fu
 	})
 }
 
-func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnOpts) error {
+func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) error {
 	return p.publish(ctx, opts, p.requestQueue)
 }
 

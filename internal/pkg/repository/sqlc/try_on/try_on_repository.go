@@ -23,8 +23,11 @@ func New(db *pgxpool.Pool) domain.TryOnResultRepository {
 func (repo *TryOnResultRepository) Create(res *domain.TryOnResult) error {
 	id, err := repo.queries.CreateTryOnResult(
 		context.Background(),
-		res.ClothesID,
-		res.UserImageID,
+		sqlc.CreateTryOnResultParams{
+			UserImageID: res.UserImageID,
+			ClothesID:   res.ClothesID,
+			Image:       res.Image,
+		},
 	)
 	if err != nil {
 		return utils.PgxError(err)
@@ -55,8 +58,8 @@ func (repo *TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.
 	return utils.Map(results, fromSqlc), nil
 }
 
-func (repo *TryOnResultRepository) GetLast(userID utils.UUID) (*domain.TryOnResult, error) {
-	result, err := repo.queries.GetLastTryOnResult(context.Background(), userID)
+func (repo *TryOnResultRepository) Get(userImageID, clothesID utils.UUID) (*domain.TryOnResult, error) {
+	result, err := repo.queries.GetTryOnResult(context.Background(), userImageID, clothesID)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +80,7 @@ func fromSqlc(model *sqlc.TryOnResult) *domain.TryOnResult {
 				UpdatedAt: model.UpdatedAt.Time,
 			},
 		},
-		Image:       model.Image.String,
+		Image:       model.Image,
 		UserImageID: model.UserImageID,
 		ClothesID:   model.ClothesID,
 		Rating:      int(model.Rating.Int32),

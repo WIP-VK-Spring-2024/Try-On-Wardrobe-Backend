@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"os"
 
 	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
@@ -29,8 +28,8 @@ type TryOnHandler struct {
 	userImages domain.UserImageRepository
 	results    domain.TryOnResultRepository
 	centrifugo centrifugo.CentrifugoApiClient
-	logger     *zap.SugaredLogger
-	cfg        *config.Centrifugo
+
+	logger *zap.SugaredLogger
 }
 
 func New(
@@ -39,7 +38,6 @@ func New(
 	clothes domain.ClothesUsecase,
 	logger *zap.SugaredLogger,
 	centrifugoConn grpc.ClientConnInterface,
-	cfg *config.Centrifugo,
 ) *TryOnHandler {
 	return &TryOnHandler{
 		model:      model,
@@ -48,69 +46,70 @@ func New(
 		results:    try_on.New(db),
 		logger:     logger,
 		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
-		cfg:        cfg,
 	}
 }
 
-func (h *TryOnHandler) ListenTryOnResults() {
+func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 	go func() {
-		err := h.model.GetTryOnResults(h.logger, h.handleQueueResponse)
+		err := h.model.GetTryOnResults(h.logger, h.handleQueueResponse(cfg))
 		if err != nil {
 			h.logger.Errorw(err.Error())
 		}
 	}()
 }
 
-func (h *TryOnHandler) handleQueueResponse(resp *domain.TryOnResponse) domain.Result {
-	tryOnRes := &domain.TryOnResult{
-		UserImageID: resp.UserImageID,
-		ClothesID:   resp.ClothesID,
-		Image:       resp.ResFilePath,
+func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.TryOnResponse) domain.Result {
+	return func(resp *domain.TryOnResponse) domain.Result {
+		tryOnRes := &domain.TryOnResult{
+			UserImageID: resp.UserImageID,
+			ClothesID:   resp.ClothesID,
+			Image:       resp.TryOnResultID,
+		}
+
+		handleResult := domain.ResultOk
+
+		err := h.results.Create(tryOnRes)
+		switch {
+		case err == nil:
+			break
+		case errors.Is(err, app_errors.ErrAlreadyExists):
+			h.logger.Errorw(err.Error())
+			handleResult = domain.ResultDiscard
+		default:
+			h.logger.Errorw(err.Error())
+			return domain.ResultRetry
+		}
+
+		var payload []byte
+		if handleResult == domain.ResultDiscard {
+			payload, _ = easyjson.Marshal(app_errors.ResponseError{
+				Code: http.StatusConflict,
+				Msg:  err.Error(),
+			})
+		} else {
+			payload, _ = easyjson.Marshal(tryOnRes)
+		}
+
+		userChannel := cfg.TryOnChannel + resp.UserID.String()
+		h.logger.Infow("centrifugo", "channel", userChannel)
+
+		centrifugoResp, err := h.centrifugo.Publish(
+			context.Background(),
+			&centrifugo.PublishRequest{
+				Channel: userChannel,
+				Data:    payload,
+			},
+		)
+
+		switch {
+		case err != nil:
+			h.logger.Errorw(err.Error())
+		case centrifugoResp.Error != nil:
+			h.logger.Errorw(centrifugoResp.Error.Message)
+		}
+
+		return domain.ResultOk
 	}
-
-	handleResult := domain.ResultOk
-
-	err := h.results.Create(tryOnRes)
-	switch {
-	case err == nil:
-		break
-	case errors.Is(err, app_errors.ErrAlreadyExists):
-		h.logger.Errorw(err.Error())
-		handleResult = domain.ResultDiscard
-	default:
-		h.logger.Errorw(err.Error())
-		return domain.ResultRetry
-	}
-
-	var payload []byte
-	if handleResult == domain.ResultDiscard {
-		payload, _ = easyjson.Marshal(app_errors.ResponseError{
-			Code: http.StatusConflict,
-			Msg:  err.Error(),
-		})
-	} else {
-		payload, _ = easyjson.Marshal(tryOnRes)
-	}
-
-	userChannel := h.cfg.TryOnChannel + resp.UserID.String()
-	h.logger.Infow("centrifugo", "channel", userChannel)
-
-	centrifugoResp, err := h.centrifugo.Publish(
-		context.Background(),
-		&centrifugo.PublishRequest{
-			Channel: userChannel,
-			Data:    payload,
-		},
-	)
-
-	switch {
-	case err != nil:
-		h.logger.Errorw(err.Error())
-	case centrifugoResp.Error != nil:
-		h.logger.Errorw(centrifugoResp.Error.Message)
-	}
-
-	return domain.ResultOk
 }
 
 //easyjson:json
@@ -132,28 +131,24 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	clothes, err := h.clothes.Get(req.ClothesID)
+	_, err = h.clothes.Get(req.ClothesID)
 	if err != nil {
 		return app_errors.New(err)
 	}
 
-	userImage, err := h.userImages.Get(req.UserImageID)
+	_, err = h.userImages.Get(req.UserImageID)
 	if err != nil {
 		return app_errors.New(err)
 	}
 
-	curPath, err := os.Getwd()
-	if err != nil {
-		return app_errors.New(err)
-	}
+	cfg := middleware.Config(ctx)
 
-	err = h.model.TryOn(ctx.UserContext(), domain.TryOnOpts{
-		UserID:          session.UserID,
-		ClothesID:       req.ClothesID,
-		ClothesFileName: clothes.Image,
-		ClothesFilePath: curPath + "/stubs/clothes/" + clothes.Image,
-		PersonFileName:  userImage.Image,
-		PersonFilePath:  curPath + "/stubs/people/" + userImage.Image,
+	err = h.model.TryOn(ctx.UserContext(), domain.TryOnRequest{
+		UserID:       session.UserID,
+		ClothesID:    req.ClothesID,
+		UserImageID:  req.UserImageID,
+		UserImageDir: cfg.Static.FullBody,
+		ClothesDir:   cfg.Static.Clothes,
 	})
 	if err != nil {
 		return app_errors.New(err)
@@ -163,12 +158,17 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 }
 
 func (c *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
-	session := middleware.Session(ctx)
-	if session == nil {
-		return app_errors.ErrUnauthorized
+	userImageID, err := utils.ParseUUID(ctx.Query("photo_id"))
+	if err != nil {
+		return app_errors.ErrUserImageIdInvalid
 	}
 
-	result, err := c.results.GetLast(session.UserID)
+	clothesID, err := utils.ParseUUID(ctx.Query("clothes_id"))
+	if err != nil {
+		return app_errors.ErrClothesIdInvalid
+	}
+
+	result, err := c.results.Get(userImageID, clothesID)
 	if err != nil {
 		return app_errors.New(err)
 	}

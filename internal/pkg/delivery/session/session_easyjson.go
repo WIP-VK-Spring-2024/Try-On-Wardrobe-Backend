@@ -38,6 +38,10 @@ func easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(in *jlexer.Lexer, out
 		switch key {
 		case "token":
 			out.Token = string(in.String())
+		case "user_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.UserID).UnmarshalText(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -57,6 +61,16 @@ func easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(out *jwriter.Writer, 
 		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Token))
+	}
+	if (in.UserID).IsDefined() {
+		const prefix string = ",\"user_id\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.RawText((in.UserID).MarshalText())
 	}
 	out.RawByte('}')
 }

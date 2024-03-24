@@ -110,7 +110,7 @@ func (app *App) Run() error {
 	tryOnHandler := tryOn.New(
 		pg, clothesProcessor,
 		clothesUsecase, app.logger,
-		centrifugoConn, &app.cfg.Centrifugo,
+		centrifugoConn,
 	)
 
 	userImageHandler := user_images.New(pg, fileManager, &app.cfg.Static)
@@ -121,7 +121,14 @@ func (app *App) Run() error {
 
 	tagsHandler := tags.New(pg)
 
-	app.api.Use(recover, logger, cors, middleware.AddLogger(app.logger), checkSession)
+	app.api.Use(
+		recover,
+		logger,
+		cors,
+		middleware.AddConfig(app.cfg),
+		middleware.AddLogger(app.logger),
+		checkSession,
+	)
 
 	app.api.Post("/register", sessionHandler.Register)
 	app.api.Post("/login", sessionHandler.Login)
@@ -149,7 +156,7 @@ func (app *App) Run() error {
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 
-	tryOnHandler.ListenTryOnResults()
+	tryOnHandler.ListenTryOnResults(&app.cfg.Centrifugo)
 
 	return app.api.Listen(app.cfg.Addr)
 }

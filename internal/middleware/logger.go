@@ -12,7 +12,7 @@ import (
 
 type loggerKeyType struct{}
 
-var loggerKey loggerKeyType = struct{}{}
+var loggerKey loggerKeyType
 
 func AddLogger(logger *zap.SugaredLogger) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {

@@ -14,7 +14,7 @@ import (
 
 type sessionKeyType struct{}
 
-var sessionKey sessionKeyType = struct{}{}
+var sessionKey sessionKeyType
 
 type SessionConfig struct {
 	TokenName    string

@@ -147,7 +147,7 @@ type TryOnResult struct {
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 	Rating      pgtype.Int4
-	Image       pgtype.Text
+	Image       string
 	UserImageID utils.UUID
 	ClothesID   utils.UUID
 }

@@ -14,13 +14,20 @@ import (
 const createTryOnResult = `-- name: CreateTryOnResult :one
 insert into try_on_results(
     clothes_id,
-    user_image_id
-) values ($1, $2)
+    user_image_id,
+    image
+) values ($1, $2, $3)
 returning id
 `
 
-func (q *Queries) CreateTryOnResult(ctx context.Context, clothesID utils.UUID, userImageID utils.UUID) (utils.UUID, error) {
-	row := q.db.QueryRow(ctx, createTryOnResult, clothesID, userImageID)
+type CreateTryOnResultParams struct {
+	ClothesID   utils.UUID
+	UserImageID utils.UUID
+	Image       string
+}
+
+func (q *Queries) CreateTryOnResult(ctx context.Context, arg CreateTryOnResultParams) (utils.UUID, error) {
+	row := q.db.QueryRow(ctx, createTryOnResult, arg.ClothesID, arg.UserImageID, arg.Image)
 	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -36,17 +43,14 @@ func (q *Queries) DeleteTryOnResult(ctx context.Context, id utils.UUID) error {
 	return err
 }
 
-const getLastTryOnResult = `-- name: GetLastTryOnResult :one
+const getTryOnResult = `-- name: GetTryOnResult :one
 select try_on_results.id, try_on_results.created_at, try_on_results.updated_at, try_on_results.rating, try_on_results.image, try_on_results.user_image_id, try_on_results.clothes_id
 from try_on_results
-join user_images u on u.id = try_on_results.user_image_id
-where u.user_id = $1
-order by try_on_results.created_at desc
-limit 1
+where user_image_id = $1 and clothes_id = $2
 `
 
-func (q *Queries) GetLastTryOnResult(ctx context.Context, userID utils.UUID) (TryOnResult, error) {
-	row := q.db.QueryRow(ctx, getLastTryOnResult, userID)
+func (q *Queries) GetTryOnResult(ctx context.Context, userImageID utils.UUID, clothesID utils.UUID) (TryOnResult, error) {
+	row := q.db.QueryRow(ctx, getTryOnResult, userImageID, clothesID)
 	var i TryOnResult
 	err := row.Scan(
 		&i.ID,
