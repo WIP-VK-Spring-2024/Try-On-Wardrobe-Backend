@@ -14,6 +14,7 @@ import (
 	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
 )
 
@@ -90,6 +91,12 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 	return ctx.SendString(common.EmptyJson)
 }
 
+//easyjson:json
+type uploadResponse struct {
+	Uuid utils.UUID
+	Msg  string
+}
+
 func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
@@ -146,7 +153,10 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	return ctx.SendString(common.EmptyJson)
+	return ctx.JSON(&uploadResponse{
+		Uuid: clothes.ID,
+		Msg:  "created",
+	})
 }
 
 func (h *ClothesHandler) getClothes(userID utils.UUID, ctx *fiber.Ctx) error {
@@ -198,11 +208,21 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 		userChannel := cfg.ProcessingChannel + resp.UserID.String()
 		h.logger.Infow("centrifugo", "channel", userChannel)
 
+		payload := &uploadResponse{
+			Uuid: resp.ClothesID,
+			Msg:  "processed",
+		}
+		bytes, err := easyjson.Marshal(payload)
+		if err != nil {
+			h.logger.Errorw(err.Error())
+			return domain.ResultDiscard
+		}
+
 		centrifugoResp, err := h.centrifugo.Publish(
 			context.Background(),
 			&centrifugo.PublishRequest{
 				Channel: userChannel,
-				Data:    []byte(common.EmptyJson),
+				Data:    bytes,
 			},
 		)
 

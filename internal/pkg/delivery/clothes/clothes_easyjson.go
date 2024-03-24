@@ -16,3 +16,85 @@ var (
 	_ *jwriter.Writer
 	_ easyjson.Marshaler
 )
+
+func easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes(in *jlexer.Lexer, out *uploadResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "uuid":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Uuid).UnmarshalText(data))
+			}
+		case "msg":
+			out.Msg = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes(out *jwriter.Writer, in uploadResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if (in.Uuid).IsDefined() {
+		const prefix string = ",\"uuid\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.RawText((in.Uuid).MarshalText())
+	}
+	if in.Msg != "" {
+		const prefix string = ",\"msg\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Msg))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v uploadResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v uploadResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *uploadResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *uploadResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes(l, v)
+}
