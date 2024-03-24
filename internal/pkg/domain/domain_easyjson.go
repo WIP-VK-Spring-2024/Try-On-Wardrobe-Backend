@@ -1155,14 +1155,12 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain11(in *jlexer.Lexer, out *Cloth
 			continue
 		}
 		switch key {
-		case "id":
-			if data := in.UnsafeBytes(); in.Ok() {
-				in.AddError((out.ID).UnmarshalText(data))
-			}
 		case "name":
 			out.Name = string(in.String())
 		case "note":
-			out.Note = string(in.String())
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Note).UnmarshalText(data))
+			}
 		case "tags":
 			if in.IsNull() {
 				in.Skip()
@@ -1186,20 +1184,26 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain11(in *jlexer.Lexer, out *Cloth
 				}
 				in.Delim(']')
 			}
-		case "image":
-			out.Image = string(in.String())
 		case "user_id":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
 			}
-		case "style":
-			out.Style = string(in.String())
-		case "type":
-			out.Type = string(in.String())
-		case "subtype":
-			out.Subtype = string(in.String())
+		case "style_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.StyleID).UnmarshalText(data))
+			}
+		case "type_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.TypeID).UnmarshalText(data))
+			}
+		case "subtype_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.SubtypeID).UnmarshalText(data))
+			}
 		case "color":
-			out.Color = string(in.String())
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Color).UnmarshalText(data))
+			}
 		case "seasons":
 			if in.IsNull() {
 				in.Skip()
@@ -1223,6 +1227,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain11(in *jlexer.Lexer, out *Cloth
 				}
 				in.Delim(']')
 			}
+		case "uuid":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.ID).UnmarshalText(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1237,23 +1245,13 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Clot
 	out.RawByte('{')
 	first := true
 	_ = first
-	if (in.ID).IsDefined() {
-		const prefix string = ",\"id\":"
-		first = false
-		out.RawString(prefix[1:])
-		out.RawText((in.ID).MarshalText())
-	}
 	if in.Name != "" {
 		const prefix string = ",\"name\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		first = false
+		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	if in.Note != "" {
+	if (in.Note).IsDefined() {
 		const prefix string = ",\"note\":"
 		if first {
 			first = false
@@ -1261,7 +1259,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Clot
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Note))
+		(in.Note).MarshalEasyJSON(out)
 	}
 	if len(in.Tags) != 0 {
 		const prefix string = ",\"tags\":"
@@ -1282,16 +1280,6 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Clot
 			out.RawByte(']')
 		}
 	}
-	if in.Image != "" {
-		const prefix string = ",\"image\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
-		out.String(string(in.Image))
-	}
 	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
 		if first {
@@ -1302,37 +1290,37 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Clot
 		}
 		out.RawText((in.UserID).MarshalText())
 	}
-	if in.Style != "" {
-		const prefix string = ",\"style\":"
+	if (in.StyleID).IsDefined() {
+		const prefix string = ",\"style_id\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Style))
+		out.RawText((in.StyleID).MarshalText())
 	}
-	if in.Type != "" {
-		const prefix string = ",\"type\":"
+	if (in.TypeID).IsDefined() {
+		const prefix string = ",\"type_id\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Type))
+		out.RawText((in.TypeID).MarshalText())
 	}
-	if in.Subtype != "" {
-		const prefix string = ",\"subtype\":"
+	if (in.SubtypeID).IsDefined() {
+		const prefix string = ",\"subtype_id\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Subtype))
+		out.RawText((in.SubtypeID).MarshalText())
 	}
-	if in.Color != "" {
+	if (in.Color).IsDefined() {
 		const prefix string = ",\"color\":"
 		if first {
 			first = false
@@ -1340,7 +1328,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Clot
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.Color))
+		(in.Color).MarshalEasyJSON(out)
 	}
 	if len(in.Seasons) != 0 {
 		const prefix string = ",\"seasons\":"
@@ -1360,6 +1348,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Clot
 			}
 			out.RawByte(']')
 		}
+	}
+	if (in.ID).IsDefined() {
+		const prefix string = ",\"uuid\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.RawText((in.ID).MarshalText())
 	}
 	out.RawByte('}')
 }

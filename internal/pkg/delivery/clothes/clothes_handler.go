@@ -69,7 +69,7 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrClothesIdInvalid
 	}
 
-	clothes := &domain.Clothes{ID: clothesID}
+	clothes := &domain.Clothes{Model: domain.Model{ID: clothesID}}
 	if err := ctx.BodyParser(clothes); err != nil {
 		middleware.LogError(ctx, err)
 		return app_errors.ErrBadRequest

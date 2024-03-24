@@ -1,56 +1,30 @@
 package domain
 
 import (
-	"database/sql"
-
 	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/optional"
 )
-
-type ClothesModel struct {
-	Model
-
-	Name string
-	Note sql.NullString
-	Tags []Tag
-
-	Image string
-
-	UserID utils.UUID
-	User   User
-
-	StyleID utils.UUID
-	Style   *Style
-
-	TypeID utils.UUID
-	Type   Type
-
-	SubtypeID utils.UUID
-	Subtype   Subtype
-
-	Color   sql.NullString
-	Seasons []Season
-}
-
-func (*ClothesModel) TableName() string {
-	return "clothes"
-}
 
 //easyjson:json
 type Clothes struct {
-	ID   utils.UUID
-	Name string
-	Note string
-	Tags []string
+	Model
 
-	Image string
+	Name string
+	Note optional.String
+	Tags []string
 
 	UserID utils.UUID
 
-	Style   string
-	Type    string
-	Subtype string
+	StyleID utils.UUID
+	Style   string `json:"-"`
 
-	Color   string
+	TypeID utils.UUID
+	Type   string `json:"-"`
+
+	SubtypeID utils.UUID
+	Subtype   string `json:"-"`
+
+	Color   optional.String
 	Seasons []Season
 }
 
@@ -63,9 +37,9 @@ type ClothesUsecase interface {
 }
 
 type ClothesRepository interface {
-	Create(clothes *ClothesModel) error
-	Update(clothes *ClothesModel) error
-	Get(id utils.UUID) (*ClothesModel, error)
+	Create(clothes *Clothes) error
+	Update(clothes *Clothes) error
+	Get(id utils.UUID) (*Clothes, error)
 	Delete(id utils.UUID) error
-	GetByUser(userId utils.UUID, limit int) ([]ClothesModel, error)
+	GetByUser(userId utils.UUID, limit int) ([]Clothes, error)
 }

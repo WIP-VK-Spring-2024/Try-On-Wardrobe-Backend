@@ -7,6 +7,7 @@ import (
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/optional"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,7 +26,7 @@ func New(db *pgxpool.Pool) domain.UserRepository {
 func (repo UserRepository) Create(user *domain.User) error {
 	id, err := repo.queries.CreateUser(context.Background(), sqlc.CreateUserParams{
 		Name:     user.Name,
-		Email:    pgtype.Text(user.Email),
+		Email:    pgtype.Text(user.Email.NullString),
 		Password: string(user.Password),
 	})
 	if err != nil {
@@ -63,6 +64,6 @@ func fromSqlc(model *sqlc.User) *domain.User {
 		},
 		Name:     model.Name,
 		Password: []byte(model.Password),
-		Email:    sql.NullString(model.Email),
+		Email:    optional.String{NullString: sql.NullString(model.Email)},
 	}
 }

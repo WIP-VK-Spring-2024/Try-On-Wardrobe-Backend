@@ -7,7 +7,7 @@ import (
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
-	"try-on/internal/pkg/utils/translate"
+	"try-on/internal/pkg/utils/optional"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,7 +25,7 @@ func New(db *pgxpool.Pool) domain.ClothesRepository {
 	}
 }
 
-func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
+func (c *ClothesRepository) Create(clothes *domain.Clothes) error {
 	ctx := context.Background()
 
 	tx, err := c.db.Begin(ctx)
@@ -40,12 +40,10 @@ func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
 		Name:      clothes.Name,
 		TypeID:    clothes.TypeID,
 		SubtypeID: clothes.SubtypeID,
-		Color:     pgtype.Text(clothes.Color),
+		Color:     pgtype.Text(clothes.Color.NullString),
 	}
 
-	tags := translate.TagsToString(clothes.Tags)
-
-	err = queries.CreateTags(ctx, tags)
+	err = queries.CreateTags(ctx, clothes.Tags)
 	if err != nil {
 		return utils.PgxError(err)
 	}
@@ -58,7 +56,7 @@ func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
 	clothes.ID = clothesId
 
 	err = queries.CreateClothesTagLinks(ctx, clothes.ID,
-		tags,
+		clothes.Tags,
 	)
 	if err != nil {
 		return utils.PgxError(err)
@@ -67,7 +65,7 @@ func (c *ClothesRepository) Create(clothes *domain.ClothesModel) error {
 	return tx.Commit(ctx)
 }
 
-func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
+func (c *ClothesRepository) Update(clothes *domain.Clothes) error {
 	ctx := context.Background()
 
 	tx, err := c.db.Begin(ctx)
@@ -80,18 +78,18 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 	updateParams := sqlc.UpdateClothesParams{
 		ID:        clothes.ID,
 		Name:      clothes.Name,
-		Note:      pgtype.Text(clothes.Note),
+		Note:      pgtype.Text(clothes.Note.NullString),
 		TypeID:    clothes.TypeID,
 		SubtypeID: clothes.SubtypeID,
-		Color:     pgtype.Text(clothes.Color),
+		Color:     pgtype.Text(clothes.Color.NullString),
 		Seasons: utils.Map(clothes.Seasons, func(t *domain.Season) *sqlc.Season {
 			tmp := sqlc.Season(*t)
 			return &tmp
 		}),
 	}
 
-	if clothes.Style != nil {
-		styleId, err := queries.CreateStyle(ctx, clothes.Style.Name)
+	if clothes.Style != "" {
+		styleId, err := queries.CreateStyle(ctx, clothes.Style)
 		if err != nil {
 			return utils.PgxError(err)
 		}
@@ -103,16 +101,14 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 		return utils.PgxError(err)
 	}
 
-	tags := translate.TagsToString(clothes.Tags)
-
-	err = queries.CreateTags(ctx, tags)
+	err = queries.CreateTags(ctx, clothes.Tags)
 	if err != nil {
 		return utils.PgxError(err)
 	}
 
 	err = queries.CreateClothesTagLinks(ctx,
 		clothes.ID,
-		tags,
+		clothes.Tags,
 	)
 	if err != nil {
 		return utils.PgxError(err)
@@ -121,7 +117,7 @@ func (c *ClothesRepository) Update(clothes *domain.ClothesModel) error {
 	return tx.Commit(ctx)
 }
 
-func (c *ClothesRepository) Get(id utils.UUID) (*domain.ClothesModel, error) {
+func (c *ClothesRepository) Get(id utils.UUID) (*domain.Clothes, error) {
 	clothes, err := c.queries.GetClothesById(context.Background(), id)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -135,7 +131,7 @@ func (c *ClothesRepository) Delete(id utils.UUID) error {
 	return utils.PgxError(c.queries.DeleteClothes(context.Background(), id))
 }
 
-func (c *ClothesRepository) GetByUser(userID utils.UUID, _ int) ([]domain.ClothesModel, error) {
+func (c *ClothesRepository) GetByUser(userID utils.UUID, _ int) ([]domain.Clothes, error) {
 	clothes, err := c.queries.GetClothesByUser(context.Background(), userID)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -144,8 +140,8 @@ func (c *ClothesRepository) GetByUser(userID utils.UUID, _ int) ([]domain.Clothe
 	return utils.Map(clothes, fromSqlc), nil
 }
 
-func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.ClothesModel {
-	result := &domain.ClothesModel{
+func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.Clothes {
+	result := &domain.Clothes{
 		Model: domain.Model{
 			ID: model.ID,
 			AutoTimestamp: domain.AutoTimestamp{
@@ -157,22 +153,16 @@ func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.ClothesModel {
 		SubtypeID: model.SubtypeID,
 		UserID:    model.UserID,
 		StyleID:   model.StyleID,
-		Color:     sql.NullString(model.Color),
+		Color:     optional.String{NullString: sql.NullString(model.Color)},
 		Name:      model.Name,
-		Note:      sql.NullString(model.Note),
-		Type: domain.Type{
-			Name: model.Type,
-		},
-		Subtype: domain.Subtype{
-			Name: model.Subtype,
-		},
-		Tags: translate.TagsFromString(model.Tags),
+		Note:      optional.String{NullString: sql.NullString(model.Note)},
+		Type:      model.Type,
+		Subtype:   model.Subtype,
+		Tags:      model.Tags,
 	}
 
 	if model.Style.Valid {
-		result.Style = &domain.Style{
-			Name: model.Style.String,
-		}
+		result.Style = model.Style.String
 	}
 
 	return result
