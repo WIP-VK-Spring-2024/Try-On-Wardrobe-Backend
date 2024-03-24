@@ -3,7 +3,8 @@
 
   "centrifugo": {
     "url": "centrifugo:10000",
-    "tryOnChannel": "try-on:user#"
+    "tryOnChannel": "try-on:user#",
+    "processingChannel": "processing:user#"
   },
 
   "static": {

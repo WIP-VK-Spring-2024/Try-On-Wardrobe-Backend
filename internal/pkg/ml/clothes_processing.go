@@ -31,8 +31,6 @@ func New(
 ) (domain.ClothesProcessingModel, error) {
 	publisher, err := rabbitmq.NewPublisher(
 		rabbit,
-		rabbitmq.WithPublisherOptionsExchangeName("default_exchange"),
-		rabbitmq.WithPublisherOptionsExchangeDeclare,
 	)
 	if err != nil {
 		return nil, err
@@ -44,10 +42,6 @@ func New(
 		tryOn:     tryOn,
 		process:   process,
 	}, nil
-}
-
-func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingRequest) error {
-	return p.publish(ctx, opts, p.process.Request)
 }
 
 type handlerFunc[T easyjson.Unmarshaler] func(T) domain.Result
@@ -62,6 +56,10 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 
 func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) error {
 	return p.publish(ctx, opts, p.tryOn.Request)
+}
+
+func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingRequest) error {
+	return p.publish(ctx, opts, p.process.Request)
 }
 
 func (p *ClothesProcessor) publish(ctx context.Context, payload easyjson.Marshaler, routingKeys ...string) error {
@@ -84,8 +82,6 @@ func getResults[T easyjson.Unmarshaler](p *ClothesProcessor, queue config.Rabbit
 	consumer, err := rabbitmq.NewConsumer(
 		p.rabbit,
 		queue.Response,
-		rabbitmq.WithConsumerOptionsExchangeName(queue.Response),
-		rabbitmq.WithConsumerOptionsExchangeDeclare,
 	)
 	if err != nil {
 		return err

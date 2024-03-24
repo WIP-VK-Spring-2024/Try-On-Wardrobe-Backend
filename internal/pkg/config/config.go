@@ -42,8 +42,9 @@ type HttpApi struct {
 }
 
 type Centrifugo struct {
-	Url          string
-	TryOnChannel string
+	Url               string
+	TryOnChannel      string
+	ProcessingChannel string
 }
 
 type Cors struct {

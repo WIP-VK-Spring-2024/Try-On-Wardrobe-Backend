@@ -12,6 +12,7 @@ type ClothesProcessingModel interface {
 	Process(ctx context.Context, opts ClothesProcessingRequest) error
 	TryOn(ctx context.Context, opts TryOnRequest) error
 	GetTryOnResults(logger *zap.SugaredLogger, handler func(*TryOnResponse) Result) error
+	GetProcessingResults(logger *zap.SugaredLogger, handler func(*ClothesProcessingResponse) Result) error
 	Close()
 }
 

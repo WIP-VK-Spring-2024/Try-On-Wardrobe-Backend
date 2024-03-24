@@ -156,6 +156,7 @@ func (app *App) Run() error {
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 
+	clothesHandler.ListenProcessingResults(&app.cfg.Centrifugo)
 	tryOnHandler.ListenTryOnResults(&app.cfg.Centrifugo)
 
 	return app.api.Listen(app.cfg.Addr)

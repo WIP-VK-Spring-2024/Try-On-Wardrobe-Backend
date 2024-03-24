@@ -1,9 +1,11 @@
 package clothes
 
 import (
+	"context"
 	"strconv"
 	"strings"
 
+	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -12,6 +14,7 @@ import (
 	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
+	"go.uber.org/zap"
 )
 
 type ClothesHandler struct {
@@ -19,6 +22,9 @@ type ClothesHandler struct {
 	file    domain.FileManager
 	model   domain.ClothesProcessingModel
 	cfg     *config.Static
+
+	logger     *zap.SugaredLogger
+	centrifugo centrifugo.CentrifugoApiClient
 }
 
 func New(
@@ -68,8 +74,6 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 	if err != nil {
 		return app_errors.ErrClothesIdInvalid
 	}
-
-	// log.Println(string(ctx.Body()))
 
 	clothes := &domain.Clothes{}
 	if err := ctx.BodyParser(clothes); err != nil {
@@ -172,4 +176,44 @@ func (h *ClothesHandler) GetOwn(ctx *fiber.Ctx) error {
 	}
 
 	return h.getClothes(session.UserID, ctx)
+}
+
+func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				h.logger.Error(err)
+			}
+		}()
+
+		err := h.model.GetProcessingResults(h.logger, h.handleQueueResponse(cfg))
+		if err != nil {
+			h.logger.Errorw(err.Error())
+		}
+	}()
+}
+
+func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
+	return func(resp *domain.ClothesProcessingResponse) domain.Result {
+		userChannel := cfg.ProcessingChannel + resp.UserID.String()
+		h.logger.Infow("centrifugo", "channel", userChannel)
+
+		centrifugoResp, err := h.centrifugo.Publish(
+			context.Background(),
+			&centrifugo.PublishRequest{
+				Channel: userChannel,
+				Data:    []byte(common.EmptyJson),
+			},
+		)
+
+		switch {
+		case err != nil:
+			h.logger.Errorw(err.Error())
+			return domain.ResultRetry
+		case centrifugoResp.Error != nil:
+			h.logger.Errorw(centrifugoResp.Error.Message)
+		}
+
+		return domain.ResultOk
+	}
 }

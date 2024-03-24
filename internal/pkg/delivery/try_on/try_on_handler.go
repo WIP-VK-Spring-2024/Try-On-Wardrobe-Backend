@@ -51,6 +51,12 @@ func New(
 
 func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				h.logger.Error(err)
+			}
+		}()
+
 		err := h.model.GetTryOnResults(h.logger, h.handleQueueResponse(cfg))
 		if err != nil {
 			h.logger.Errorw(err.Error())
