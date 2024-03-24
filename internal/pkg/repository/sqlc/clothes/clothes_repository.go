@@ -146,8 +146,8 @@ func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.Clothes {
 		Color:     optional.String{NullString: sql.NullString(model.Color)},
 		Name:      model.Name,
 		Note:      optional.String{NullString: sql.NullString(model.Note)},
-		Type:      model.Type,
-		Subtype:   model.Subtype,
+		Type:      model.Type.String,
+		Subtype:   model.Subtype.String,
 		Tags:      model.Tags,
 		Seasons:   model.Seasons,
 	}

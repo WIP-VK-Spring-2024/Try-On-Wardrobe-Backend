@@ -18,12 +18,7 @@ func New(repo domain.ClothesRepository) domain.ClothesUsecase {
 }
 
 func (c *ClothesUsecase) Create(clothes *domain.Clothes) error {
-	err := c.repo.Create(clothes)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.repo.Create(clothes)
 }
 
 func (c *ClothesUsecase) Update(clothes *domain.Clothes) error {

@@ -6,8 +6,8 @@ select
     styles.name as style,
     array_agg(coalesce(tags.name, ''))::text[] as tags
 from clothes
-join types on types.id = clothes.type_id
-join subtypes on subtypes.id = clothes.subtype_id
+left join types on types.id = clothes.type_id
+left join subtypes on subtypes.id = clothes.subtype_id
 left join styles on styles.id = clothes.style_id
 left join clothes_tags on clothes.id = clothes_tags.clothes_id
 left join tags on clothes_tags.tag_id = tags.id
@@ -35,8 +35,8 @@ select
     styles.name as style,
     array_agg(coalesce(tags.name, ''))::text[] as tags
 from clothes
-join types on types.id = clothes.type_id
-join subtypes on subtypes.id = clothes.subtype_id
+left join types on types.id = clothes.type_id
+left join subtypes on subtypes.id = clothes.subtype_id
 left join styles on styles.id = clothes.style_id
 left join clothes_tags on clothes.id = clothes_tags.clothes_id
 left join tags on clothes_tags.tag_id = tags.id
