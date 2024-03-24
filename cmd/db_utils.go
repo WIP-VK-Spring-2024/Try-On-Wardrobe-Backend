@@ -30,6 +30,8 @@ func applyMigrations(cfg config.Sql, pg *pgxpool.Pool) error {
 	return nil
 }
 
+var customTypes []string = []string{"season", "_season"}
+
 func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 	till := time.Now().Add(time.Second * config.InitTimeout)
 	log.Println("Connecting to postgres:", config.DSN())
@@ -65,17 +67,13 @@ func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 		return nil, errors.Join(errors.New("failed acquiring connection"), err)
 	}
 
-	t, err := conn.Conn().LoadType(context.Background(), "season")
-	if err != nil {
-		return nil, errors.Join(errors.New("failed registering season type"), err)
+	for _, customType := range customTypes {
+		t, err := conn.Conn().LoadType(context.Background(), customType)
+		if err != nil {
+			return nil, errors.Join(errors.New("failed registering season type"), err)
+		}
+		conn.Conn().TypeMap().RegisterType(t)
 	}
-	conn.Conn().TypeMap().RegisterType(t)
-
-	// t, err = conn.Conn().LoadType(context.Background(), "_seasons")
-	// if err != nil {
-	// 	return nil, errors.Join(errors.New("failed registering season[] type"), err)
-	// }
-	// conn.Conn().TypeMap().RegisterType(t)
 
 	return db, nil
 }
