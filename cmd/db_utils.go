@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"try-on/internal/pkg/config"
+	"try-on/internal/pkg/domain"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
 	migrate "github.com/rubenv/sql-migrate"
@@ -41,6 +43,19 @@ func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 		return nil, err
 	}
 
+	cfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		conn.TypeMap().RegisterDefaultPgType(domain.Spring, "season")
+
+		for _, customType := range customTypes {
+			t, err := conn.LoadType(context.Background(), customType)
+			if err != nil {
+				return errors.Join(fmt.Errorf("failed registering type %s", customType), err)
+			}
+			conn.TypeMap().RegisterType(t)
+		}
+		return nil
+	}
+
 	db, err := pgxpool.NewWithConfig(context.Background(), cfg)
 	if err != nil {
 		return nil, err
@@ -60,19 +75,6 @@ func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 
 	if err != nil {
 		return nil, errors.New("connection to postgres timed out")
-	}
-
-	conn, err := db.Acquire(context.Background())
-	if err != nil {
-		return nil, errors.Join(errors.New("failed acquiring connection"), err)
-	}
-
-	for _, customType := range customTypes {
-		t, err := conn.Conn().LoadType(context.Background(), customType)
-		if err != nil {
-			return nil, errors.Join(fmt.Errorf("failed registering type %s", customType), err)
-		}
-		conn.Conn().TypeMap().RegisterType(t)
 	}
 
 	return db, nil
