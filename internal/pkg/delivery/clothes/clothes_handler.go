@@ -1,7 +1,6 @@
 package clothes
 
 import (
-	"log"
 	"strconv"
 	"strings"
 
@@ -70,7 +69,7 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrClothesIdInvalid
 	}
 
-	log.Println(string(ctx.Body()))
+	// log.Println(string(ctx.Body()))
 
 	clothes := &domain.Clothes{}
 	if err := ctx.BodyParser(clothes); err != nil {
