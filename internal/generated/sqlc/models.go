@@ -9,6 +9,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
 
@@ -111,7 +112,7 @@ type Clothes struct {
 	TypeID    utils.UUID
 	SubtypeID utils.UUID
 	Color     pgtype.Text
-	Seasons   []Season
+	Seasons   []domain.Season
 }
 
 type ClothesTag struct {

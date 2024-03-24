@@ -83,10 +83,7 @@ func (c *ClothesRepository) Update(clothes *domain.Clothes) error {
 		SubtypeID: clothes.SubtypeID,
 		StyleID:   clothes.StyleID,
 		Color:     pgtype.Text(clothes.Color.NullString),
-		Seasons: utils.Map(clothes.Seasons, func(t *domain.Season) *sqlc.Season {
-			tmp := sqlc.Season(*t)
-			return &tmp
-		}),
+		Seasons:   clothes.Seasons,
 	}
 
 	err = c.queries.UpdateClothes(ctx, updateParams)

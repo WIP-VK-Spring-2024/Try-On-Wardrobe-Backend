@@ -13,13 +13,17 @@ sql:
             go_type:
               import: "try-on/internal/pkg/utils"
               type: "UUID"
+
           - db_type: "uuid"
             go_type:
               import: "try-on/internal/pkg/utils"
               type: "UUID"
             nullable: true
-          - db_type: int
-            go_type: int
+
+          - db_type: season
+            go_type:
+              import: "try-on/internal/pkg/domain"
+              type: "Season"
         query_parameter_limit: 2
         rename:
           clothe: Clothes

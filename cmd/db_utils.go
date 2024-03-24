@@ -60,5 +60,22 @@ func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 		return nil, errors.New("connection to postgres timed out")
 	}
 
+	conn, err := db.Acquire(context.Background())
+	if err != nil {
+		return nil, errors.Join(errors.New("failed acquiring connection"), err)
+	}
+
+	t, err := conn.Conn().LoadType(context.Background(), "season")
+	if err != nil {
+		return nil, errors.Join(errors.New("failed registering season type"), err)
+	}
+	conn.Conn().TypeMap().RegisterType(t)
+
+	t, err = conn.Conn().LoadType(context.Background(), "_seasons")
+	if err != nil {
+		return nil, errors.Join(errors.New("failed registering season[] type"), err)
+	}
+	conn.Conn().TypeMap().RegisterType(t)
+
 	return db, nil
 }

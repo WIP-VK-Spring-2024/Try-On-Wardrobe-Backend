@@ -66,8 +66,8 @@ func (app *App) Run() error {
 	}
 
 	clothesProcessor, err := ml.New(
-		app.cfg.Rabbit.RequestQueue,
-		app.cfg.Rabbit.ResponseQueue,
+		app.cfg.Rabbit.TryOn,
+		app.cfg.Rabbit.Process,
 		rabbitConn,
 	)
 	if err != nil {

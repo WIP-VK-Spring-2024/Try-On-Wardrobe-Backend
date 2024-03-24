@@ -29,8 +29,14 @@
     "host": "wardrobe-rabbitmq",
     "port": 5672,
     "user": "usr",
-    "requestQueue": "model",
-    "responseQueue": "model_response"
+    "try_on": {
+      "request": "model",
+      "response": "model_response"
+    },
+    "process": {
+      "request": "model",
+      "response": "model_response"
+    }
   },
 
   "sql": {

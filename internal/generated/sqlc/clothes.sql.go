@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
 
@@ -96,7 +97,7 @@ type GetClothesByIdRow struct {
 	TypeID    utils.UUID
 	SubtypeID utils.UUID
 	Color     pgtype.Text
-	Seasons   []Season
+	Seasons   []domain.Season
 	Type      string
 	Subtype   string
 	Style     pgtype.Text
@@ -167,7 +168,7 @@ type GetClothesByUserRow struct {
 	TypeID    utils.UUID
 	SubtypeID utils.UUID
 	Color     pgtype.Text
-	Seasons   []Season
+	Seasons   []domain.Season
 	Type      string
 	Subtype   string
 	Style     pgtype.Text
@@ -231,7 +232,7 @@ type UpdateClothesParams struct {
 	SubtypeID utils.UUID
 	StyleID   utils.UUID
 	Color     pgtype.Text
-	Seasons   []Season
+	Seasons   []domain.Season
 }
 
 func (q *Queries) UpdateClothes(ctx context.Context, arg UpdateClothesParams) error {

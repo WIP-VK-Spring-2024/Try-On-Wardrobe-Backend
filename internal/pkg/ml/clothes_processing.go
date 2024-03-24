@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"try-on/internal/pkg/common"
+	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 
 	"github.com/mailru/easyjson"
@@ -13,10 +14,10 @@ import (
 )
 
 type ClothesProcessor struct {
-	publisher     *rabbitmq.Publisher
-	rabbit        *rabbitmq.Conn
-	requestQueue  string
-	responseQueue string
+	publisher *rabbitmq.Publisher
+	rabbit    *rabbitmq.Conn
+	tryOn     config.RabbitQueue
+	process   config.RabbitQueue
 }
 
 func (p *ClothesProcessor) Close() {
@@ -24,13 +25,13 @@ func (p *ClothesProcessor) Close() {
 }
 
 func New(
-	requestQueue string,
-	responseQueue string,
+	tryOn config.RabbitQueue,
+	process config.RabbitQueue,
 	rabbit *rabbitmq.Conn,
 ) (domain.ClothesProcessingModel, error) {
 	publisher, err := rabbitmq.NewPublisher(
 		rabbit,
-		rabbitmq.WithPublisherOptionsExchangeName(requestQueue),
+		rabbitmq.WithPublisherOptionsExchangeName("default_exchange"),
 		rabbitmq.WithPublisherOptionsExchangeDeclare,
 	)
 	if err != nil {
@@ -38,22 +39,22 @@ func New(
 	}
 
 	return &ClothesProcessor{
-		publisher:     publisher,
-		rabbit:        rabbit,
-		requestQueue:  requestQueue,
-		responseQueue: responseQueue,
+		publisher: publisher,
+		rabbit:    rabbit,
+		tryOn:     tryOn,
+		process:   process,
 	}, nil
 }
 
 func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingRequest) error {
-	return p.publish(ctx, opts, p.requestQueue)
+	return p.publish(ctx, opts, p.process.Request)
 }
 
 func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
 	consumer, err := rabbitmq.NewConsumer(
 		p.rabbit,
-		p.responseQueue,
-		rabbitmq.WithConsumerOptionsExchangeName(p.responseQueue),
+		p.tryOn.Response,
+		rabbitmq.WithConsumerOptionsExchangeName(p.tryOn.Response),
 		rabbitmq.WithConsumerOptionsExchangeDeclare,
 	)
 	if err != nil {
@@ -78,8 +79,8 @@ func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler fu
 func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
 	consumer, err := rabbitmq.NewConsumer(
 		p.rabbit,
-		p.responseQueue,
-		rabbitmq.WithConsumerOptionsExchangeName(p.responseQueue),
+		p.process.Response,
+		rabbitmq.WithConsumerOptionsExchangeName(p.process.Response),
 		rabbitmq.WithConsumerOptionsExchangeDeclare,
 	)
 	if err != nil {
@@ -102,7 +103,7 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 }
 
 func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) error {
-	return p.publish(ctx, opts, p.requestQueue)
+	return p.publish(ctx, opts, p.tryOn.Request)
 }
 
 func (p *ClothesProcessor) publish(ctx context.Context, payload easyjson.Marshaler, routingKeys ...string) error {

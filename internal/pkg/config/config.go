@@ -54,12 +54,17 @@ type Cors struct {
 }
 
 type Rabbit struct {
-	Host          string
-	Port          int
-	User          string
-	Password      string
-	RequestQueue  string
-	ResponseQueue string
+	Host     string
+	Port     int
+	User     string
+	Password string
+	TryOn    RabbitQueue
+	Process  RabbitQueue
+}
+
+type RabbitQueue struct {
+	Request  string
+	Response string
 }
 
 func (cfg *Rabbit) DSN() string {
