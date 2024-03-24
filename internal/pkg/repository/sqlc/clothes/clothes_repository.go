@@ -149,6 +149,7 @@ func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.Clothes {
 		Type:      model.Type,
 		Subtype:   model.Subtype,
 		Tags:      model.Tags,
+		Seasons:   model.Seasons,
 	}
 
 	if model.Style.Valid {
