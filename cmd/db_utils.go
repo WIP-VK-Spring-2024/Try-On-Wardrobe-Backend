@@ -71,11 +71,11 @@ func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 	}
 	conn.Conn().TypeMap().RegisterType(t)
 
-	t, err = conn.Conn().LoadType(context.Background(), "_seasons")
-	if err != nil {
-		return nil, errors.Join(errors.New("failed registering season[] type"), err)
-	}
-	conn.Conn().TypeMap().RegisterType(t)
+	// t, err = conn.Conn().LoadType(context.Background(), "_seasons")
+	// if err != nil {
+	// 	return nil, errors.Join(errors.New("failed registering season[] type"), err)
+	// }
+	// conn.Conn().TypeMap().RegisterType(t)
 
 	return db, nil
 }

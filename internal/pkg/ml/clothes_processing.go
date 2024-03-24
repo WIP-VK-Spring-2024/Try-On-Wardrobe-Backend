@@ -50,56 +50,14 @@ func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProce
 	return p.publish(ctx, opts, p.process.Request)
 }
 
+type handlerFunc[T easyjson.Unmarshaler] func(T) domain.Result
+
 func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
-	consumer, err := rabbitmq.NewConsumer(
-		p.rabbit,
-		p.tryOn.Response,
-		rabbitmq.WithConsumerOptionsExchangeName(p.tryOn.Response),
-		rabbitmq.WithConsumerOptionsExchangeDeclare,
-	)
-	if err != nil {
-		return err
-	}
-	defer consumer.Close()
-
-	return consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
-		logger.Infow("rabbit", "got", string(delivery.Body))
-
-		var resp domain.TryOnResponse
-		err := easyjson.Unmarshal(delivery.Body, &resp)
-		if err != nil {
-			logger.Infow("rabbit", "error", err)
-			return rabbitmq.NackDiscard
-		}
-
-		return toRabbitAction(handler(&resp))
-	})
+	return getResults(p, p.tryOn, logger, handler)
 }
 
 func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
-	consumer, err := rabbitmq.NewConsumer(
-		p.rabbit,
-		p.process.Response,
-		rabbitmq.WithConsumerOptionsExchangeName(p.process.Response),
-		rabbitmq.WithConsumerOptionsExchangeDeclare,
-	)
-	if err != nil {
-		return err
-	}
-	defer consumer.Close()
-
-	return consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
-		logger.Infow("rabbit", "got", string(delivery.Body))
-
-		var resp domain.ClothesProcessingResponse
-		err := easyjson.Unmarshal(delivery.Body, &resp)
-		if err != nil {
-			logger.Infow("rabbit", "error", err)
-			return rabbitmq.NackDiscard
-		}
-
-		return toRabbitAction(handler(&resp))
-	})
+	return getResults(p, p.process, logger, handler)
 }
 
 func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) error {
@@ -120,6 +78,32 @@ func (p *ClothesProcessor) publish(ctx context.Context, payload easyjson.Marshal
 		rabbitmq.WithPublishOptionsTimestamp(time.Now()),
 		rabbitmq.WithPublishOptionsPersistentDelivery,
 	)
+}
+
+func getResults[T easyjson.Unmarshaler](p *ClothesProcessor, queue config.RabbitQueue, logger *zap.SugaredLogger, handler handlerFunc[T]) error {
+	consumer, err := rabbitmq.NewConsumer(
+		p.rabbit,
+		queue.Response,
+		rabbitmq.WithConsumerOptionsExchangeName(queue.Response),
+		rabbitmq.WithConsumerOptionsExchangeDeclare,
+	)
+	if err != nil {
+		return err
+	}
+	defer consumer.Close()
+
+	return consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
+		logger.Infow("rabbit", "got", string(delivery.Body))
+
+		var resp T
+		err := easyjson.Unmarshal(delivery.Body, resp)
+		if err != nil {
+			logger.Infow("rabbit", "error", err)
+			return rabbitmq.NackDiscard
+		}
+
+		return toRabbitAction(handler(resp))
+	})
 }
 
 func toRabbitAction(result domain.Result) rabbitmq.Action {
