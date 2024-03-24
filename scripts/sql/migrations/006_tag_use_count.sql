@@ -3,6 +3,7 @@ alter table tags add column use_count int not null default 0;
 
 create index tags_use_count_idx on tags(use_count) include (id, name);
 
+-- +migrate StatementBegin
 create or replace function handle_tag_use_count() returns trigger as $$
     begin
         if (tg_op = 'DELETE') then
@@ -15,12 +16,13 @@ create or replace function handle_tag_use_count() returns trigger as $$
         return null;
     end
 $$ LANGUAGE plpgsql;
+-- +migrate StatementEnd
 
 create or replace trigger trigger_tag_use_count
     after insert or delete
     on "clothes_tags"
     for each row
-    execute procedure process_tag_use_inc();
+    execute procedure handle_tag_use_count();
 
 -- +migrate Down
 alter table tags drop column use_count;

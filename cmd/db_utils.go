@@ -23,7 +23,7 @@ func applyMigrations(cfg config.Sql, pg *pgxpool.Pool) error {
 
 	n, err := migrate.Exec(sqlDB, "postgres", migrations, migrate.Up)
 	if err != nil {
-		errors.Join(errors.New("sql-migrate migrations failed"), err)
+		return errors.Join(errors.New("sql-migrate migrations failed"), err)
 	}
 	fmt.Printf("Applied %d migrations\n", n)
 
