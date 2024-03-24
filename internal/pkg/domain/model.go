@@ -7,7 +7,7 @@ import (
 )
 
 type Model struct {
-	ID utils.UUID
+	ID utils.UUID `json:"uuid"`
 	AutoTimestamp
 }
 

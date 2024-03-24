@@ -14,7 +14,7 @@ import (
 
 type ClothesProcessor struct {
 	publisher     *rabbitmq.Publisher
-	consumer      *rabbitmq.Consumer
+	rabbit        *rabbitmq.Conn
 	requestQueue  string
 	responseQueue string
 }
@@ -37,20 +37,9 @@ func New(
 		return nil, err
 	}
 
-	consumer, err := rabbitmq.NewConsumer(
-		rabbit,
-		responseQueue,
-		rabbitmq.WithConsumerOptionsExchangeName(responseQueue),
-		rabbitmq.WithConsumerOptionsExchangeDeclare,
-	)
-	if err != nil {
-		publisher.Close()
-		return nil, err
-	}
-
 	return &ClothesProcessor{
 		publisher:     publisher,
-		consumer:      consumer,
+		rabbit:        rabbit,
 		requestQueue:  requestQueue,
 		responseQueue: responseQueue,
 	}, nil
@@ -61,9 +50,18 @@ func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProce
 }
 
 func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
-	defer p.consumer.Close()
+	consumer, err := rabbitmq.NewConsumer(
+		p.rabbit,
+		p.responseQueue,
+		rabbitmq.WithConsumerOptionsExchangeName(p.responseQueue),
+		rabbitmq.WithConsumerOptionsExchangeDeclare,
+	)
+	if err != nil {
+		return err
+	}
+	defer consumer.Close()
 
-	return p.consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
+	return consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
 		logger.Infow("rabbit", "got", string(delivery.Body))
 
 		var resp domain.TryOnResponse
@@ -73,20 +71,33 @@ func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler fu
 			return rabbitmq.NackDiscard
 		}
 
-		res := handler(&resp)
-		switch res {
-		case domain.ResultOk:
-			return rabbitmq.Ack
+		return toRabbitAction(handler(&resp))
+	})
+}
 
-		case domain.ResultRetry:
-			return rabbitmq.NackRequeue
+func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
+	consumer, err := rabbitmq.NewConsumer(
+		p.rabbit,
+		p.responseQueue,
+		rabbitmq.WithConsumerOptionsExchangeName(p.responseQueue),
+		rabbitmq.WithConsumerOptionsExchangeDeclare,
+	)
+	if err != nil {
+		return err
+	}
+	defer consumer.Close()
 
-		case domain.ResultDiscard:
-			fallthrough
+	return consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
+		logger.Infow("rabbit", "got", string(delivery.Body))
 
-		default:
+		var resp domain.ClothesProcessingResponse
+		err := easyjson.Unmarshal(delivery.Body, &resp)
+		if err != nil {
+			logger.Infow("rabbit", "error", err)
 			return rabbitmq.NackDiscard
 		}
+
+		return toRabbitAction(handler(&resp))
 	})
 }
 
@@ -108,4 +119,20 @@ func (p *ClothesProcessor) publish(ctx context.Context, payload easyjson.Marshal
 		rabbitmq.WithPublishOptionsTimestamp(time.Now()),
 		rabbitmq.WithPublishOptionsPersistentDelivery,
 	)
+}
+
+func toRabbitAction(result domain.Result) rabbitmq.Action {
+	switch result {
+	case domain.ResultOk:
+		return rabbitmq.Ack
+
+	case domain.ResultRetry:
+		return rabbitmq.NackRequeue
+
+	case domain.ResultDiscard:
+		fallthrough
+
+	default:
+		return rabbitmq.NackDiscard
+	}
 }
