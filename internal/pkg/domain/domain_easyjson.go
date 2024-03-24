@@ -42,7 +42,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain(in *jlexer.Lexer, out *UserIma
 			}
 		case "image":
 			out.Image = string(in.String())
-		case "id":
+		case "uuid":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
@@ -77,7 +77,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain(out *jwriter.Writer, in UserIm
 		out.String(string(in.Image))
 	}
 	if (in.ID).IsDefined() {
-		const prefix string = ",\"id\":"
+		const prefix string = ",\"uuid\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -156,7 +156,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain1(in *jlexer.Lexer, out *Type) 
 				}
 				in.Delim(']')
 			}
-		case "id":
+		case "uuid":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
@@ -200,7 +200,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain1(out *jwriter.Writer, in Type)
 		}
 	}
 	if (in.ID).IsDefined() {
-		const prefix string = ",\"id\":"
+		const prefix string = ",\"uuid\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -266,7 +266,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain2(in *jlexer.Lexer, out *TryOnR
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ClothesID).UnmarshalText(data))
 			}
-		case "id":
+		case "uuid":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
@@ -321,7 +321,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain2(out *jwriter.Writer, in TryOn
 		out.RawText((in.ClothesID).MarshalText())
 	}
 	if (in.ID).IsDefined() {
-		const prefix string = ",\"id\":"
+		const prefix string = ",\"uuid\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -621,7 +621,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain5(in *jlexer.Lexer, out *Tag) {
 			out.Name = string(in.String())
 		case "use_count":
 			out.UseCount = int32(in.Int32())
-		case "id":
+		case "uuid":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
@@ -656,7 +656,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain5(out *jwriter.Writer, in Tag) 
 		out.Int32(int32(in.UseCount))
 	}
 	if (in.ID).IsDefined() {
-		const prefix string = ",\"id\":"
+		const prefix string = ",\"uuid\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -716,7 +716,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain6(in *jlexer.Lexer, out *Subtyp
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.TypeID).UnmarshalText(data))
 			}
-		case "id":
+		case "uuid":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
@@ -751,7 +751,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain6(out *jwriter.Writer, in Subty
 		out.RawText((in.TypeID).MarshalText())
 	}
 	if (in.ID).IsDefined() {
-		const prefix string = ",\"id\":"
+		const prefix string = ",\"uuid\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -807,7 +807,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain7(in *jlexer.Lexer, out *Style)
 		switch key {
 		case "name":
 			out.Name = string(in.String())
-		case "id":
+		case "uuid":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
@@ -832,7 +832,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain7(out *jwriter.Writer, in Style
 		out.String(string(in.Name))
 	}
 	if (in.ID).IsDefined() {
-		const prefix string = ",\"id\":"
+		const prefix string = ",\"uuid\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
