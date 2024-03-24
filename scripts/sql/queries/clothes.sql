@@ -79,6 +79,6 @@ set name = coalesce($2, name),
     subtype_id = coalesce($5, subtype_id),
     style_id = coalesce($6, style_id),
     color = coalesce($7, color),
-    seasons = coalesce($8, seasons)::season[],
+    seasons = coalesce(sqlc.arg(seasons), seasons)::season[],
     updated_at = now()
 where id = $1;
