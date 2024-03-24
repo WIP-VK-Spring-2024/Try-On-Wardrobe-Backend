@@ -1,6 +1,8 @@
 package clothes
 
 import (
+	"slices"
+
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
@@ -34,6 +36,10 @@ func (c *ClothesUsecase) Get(id utils.UUID) (*domain.Clothes, error) {
 		return nil, err
 	}
 
+	if slices.Equal(clothes.Tags, []string{""}) {
+		clothes.Tags = []string{}
+	}
+
 	return clothes, nil
 }
 
@@ -45,6 +51,12 @@ func (c *ClothesUsecase) GetByUser(userID utils.UUID, limit int) ([]domain.Cloth
 	clothes, err := c.repo.GetByUser(userID, limit)
 	if err != nil {
 		return nil, err
+	}
+
+	for i := range clothes {
+		if slices.Equal(clothes[i].Tags, []string{""}) {
+			clothes[i].Tags = []string{}
+		}
 	}
 
 	return clothes, nil
