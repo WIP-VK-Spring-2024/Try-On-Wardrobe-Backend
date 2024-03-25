@@ -3,6 +3,7 @@ package try_on
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"try-on/internal/generated/proto/centrifugo"
@@ -14,6 +15,7 @@ import (
 	"try-on/internal/pkg/repository/sqlc/try_on"
 	"try-on/internal/pkg/repository/sqlc/user_images"
 	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/translate"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -137,13 +139,17 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	_, err = h.clothes.Get(req.ClothesID)
+	fmt.Printf("%+v\n", req)
+
+	clothes, err := h.clothes.Get(req.ClothesID)
 	if err != nil {
+		middleware.LogError(ctx, err)
 		return app_errors.New(err)
 	}
 
 	_, err = h.userImages.Get(req.UserImageID)
 	if err != nil {
+		middleware.LogError(ctx, err)
 		return app_errors.New(err)
 	}
 
@@ -155,6 +161,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		UserImageID:  req.UserImageID,
 		UserImageDir: cfg.Static.FullBody,
 		ClothesDir:   cfg.Static.Clothes,
+		Category:     translate.ClothesTypeToTryOnCategory(clothes.Type),
 	})
 	if err != nil {
 		return app_errors.New(err)

@@ -37,6 +37,7 @@ type TryOnRequest struct {
 	ClothesID    utils.UUID
 	UserImageDir string
 	ClothesDir   string
+	Category     string
 }
 
 //easyjson:json
