@@ -5,17 +5,23 @@
   "log_level": "debug",
 
   "allowed_origins": ["*"],
-  "allow_anonymous_connect_without_token": true,
-  "allow_subscribe_for_anonymous": true,
 
-  "allow_subscribe_for_client": true,
   "namespaces": [
     {
       "name": "try-on",
       "history_size": 10,
       "history_ttl": "300s",
       "force_recovery": true,
-      "allow_user_limited_channels": true
+      "allow_user_limited_channels": true,
+      "allow_subscribe_for_client": true
+    },
+    {
+      "name": "processing",
+      "history_size": 10,
+      "history_ttl": "300s",
+      "force_recovery": true,
+      "allow_user_limited_channels": true,
+      "allow_subscribe_for_client": true
     }
   ]
 }

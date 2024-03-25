@@ -16,3 +16,73 @@ var (
 	_ *jwriter.Writer
 	_ easyjson.Marshaler
 )
+
+func easyjson661d13f0DecodeTryOnInternalPkgDeliveryUserImages(in *jlexer.Lexer, out *imageUploadedResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "uuid":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Uuid).UnmarshalText(data))
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson661d13f0EncodeTryOnInternalPkgDeliveryUserImages(out *jwriter.Writer, in imageUploadedResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if (in.Uuid).IsDefined() {
+		const prefix string = ",\"uuid\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.RawText((in.Uuid).MarshalText())
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v imageUploadedResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson661d13f0EncodeTryOnInternalPkgDeliveryUserImages(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v imageUploadedResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson661d13f0EncodeTryOnInternalPkgDeliveryUserImages(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *imageUploadedResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson661d13f0DecodeTryOnInternalPkgDeliveryUserImages(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *imageUploadedResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson661d13f0DecodeTryOnInternalPkgDeliveryUserImages(l, v)
+}

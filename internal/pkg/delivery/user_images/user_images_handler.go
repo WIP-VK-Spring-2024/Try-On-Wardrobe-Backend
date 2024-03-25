@@ -31,6 +31,11 @@ func New(
 	}
 }
 
+//easyjson:json
+type imageUploadedResponse struct {
+	Uuid utils.UUID
+}
+
 func (h *UserImageHandler) GetByID(ctx *fiber.Ctx) error {
 	userImageID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
@@ -96,7 +101,9 @@ func (h *UserImageHandler) Upload(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	return ctx.SendString(common.EmptyJson)
+	return ctx.JSON(&imageUploadedResponse{
+		Uuid: userImage.ID,
+	})
 }
 
 func (h *UserImageHandler) GetByUser(ctx *fiber.Ctx) error {
