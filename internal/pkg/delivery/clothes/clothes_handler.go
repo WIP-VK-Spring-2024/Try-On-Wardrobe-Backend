@@ -77,7 +77,7 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 	}
 
 	clothes := &domain.Clothes{}
-	if err := ctx.BodyParser(clothes); err != nil {
+	if err := easyjson.Unmarshal(ctx.Body(), clothes); err != nil {
 		middleware.LogError(ctx, err)
 		return app_errors.ErrBadRequest
 	}
@@ -115,8 +115,8 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	}
 	defer file.Close()
 
-	var clothes domain.Clothes
-	if err := ctx.BodyParser(&clothes); err != nil {
+	clothes := domain.Clothes{}
+	if err := easyjson.Unmarshal(ctx.Body(), &clothes); err != nil {
 		middleware.LogError(ctx, err)
 		return app_errors.ErrBadRequest
 	}
