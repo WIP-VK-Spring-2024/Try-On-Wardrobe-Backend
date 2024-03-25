@@ -30,7 +30,7 @@ func (repo UserRepository) Create(user *domain.User) error {
 		Password: string(user.Password),
 	})
 	if err != nil {
-		return err
+		return utils.PgxError(err)
 	}
 
 	user.ID = id
@@ -40,7 +40,7 @@ func (repo UserRepository) Create(user *domain.User) error {
 func (repo UserRepository) GetByName(name string) (*domain.User, error) {
 	user, err := repo.queries.GetUserByName(context.Background(), name)
 	if err != nil {
-		return nil, err
+		return nil, utils.PgxError(err)
 	}
 	return fromSqlc(&user), nil
 }
@@ -48,7 +48,7 @@ func (repo UserRepository) GetByName(name string) (*domain.User, error) {
 func (repo UserRepository) GetByID(id utils.UUID) (*domain.User, error) {
 	user, err := repo.queries.GetUserByID(context.Background(), id)
 	if err != nil {
-		return nil, err
+		return nil, utils.PgxError(err)
 	}
 	return fromSqlc(&user), nil
 }

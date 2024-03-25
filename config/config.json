@@ -31,8 +31,8 @@
     "port": 5672,
     "user": "usr",
     "try_on": {
-      "request": "model",
-      "response": "model_response"
+      "request": "try_on",
+      "response": "try_on_result"
     },
     "process": {
       "request": "model",

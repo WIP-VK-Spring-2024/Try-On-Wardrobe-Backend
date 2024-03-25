@@ -37,7 +37,7 @@ func (repo *UserImageRepository) Delete(id utils.UUID) error {
 func (repo *UserImageRepository) GetByUser(userID utils.UUID) ([]domain.UserImage, error) {
 	userImages, err := repo.queries.GetUserImageByUser(context.Background(), userID)
 	if err != nil {
-		return nil, err
+		return nil, utils.PgxError(err)
 	}
 	return utils.Map(userImages, fromSqlc), nil
 }
@@ -45,7 +45,7 @@ func (repo *UserImageRepository) GetByUser(userID utils.UUID) ([]domain.UserImag
 func (repo *UserImageRepository) Get(id utils.UUID) (*domain.UserImage, error) {
 	userImage, err := repo.queries.GetUserImageByID(context.Background(), id)
 	if err != nil {
-		return nil, err
+		return nil, utils.PgxError(err)
 	}
 	return fromSqlc(&userImage), nil
 }

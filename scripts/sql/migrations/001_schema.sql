@@ -53,8 +53,8 @@ create table tags (
 );
 
 create table clothes_tags (
-    clothes_id uuid references clothes(id) on delete cascade,
-    tag_id uuid references tags(id) on delete cascade,
+    clothes_id uuid references clothes(id),
+    tag_id uuid references tags(id),
     primary key(clothes_id, tag_id)
 );
 

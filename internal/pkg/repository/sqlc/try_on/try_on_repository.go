@@ -45,7 +45,7 @@ func (repo *TryOnResultRepository) Delete(id utils.UUID) error {
 func (repo *TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnResult, error) {
 	results, err := repo.queries.GetTryOnResultsByUser(context.Background(), userID)
 	if err != nil {
-		return nil, err
+		return nil, utils.PgxError(err)
 	}
 	return utils.Map(results, fromSqlc), nil
 }
@@ -53,7 +53,7 @@ func (repo *TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnR
 func (repo *TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.TryOnResult, error) {
 	results, err := repo.queries.GetTryOnResultsByClothes(context.Background(), clothesID)
 	if err != nil {
-		return nil, err
+		return nil, utils.PgxError(err)
 	}
 	return utils.Map(results, fromSqlc), nil
 }
@@ -61,7 +61,7 @@ func (repo *TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.
 func (repo *TryOnResultRepository) Get(userImageID, clothesID utils.UUID) (*domain.TryOnResult, error) {
 	result, err := repo.queries.GetTryOnResult(context.Background(), userImageID, clothesID)
 	if err != nil {
-		return nil, err
+		return nil, utils.PgxError(err)
 	}
 	return fromSqlc(&result), nil
 }
