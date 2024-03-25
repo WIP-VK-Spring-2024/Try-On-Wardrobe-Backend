@@ -40,12 +40,12 @@ type App struct {
 }
 
 func (app *App) Run() error {
-	pg, err := initPostgres(&app.cfg.Postgres)
+	err := applyMigrations(app.cfg.Sql, &app.cfg.Postgres)
 	if err != nil {
 		return err
 	}
 
-	err = applyMigrations(app.cfg.Sql, pg)
+	pg, err := initPostgres(&app.cfg.Postgres)
 	if err != nil {
 		return err
 	}

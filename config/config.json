@@ -12,7 +12,7 @@
     "dir": "static",
     "clothes": "clothes",
     "cut": "clothes/cut",
-    "fullBody": "people",
+    "fullBody": "photos",
     "tryOn": "try-on",
     "s3": {
       "endpoint": "https://hb.ru-msk.vkcs.cloud",

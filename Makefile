@@ -36,4 +36,4 @@ run: build
 
 docker: build_alpine
 	docker compose up --build -d
-	docker compose logs --follow
+	docker compose logs app centrifugo --follow

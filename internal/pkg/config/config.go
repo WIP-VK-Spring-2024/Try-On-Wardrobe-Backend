@@ -82,9 +82,14 @@ type Postgres struct {
 	InitTimeout time.Duration
 }
 
-func (cfg *Postgres) DSN() string {
+func (cfg *Postgres) PoolDSN() string {
 	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable pool_max_conns=%d",
 		cfg.Host, cfg.User, cfg.Password, cfg.DB, cfg.Port, cfg.MaxConn)
+}
+
+func (cfg *Postgres) DSN() string {
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		cfg.Host, cfg.User, cfg.Password, cfg.DB, cfg.Port)
 }
 
 type Sql struct {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -11,19 +12,23 @@ import (
 	"try-on/internal/pkg/domain"
 
 	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
+
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
 	migrate "github.com/rubenv/sql-migrate"
 )
 
-func applyMigrations(cfg config.Sql, pg *pgxpool.Pool) error {
+func applyMigrations(cfg config.Sql, pgCfg *config.Postgres) error {
 	migrations := &migrate.FileMigrationSource{
 		Dir: cfg.Dir,
 	}
 
-	sqlDB := stdlib.OpenDBFromPool(pg)
+	db, err := sql.Open("pgx", pgCfg.DSN())
+	if err != nil {
+		return errors.Join(errors.New("failed opening connections for migrations"), err)
+	}
 
-	n, err := migrate.Exec(sqlDB, "postgres", migrations, migrate.Up)
+	n, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
 	if err != nil {
 		return errors.Join(errors.New("sql-migrate migrations failed"), err)
 	}
@@ -38,7 +43,7 @@ func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 	till := time.Now().Add(time.Second * config.InitTimeout)
 	log.Println("Connecting to postgres:", config.DSN())
 
-	cfg, err := pgxpool.ParseConfig(config.DSN())
+	cfg, err := pgxpool.ParseConfig(config.PoolDSN())
 	if err != nil {
 		return nil, err
 	}
