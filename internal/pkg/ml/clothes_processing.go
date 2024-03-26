@@ -89,6 +89,12 @@ func getResults[T easyjson.Unmarshaler](p *ClothesProcessor, queue config.Rabbit
 	defer consumer.Close()
 
 	return consumer.Run(func(delivery rabbitmq.Delivery) rabbitmq.Action {
+		defer func() {
+			if err := recover(); err != nil {
+				logger.Errorln(err)
+			}
+		}()
+
 		logger.Infow("rabbit", "got", string(delivery.Body))
 
 		var resp T

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
 	"try-on/internal/pkg/config"
@@ -21,6 +22,8 @@ func main() {
 		log.Println(err)
 		return
 	}
+
+	fmt.Printf("Config is: %+v\n", cfg)
 
 	loggerConfig := zap.Config{
 		Development:       true,

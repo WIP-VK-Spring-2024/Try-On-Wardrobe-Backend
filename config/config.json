@@ -28,7 +28,7 @@
   "rabbit": {
     "port": 5672,
     "user": "usr",
-    "try_on": {
+    "tryOn": {
       "request": "try_on",
       "response": "try_on_result"
     },
