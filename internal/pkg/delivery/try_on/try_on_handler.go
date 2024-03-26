@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
@@ -82,11 +83,12 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp int
 		switch {
 		case err == nil:
 			break
-		case errors.Is(err, app_errors.ErrAlreadyExists):
+		case errors.Is(err, app_errors.ErrAlreadyExists) || errors.Is(err, app_errors.ErrNoRelatedEntity):
 			h.logger.Errorw(err.Error())
 			handleResult = domain.ResultDiscard
 		default:
 			h.logger.Errorw(err.Error())
+			time.Sleep(time.Second) // BAD CODE
 			return domain.ResultRetry
 		}
 
