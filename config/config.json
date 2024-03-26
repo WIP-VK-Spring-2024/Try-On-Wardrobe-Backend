@@ -19,7 +19,6 @@
       "bucket": "try_on_wardrobe_images"
     },
     "httpApi": {
-      "endpoint": "http://model-api:8000/aws",
       "uploadUrl": "/upload",
       "deleteUrl": "/delete",
       "tokenHeader": "X-ACCESS-TOKEN"
@@ -27,7 +26,6 @@
   },
 
   "rabbit": {
-    "host": "wardrobe-rabbitmq",
     "port": 5672,
     "user": "usr",
     "try_on": {

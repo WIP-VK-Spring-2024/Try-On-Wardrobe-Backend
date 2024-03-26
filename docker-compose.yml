@@ -13,7 +13,9 @@ services:
       - POSTGRES.PORT
       - SESSION.SECRET
       - RABBIT.PASSWORD
+      - RABBIT.HOST
       - STATIC.HTTPAPI.TOKEN
+      - STATIC.HTTPAPI.ENDPOINT
 
   centrifugo:
     image: centrifugo/centrifugo:v5

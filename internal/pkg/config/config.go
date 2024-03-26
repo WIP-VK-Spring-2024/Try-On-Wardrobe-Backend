@@ -119,6 +119,8 @@ func NewDynamicConfig(configPath string, onChange func(*Config), onError func(er
 	viper.BindEnv("static.s3.secretKey")
 	viper.BindEnv("rabbit.password")
 	viper.BindEnv("static.httpapi.token")
+	viper.BindEnv("rabbit.host")
+	viper.BindEnv("static.httpapi.endpoint")
 
 	cfg := Config{}
 
