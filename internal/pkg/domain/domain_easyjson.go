@@ -1069,8 +1069,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain9(in *jlexer.Lexer, out *Clothe
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ClothesID).UnmarshalText(data))
 			}
-		case "processed_dir":
-			out.ProcessedDir = string(in.String())
+		case "result_dir":
+			out.ResultDir = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1101,15 +1101,15 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain9(out *jwriter.Writer, in Cloth
 		}
 		out.RawText((in.ClothesID).MarshalText())
 	}
-	if in.ProcessedDir != "" {
-		const prefix string = ",\"processed_dir\":"
+	if in.ResultDir != "" {
+		const prefix string = ",\"result_dir\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.ProcessedDir))
+		out.String(string(in.ResultDir))
 	}
 	out.RawByte('}')
 }

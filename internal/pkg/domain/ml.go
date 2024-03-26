@@ -25,9 +25,9 @@ type ClothesProcessingRequest struct {
 
 //easyjson:json
 type ClothesProcessingResponse struct {
-	UserID       utils.UUID
-	ClothesID    utils.UUID
-	ProcessedDir string
+	UserID    utils.UUID
+	ClothesID utils.UUID
+	ResultDir string
 }
 
 //easyjson:json
