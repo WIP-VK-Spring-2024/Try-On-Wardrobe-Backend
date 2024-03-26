@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"time"
-
 	"try-on/internal/pkg/utils"
 )
 
@@ -12,6 +10,6 @@ type Model struct {
 }
 
 type AutoTimestamp struct {
-	CreatedAt time.Time `json:"-"`
-	UpdatedAt time.Time `json:"-"`
+	CreatedAt utils.Time
+	UpdatedAt utils.Time `json:"-"`
 }

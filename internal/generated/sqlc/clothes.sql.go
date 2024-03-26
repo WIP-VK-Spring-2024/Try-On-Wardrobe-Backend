@@ -155,6 +155,7 @@ group by
     type,
     subtype,
     style
+order by clothes.created_at desc
 `
 
 type GetClothesByUserRow struct {

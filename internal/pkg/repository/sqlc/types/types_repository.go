@@ -27,22 +27,28 @@ func (repo *TypeRepository) GetAll() ([]domain.Type, error) {
 	}
 
 	return utils.Map(types, func(t *sqlc.GetTypesRow) *domain.Type {
+		subtypes := utils.Zip(t.SubtypeIds, t.SubtypeNames,
+			func(id utils.UUID, name string) domain.Subtype {
+				return domain.Subtype{
+					Model: domain.Model{ID: id},
+					Name:  name,
+				}
+			})
+
+		for i, createdAt := range t.SubtypesCreatedAt {
+			subtypes[i].CreatedAt.Time = createdAt.Time
+		}
+
 		return &domain.Type{
 			Model: domain.Model{
 				ID: t.ID,
 				AutoTimestamp: domain.AutoTimestamp{
-					CreatedAt: t.CreatedAt.Time,
-					UpdatedAt: t.UpdatedAt.Time,
+					CreatedAt: utils.Time{Time: t.CreatedAt.Time},
+					UpdatedAt: utils.Time{Time: t.UpdatedAt.Time},
 				},
 			},
-			Name: t.Name,
-			Subtypes: utils.Zip(t.SubtypeIds, t.SubtypeNames,
-				func(id utils.UUID, name string) domain.Subtype {
-					return domain.Subtype{
-						Model: domain.Model{ID: id},
-						Name:  name,
-					}
-				}),
+			Name:     t.Name,
+			Subtypes: subtypes,
 		}
 	}), nil
 }

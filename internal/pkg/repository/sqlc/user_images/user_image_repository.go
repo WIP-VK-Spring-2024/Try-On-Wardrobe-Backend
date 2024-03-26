@@ -55,8 +55,8 @@ func fromSqlc(model *sqlc.UserImage) *domain.UserImage {
 		Model: domain.Model{
 			ID: model.ID,
 			AutoTimestamp: domain.AutoTimestamp{
-				CreatedAt: model.CreatedAt.Time,
-				UpdatedAt: model.UpdatedAt.Time,
+				CreatedAt: utils.Time{Time: model.CreatedAt.Time},
+				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
 		UserID: model.UserID,

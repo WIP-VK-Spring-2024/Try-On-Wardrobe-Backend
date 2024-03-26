@@ -135,8 +135,8 @@ func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.Clothes {
 		Model: domain.Model{
 			ID: model.ID,
 			AutoTimestamp: domain.AutoTimestamp{
-				CreatedAt: model.CreatedAt.Time,
-				UpdatedAt: model.UpdatedAt.Time,
+				CreatedAt: utils.Time{Time: model.CreatedAt.Time},
+				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
 		TypeID:    model.TypeID,

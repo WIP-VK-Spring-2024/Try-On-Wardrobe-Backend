@@ -46,6 +46,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain(in *jlexer.Lexer, out *UserIma
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
+		case "created_at":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreatedAt).UnmarshalJSON(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -85,6 +89,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain(out *jwriter.Writer, in UserIm
 			out.RawString(prefix)
 		}
 		out.RawText((in.ID).MarshalText())
+	}
+	if (in.CreatedAt).IsDefined() {
+		const prefix string = ",\"created_at\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')
 }
@@ -160,6 +174,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain1(in *jlexer.Lexer, out *Type) 
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
+		case "created_at":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreatedAt).UnmarshalJSON(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -208,6 +226,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain1(out *jwriter.Writer, in Type)
 			out.RawString(prefix)
 		}
 		out.RawText((in.ID).MarshalText())
+	}
+	if (in.CreatedAt).IsDefined() {
+		const prefix string = ",\"created_at\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')
 }
@@ -270,6 +298,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain2(in *jlexer.Lexer, out *TryOnR
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
+		case "created_at":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreatedAt).UnmarshalJSON(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -329,6 +361,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain2(out *jwriter.Writer, in TryOn
 			out.RawString(prefix)
 		}
 		out.RawText((in.ID).MarshalText())
+	}
+	if (in.CreatedAt).IsDefined() {
+		const prefix string = ",\"created_at\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')
 }
@@ -637,6 +679,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain5(in *jlexer.Lexer, out *Tag) {
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
+		case "created_at":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreatedAt).UnmarshalJSON(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -676,6 +722,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain5(out *jwriter.Writer, in Tag) 
 			out.RawString(prefix)
 		}
 		out.RawText((in.ID).MarshalText())
+	}
+	if (in.CreatedAt).IsDefined() {
+		const prefix string = ",\"created_at\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')
 }
@@ -732,6 +788,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain6(in *jlexer.Lexer, out *Subtyp
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
+		case "created_at":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreatedAt).UnmarshalJSON(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -771,6 +831,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain6(out *jwriter.Writer, in Subty
 			out.RawString(prefix)
 		}
 		out.RawText((in.ID).MarshalText())
+	}
+	if (in.CreatedAt).IsDefined() {
+		const prefix string = ",\"created_at\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')
 }
@@ -823,6 +893,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain7(in *jlexer.Lexer, out *Style)
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
+		case "created_at":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreatedAt).UnmarshalJSON(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -852,6 +926,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain7(out *jwriter.Writer, in Style
 			out.RawString(prefix)
 		}
 		out.RawText((in.ID).MarshalText())
+	}
+	if (in.CreatedAt).IsDefined() {
+		const prefix string = ",\"created_at\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')
 }
@@ -1243,6 +1327,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain11(in *jlexer.Lexer, out *Cloth
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
 			}
+		case "created_at":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreatedAt).UnmarshalJSON(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -1370,6 +1458,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Clot
 			out.RawString(prefix)
 		}
 		out.RawText((in.ID).MarshalText())
+	}
+	if (in.CreatedAt).IsDefined() {
+		const prefix string = ",\"created_at\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')
 }

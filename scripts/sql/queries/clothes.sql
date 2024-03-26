@@ -54,7 +54,8 @@ group by
     clothes.updated_at,
     type,
     subtype,
-    style;
+    style
+order by clothes.created_at desc;
 
 -- name: DeleteClothes :exec
 delete from clothes
