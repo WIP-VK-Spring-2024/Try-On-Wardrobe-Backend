@@ -512,6 +512,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain4(in *jlexer.Lexer, out *TryOnR
 			out.UserImageDir = string(in.String())
 		case "clothes_dir":
 			out.ClothesDir = string(in.String())
+		case "category":
+			out.Category = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -571,6 +573,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain4(out *jwriter.Writer, in TryOn
 			out.RawString(prefix)
 		}
 		out.String(string(in.ClothesDir))
+	}
+	if in.Category != "" {
+		const prefix string = ",\"category\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Category))
 	}
 	out.RawByte('}')
 }
