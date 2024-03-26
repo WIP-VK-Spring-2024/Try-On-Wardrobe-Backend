@@ -17,6 +17,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 type ClothesHandler struct {
@@ -35,13 +36,15 @@ func New(
 	fileManager domain.FileManager,
 	cfg *config.Static,
 	logger *zap.SugaredLogger,
+	grpcConn grpc.ClientConnInterface,
 ) *ClothesHandler {
 	return &ClothesHandler{
-		clothes: clothes,
-		file:    fileManager,
-		model:   model,
-		cfg:     cfg,
-		logger:  logger,
+		clothes:    clothes,
+		file:       fileManager,
+		model:      model,
+		cfg:        cfg,
+		logger:     logger,
+		centrifugo: centrifugo.NewCentrifugoApiClient(grpcConn),
 	}
 }
 
