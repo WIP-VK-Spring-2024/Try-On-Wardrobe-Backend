@@ -2,6 +2,7 @@ package clothes
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -207,8 +208,12 @@ func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
 
 func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
 	return func(resp *domain.ClothesProcessingResponse) domain.Result {
+		fmt.Println("Generating channel name")
+
 		userChannel := cfg.ProcessingChannel + resp.UserID.String()
 		h.logger.Infow("centrifugo", "channel", userChannel)
+
+		fmt.Println("Marshalling response for centrifugo")
 
 		payload := &uploadResponse{
 			Uuid: resp.ClothesID,
@@ -220,6 +225,7 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 			return domain.ResultDiscard
 		}
 
+		fmt.Println("Publishing to centrifugo")
 		centrifugoResp, err := h.centrifugo.Publish(
 			context.Background(),
 			&centrifugo.PublishRequest{

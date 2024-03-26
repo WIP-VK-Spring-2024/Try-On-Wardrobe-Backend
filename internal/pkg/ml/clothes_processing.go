@@ -2,6 +2,7 @@ package ml
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"try-on/internal/pkg/common"
@@ -103,6 +104,8 @@ func getResults[T easyjson.Unmarshaler](p *ClothesProcessor, queue config.Rabbit
 			logger.Infow("rabbit", "error", err)
 			return rabbitmq.NackDiscard
 		}
+
+		fmt.Println("Calling callback")
 
 		return toRabbitAction(handler(*resp))
 	})
