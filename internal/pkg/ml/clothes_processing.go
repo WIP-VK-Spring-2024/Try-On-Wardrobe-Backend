@@ -97,14 +97,14 @@ func getResults[T easyjson.Unmarshaler](p *ClothesProcessor, queue config.Rabbit
 
 		logger.Infow("rabbit", "got", string(delivery.Body))
 
-		var resp T
-		err := easyjson.Unmarshal(delivery.Body, resp)
+		resp := new(T)
+		err := easyjson.Unmarshal(delivery.Body, *resp)
 		if err != nil {
 			logger.Infow("rabbit", "error", err)
 			return rabbitmq.NackDiscard
 		}
 
-		return toRabbitAction(handler(resp))
+		return toRabbitAction(handler(*resp))
 	})
 }
 
