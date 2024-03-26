@@ -66,8 +66,10 @@ func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 	}()
 }
 
-func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.TryOnResponse) domain.Result {
-	return func(resp *domain.TryOnResponse) domain.Result {
+func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp interface{}) domain.Result {
+	return func(response interface{}) domain.Result {
+		resp := response.(*domain.TryOnResponse) // BAD CODE
+
 		tryOnRes := &domain.TryOnResult{
 			UserImageID: resp.UserImageID,
 			ClothesID:   resp.ClothesID,

@@ -45,13 +45,13 @@ func New(
 	}, nil
 }
 
-type handlerFunc[T easyjson.Unmarshaler] func(T) domain.Result
+type handlerFunc func(interface{}) domain.Result
 
-func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
+func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(interface{}) domain.Result) error {
 	return getResults(p, p.tryOn, logger, handler)
 }
 
-func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
+func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(interface{}) domain.Result) error {
 	return getResults(p, p.process, logger, handler)
 }
 
@@ -79,7 +79,7 @@ func (p *ClothesProcessor) publish(ctx context.Context, payload easyjson.Marshal
 	)
 }
 
-func getResults[T easyjson.Unmarshaler](p *ClothesProcessor, queue config.RabbitQueue, logger *zap.SugaredLogger, handler handlerFunc[T]) error {
+func getResults(p *ClothesProcessor, queue config.RabbitQueue, logger *zap.SugaredLogger, handler handlerFunc) error {
 	consumer, err := rabbitmq.NewConsumer(
 		p.rabbit,
 		queue.Response,
@@ -98,8 +98,13 @@ func getResults[T easyjson.Unmarshaler](p *ClothesProcessor, queue config.Rabbit
 
 		logger.Infow("rabbit", "got", string(delivery.Body))
 
-		resp := new(T)
-		err := easyjson.Unmarshal(delivery.Body, *resp)
+		var resp easyjson.Unmarshaler
+		if queue.Response == p.tryOn.Response {
+			resp = &domain.TryOnResponse{}
+		} else {
+			resp = &domain.ClothesProcessingResponse{}
+		}
+		err := easyjson.Unmarshal(delivery.Body, resp)
 		if err != nil {
 			logger.Infow("rabbit", "error", err)
 			return rabbitmq.NackDiscard
@@ -107,7 +112,7 @@ func getResults[T easyjson.Unmarshaler](p *ClothesProcessor, queue config.Rabbit
 
 		fmt.Println("Calling callback")
 
-		return toRabbitAction(handler(*resp))
+		return toRabbitAction(handler(resp))
 	})
 }
 

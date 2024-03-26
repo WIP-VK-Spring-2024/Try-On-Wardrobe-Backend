@@ -206,8 +206,10 @@ func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
 	}()
 }
 
-func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
-	return func(resp *domain.ClothesProcessingResponse) domain.Result {
+func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp interface{}) domain.Result {
+	return func(response interface{}) domain.Result {
+		resp := response.(*domain.ClothesProcessingResponse)
+
 		fmt.Println("Generating channel name")
 
 		userChannel := cfg.ProcessingChannel + resp.UserID.String()
