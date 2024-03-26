@@ -74,7 +74,7 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp int
 		tryOnRes := &domain.TryOnResult{
 			UserImageID: resp.UserImageID,
 			ClothesID:   resp.ClothesID,
-			Image:       resp.TryOnResultID,
+			Image:       resp.TryOnResultDir + resp.TryOnResultID,
 		}
 
 		handleResult := domain.ResultOk
