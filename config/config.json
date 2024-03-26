@@ -11,7 +11,7 @@
     "type": "http",
     "dir": "static",
     "clothes": "clothes",
-    "cut": "clothes/cut",
+    "cut": "cut",
     "fullBody": "photos",
     "tryOn": "try-on",
     "s3": {

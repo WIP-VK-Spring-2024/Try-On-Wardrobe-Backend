@@ -162,7 +162,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		ClothesID:    req.ClothesID,
 		UserImageID:  req.UserImageID,
 		UserImageDir: cfg.Static.FullBody,
-		ClothesDir:   cfg.Static.Clothes,
+		ClothesDir:   cfg.Static.Cut,
 		Category:     translate.ClothesTypeToTryOnCategory(clothes.Type),
 	})
 	if err != nil {
