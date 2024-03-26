@@ -33,12 +33,14 @@ func New(
 	model domain.ClothesProcessingModel,
 	fileManager domain.FileManager,
 	cfg *config.Static,
+	logger *zap.SugaredLogger,
 ) *ClothesHandler {
 	return &ClothesHandler{
 		clothes: clothes,
 		file:    fileManager,
 		model:   model,
 		cfg:     cfg,
+		logger:  logger,
 	}
 }
 

@@ -105,7 +105,7 @@ func (app *App) Run() error {
 
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(pg))
 
-	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, fileManager, &app.cfg.Static)
+	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, fileManager, &app.cfg.Static, app.logger)
 
 	tryOnHandler := tryOn.New(
 		pg, clothesProcessor,
