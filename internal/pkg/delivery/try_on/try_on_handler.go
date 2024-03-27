@@ -176,7 +176,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 	return ctx.SendString(common.EmptyJson)
 }
 
-func (c *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
+func (h *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
 	userImageID, err := utils.ParseUUID(ctx.Query("photo_id"))
 	if err != nil {
 		return app_errors.ErrUserImageIdInvalid
@@ -187,10 +187,21 @@ func (c *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
 		return app_errors.ErrClothesIdInvalid
 	}
 
-	result, err := c.results.Get(userImageID, clothesID)
+	result, err := h.results.Get(userImageID, clothesID)
 	if err != nil {
 		return app_errors.New(err)
 	}
 
 	return ctx.JSON(result)
+}
+
+func (h *TryOnHandler) GetByUser(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+
+	results, err := h.results.GetByUser(session.UserID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(results)
 }

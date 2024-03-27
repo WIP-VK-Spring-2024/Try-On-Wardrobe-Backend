@@ -1,5 +1,5 @@
 -- +migrate Up
-alter table try_on_result
+alter table try_on_results
 drop constraint try_on_results_clothes_id_fkey,
 add constraint try_on_results_clothes_id_fkey
    foreign key (clothes_id)
@@ -7,7 +7,7 @@ add constraint try_on_results_clothes_id_fkey
    on delete cascade;
 
 -- +migrate Down
-alter table try_on_result
+alter table try_on_results
 drop constraint try_on_results_clothes_id_fkey,
 add constraint try_on_results_clothes_id_fkey
    foreign key (clothes_id)
