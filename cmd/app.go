@@ -152,6 +152,7 @@ func (app *App) Run() error {
 	app.api.Delete("/photos/:id", userImageHandler.Delete)
 
 	app.api.Post("/try-on", tryOnHandler.TryOn)
+	app.api.Get("/try-on", tryOnHandler.GetByUser)
 	app.api.Get("/try-on/:id", tryOnHandler.GetTryOnResult)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
