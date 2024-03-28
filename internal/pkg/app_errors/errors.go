@@ -24,6 +24,11 @@ var (
 		Code: http.StatusBadRequest,
 	}
 
+	ErrNotOwner = &ResponseError{
+		Msg:  "must be the owner to delete or edit this resource",
+		Code: http.StatusForbidden,
+	}
+
 	ErrUnauthorized = &ResponseError{
 		Msg:  "credentials missing or invalid",
 		Code: http.StatusUnauthorized,

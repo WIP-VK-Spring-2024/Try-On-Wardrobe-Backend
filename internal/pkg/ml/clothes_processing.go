@@ -10,6 +10,7 @@ import (
 	"try-on/internal/pkg/domain"
 
 	"github.com/mailru/easyjson"
+	"github.com/mailru/easyjson/jlexer"
 	"github.com/wagslane/go-rabbitmq"
 	"go.uber.org/zap"
 )
@@ -45,13 +46,13 @@ func New(
 	}, nil
 }
 
-type handlerFunc func(interface{}) domain.Result
+type handlerFunc[T easyjson.Unmarshaler] func(T) domain.Result
 
-func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(interface{}) domain.Result) error {
+func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
 	return getResults(p, p.tryOn, logger, handler)
 }
 
-func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(interface{}) domain.Result) error {
+func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
 	return getResults(p, p.process, logger, handler)
 }
 
@@ -79,7 +80,10 @@ func (p *ClothesProcessor) publish(ctx context.Context, payload easyjson.Marshal
 	)
 }
 
-func getResults(p *ClothesProcessor, queue config.RabbitQueue, logger *zap.SugaredLogger, handler handlerFunc) error {
+func getResults[T any, PT interface {
+	*T
+	UnmarshalEasyJSON(w *jlexer.Lexer)
+}](p *ClothesProcessor, queue config.RabbitQueue, logger *zap.SugaredLogger, handler handlerFunc[PT]) error {
 	consumer, err := rabbitmq.NewConsumer(
 		p.rabbit,
 		queue.Response,
@@ -98,12 +102,8 @@ func getResults(p *ClothesProcessor, queue config.RabbitQueue, logger *zap.Sugar
 
 		logger.Infow("rabbit", "got", string(delivery.Body))
 
-		var resp easyjson.Unmarshaler
-		if queue.Response == p.tryOn.Response {
-			resp = &domain.TryOnResponse{}
-		} else {
-			resp = &domain.ClothesProcessingResponse{}
-		}
+		resp := PT(new(T))
+
 		err := easyjson.Unmarshal(delivery.Body, resp)
 		if err != nil {
 			logger.Infow("rabbit", "error", err)

@@ -43,7 +43,7 @@ func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
 func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 	var credentials domain.Credentials
 	if err := easyjson.Unmarshal(ctx.Body(), &credentials); err != nil {
-		middleware.LogError(ctx, err)
+		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 
@@ -66,7 +66,7 @@ func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
 func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 	var credentials domain.Credentials
 	if err := easyjson.Unmarshal(ctx.Body(), &credentials); err != nil {
-		middleware.LogError(ctx, err)
+		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 

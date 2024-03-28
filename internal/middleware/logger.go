@@ -29,12 +29,10 @@ func GetLogger(ctx *fiber.Ctx) *zap.SugaredLogger {
 	return logger
 }
 
-func LogError(ctx *fiber.Ctx, err error) {
+func log(ctx *fiber.Ctx, err error, logfunc func(string, ...interface{})) {
 	if err == nil {
 		return
 	}
-
-	logger := GetLogger(ctx)
 
 	values := []interface{}{"method", ctx.Method(), "path", ctx.Path(), "ip", ctx.IP()}
 
@@ -43,5 +41,15 @@ func LogError(ctx *fiber.Ctx, err error) {
 		values = append(values, "file", e.File, "line", e.Line)
 	}
 
-	logger.Errorw(err.Error(), values...)
+	logfunc(err.Error(), values...)
+}
+
+func LogError(ctx *fiber.Ctx, err error) {
+	logger := GetLogger(ctx)
+	log(ctx, err, logger.Errorw)
+}
+
+func LogWarning(ctx *fiber.Ctx, err error) {
+	logger := GetLogger(ctx)
+	log(ctx, err, logger.Warnw)
 }

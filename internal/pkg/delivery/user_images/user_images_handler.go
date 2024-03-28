@@ -1,6 +1,8 @@
 package user_images
 
 import (
+	"errors"
+
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -51,14 +53,33 @@ func (h *UserImageHandler) GetByID(ctx *fiber.Ctx) error {
 }
 
 func (h *UserImageHandler) Delete(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
 	userImageID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrUserImageIdInvalid
 	}
 
+	userImage, err := h.userImages.Get(userImageID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	if userImage.UserID != session.UserID {
+		return app_errors.ErrNotOwner
+	}
+
 	err = h.userImages.Delete(userImageID)
 	if err != nil {
 		return app_errors.New(err)
+	}
+
+	err = h.file.Delete(ctx.UserContext(), h.cfg.Type, userImageID.String())
+	if err != nil {
+		middleware.LogWarning(ctx, errors.Join(err, errors.New("user_image image deletion error")))
 	}
 
 	return ctx.SendString(common.EmptyJson)
@@ -74,7 +95,7 @@ func (h *UserImageHandler) Upload(ctx *fiber.Ctx) error {
 
 	fileHeader, err := ctx.FormFile("img")
 	if err != nil {
-		middleware.LogError(ctx, err)
+		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 

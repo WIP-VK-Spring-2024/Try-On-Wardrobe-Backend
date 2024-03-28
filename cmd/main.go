@@ -26,7 +26,6 @@ func main() {
 	fmt.Printf("Config is: %+v\n", cfg)
 
 	loggerConfig := zap.Config{
-		Development:       true,
 		Level:             zap.NewAtomicLevelAt(zap.DebugLevel),
 		DisableStacktrace: false,
 		DisableCaller:     true,
@@ -43,7 +42,7 @@ func main() {
 	}
 
 	logger := zap.Must(loggerConfig.Build())
-	defer logger.Sync() //nolint:errcheck
+	defer logger.Sync()
 
 	app := NewApp(cfg, logger.Sugar())
 

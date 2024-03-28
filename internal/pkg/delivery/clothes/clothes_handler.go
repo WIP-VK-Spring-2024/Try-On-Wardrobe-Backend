@@ -2,7 +2,6 @@ package clothes
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"strings"
 
@@ -63,9 +62,23 @@ func (h *ClothesHandler) GetByID(ctx *fiber.Ctx) error {
 }
 
 func (h *ClothesHandler) Delete(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
 	clothesID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrClothesIdInvalid
+	}
+
+	clothes, err := h.clothes.Get(clothesID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	if clothes.UserID != session.UserID {
+		return app_errors.ErrNotOwner
 	}
 
 	err = h.clothes.Delete(clothesID)
@@ -73,23 +86,42 @@ func (h *ClothesHandler) Delete(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
+	err = h.file.Delete(ctx.UserContext(), h.cfg.Clothes, clothesID.String())
+	if err != nil {
+		middleware.LogWarning(ctx, err)
+	}
+
 	return ctx.SendString(common.EmptyJson)
 }
 
 func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
 	clothesID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrClothesIdInvalid
 	}
 
-	clothes := &domain.Clothes{}
-	if err := easyjson.Unmarshal(ctx.Body(), clothes); err != nil {
-		middleware.LogError(ctx, err)
+	clothes, err := h.clothes.Get(clothesID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	if clothes.UserID != session.UserID {
+		return app_errors.ErrNotOwner
+	}
+
+	clothesUpdate := &domain.Clothes{}
+	if err := easyjson.Unmarshal(ctx.Body(), clothesUpdate); err != nil {
+		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
-	clothes.ID = clothesID
+	clothesUpdate.ID = clothesID
 
-	err = h.clothes.Update(clothes)
+	err = h.clothes.Update(clothesUpdate)
 	if err != nil {
 		return app_errors.New(err)
 	}
@@ -111,7 +143,7 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 
 	fileHeader, err := ctx.FormFile("img")
 	if err != nil {
-		middleware.LogError(ctx, err)
+		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 
@@ -123,7 +155,7 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 
 	var clothes domain.Clothes
 	if err := ctx.BodyParser(&clothes); err != nil {
-		middleware.LogError(ctx, err)
+		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 
@@ -209,16 +241,11 @@ func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
 	}()
 }
 
-func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp interface{}) domain.Result {
-	return func(response interface{}) domain.Result {
-		resp := response.(*domain.ClothesProcessingResponse)
-
-		fmt.Println("Generating channel name")
+func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
+	return func(resp *domain.ClothesProcessingResponse) domain.Result {
+		// resp := response.(*domain.ClothesProcessingResponse)
 
 		userChannel := cfg.ProcessingChannel + resp.UserID.String()
-		h.logger.Infow("centrifugo", "channel", userChannel)
-
-		fmt.Println("Marshalling response for centrifugo")
 
 		payload := &uploadResponse{
 			Uuid: resp.ClothesID,
@@ -230,7 +257,8 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp i
 			return domain.ResultDiscard
 		}
 
-		fmt.Println("Publishing to centrifugo")
+		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(bytes))
+
 		centrifugoResp, err := h.centrifugo.Publish(
 			context.Background(),
 			&centrifugo.PublishRequest{

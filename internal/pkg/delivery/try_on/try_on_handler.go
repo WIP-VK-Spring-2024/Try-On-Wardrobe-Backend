@@ -67,10 +67,8 @@ func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 	}()
 }
 
-func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp interface{}) domain.Result {
-	return func(response interface{}) domain.Result {
-		resp := response.(*domain.TryOnResponse) // BAD CODE
-
+func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.TryOnResponse) domain.Result {
+	return func(resp *domain.TryOnResponse) domain.Result {
 		tryOnRes := &domain.TryOnResult{
 			UserImageID: resp.UserImageID,
 			ClothesID:   resp.ClothesID,
@@ -141,7 +139,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 	var req tryOnRequest
 	err := easyjson.Unmarshal(ctx.Body(), &req)
 	if err != nil {
-		middleware.LogError(ctx, err)
+		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 
@@ -149,13 +147,11 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 
 	clothes, err := h.clothes.Get(req.ClothesID)
 	if err != nil {
-		middleware.LogError(ctx, err)
 		return app_errors.New(err)
 	}
 
 	_, err = h.userImages.Get(req.UserImageID)
 	if err != nil {
-		middleware.LogError(ctx, err)
 		return app_errors.New(err)
 	}
 
