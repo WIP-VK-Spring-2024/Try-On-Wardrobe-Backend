@@ -35,7 +35,7 @@ func (q *Queries) DeleteUserImage(ctx context.Context, id utils.UUID) error {
 }
 
 const getUserImageByID = `-- name: GetUserImageByID :one
-select id, created_at, updated_at, user_id from user_images
+select id, created_at, updated_at, user_id, image from user_images
 where id = $1
 `
 
@@ -47,12 +47,13 @@ func (q *Queries) GetUserImageByID(ctx context.Context, id utils.UUID) (UserImag
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.UserID,
+		&i.Image,
 	)
 	return i, err
 }
 
 const getUserImageByUser = `-- name: GetUserImageByUser :many
-select id, created_at, updated_at, user_id from user_images
+select id, created_at, updated_at, user_id, image from user_images
 where user_id = $1
 `
 
@@ -70,6 +71,7 @@ func (q *Queries) GetUserImageByUser(ctx context.Context, userID utils.UUID) ([]
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.UserID,
+			&i.Image,
 		); err != nil {
 			return nil, err
 		}
@@ -79,4 +81,15 @@ func (q *Queries) GetUserImageByUser(ctx context.Context, userID utils.UUID) ([]
 		return nil, err
 	}
 	return items, nil
+}
+
+const setUserImageUrl = `-- name: SetUserImageUrl :exec
+update user_images
+set image = $2
+where id = $1
+`
+
+func (q *Queries) SetUserImageUrl(ctx context.Context, iD utils.UUID, image string) error {
+	_, err := q.db.Exec(ctx, setUserImageUrl, iD, image)
+	return err
 }

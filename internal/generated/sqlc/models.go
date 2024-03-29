@@ -113,6 +113,7 @@ type Clothes struct {
 	SubtypeID utils.UUID
 	Color     pgtype.Text
 	Seasons   []domain.Season
+	Image     string
 }
 
 type ClothesTag struct {
@@ -175,4 +176,5 @@ type UserImage struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	UserID    utils.UUID
+	Image     string
 }

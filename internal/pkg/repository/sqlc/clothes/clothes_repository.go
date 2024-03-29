@@ -55,6 +55,11 @@ func (c *ClothesRepository) Create(clothes *domain.Clothes) error {
 
 	clothes.ID = clothesId
 
+	err = queries.SetClothesImage(ctx, clothesId, clothes.Image+"/"+clothesId.String())
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
 	err = queries.CreateClothesTagLinks(ctx, clothes.ID,
 		clothes.Tags,
 	)
@@ -63,6 +68,10 @@ func (c *ClothesRepository) Create(clothes *domain.Clothes) error {
 	}
 
 	return tx.Commit(ctx)
+}
+
+func (c *ClothesRepository) SetImage(id utils.UUID, path string) error {
+	return utils.PgxError(c.queries.SetClothesImage(context.Background(), id, path))
 }
 
 func (c *ClothesRepository) Update(clothes *domain.Clothes) error {
@@ -139,6 +148,7 @@ func fromSqlc(model *sqlc.GetClothesByUserRow) *domain.Clothes {
 				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
+		Image:     model.Image,
 		TypeID:    model.TypeID,
 		SubtypeID: model.SubtypeID,
 		UserID:    model.UserID,

@@ -16,6 +16,7 @@ group by
     clothes.id,
     clothes.name,
     clothes.note,
+    clothes.image,
     clothes.type_id,
     clothes.subtype_id,
     clothes.style_id,
@@ -45,6 +46,7 @@ group by
     clothes.id,
     clothes.name,
     clothes.note,
+    clothes.image,
     clothes.type_id,
     clothes.subtype_id,
     clothes.style_id,
@@ -71,6 +73,11 @@ insert into clothes(
 )
 values ($1, $2, $3, $4, $5)
 returning id;
+
+-- name: SetClothesImage :exec
+update clothes
+set image = $2
+where id = $1;
 
 -- name: UpdateClothes :exec
 update clothes

@@ -58,7 +58,7 @@ func (q *Queries) DeleteClothes(ctx context.Context, id utils.UUID) error {
 
 const getClothesById = `-- name: GetClothesById :one
 select
-    clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons,
+    clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons, clothes.image,
     types.name as type,
     subtypes.name as subtype,
     styles.name as style,
@@ -74,6 +74,7 @@ group by
     clothes.id,
     clothes.name,
     clothes.note,
+    clothes.image,
     clothes.type_id,
     clothes.subtype_id,
     clothes.style_id,
@@ -98,6 +99,7 @@ type GetClothesByIdRow struct {
 	SubtypeID utils.UUID
 	Color     pgtype.Text
 	Seasons   []domain.Season
+	Image     string
 	Type      pgtype.Text
 	Subtype   pgtype.Text
 	Style     pgtype.Text
@@ -119,6 +121,7 @@ func (q *Queries) GetClothesById(ctx context.Context, id utils.UUID) (GetClothes
 		&i.SubtypeID,
 		&i.Color,
 		&i.Seasons,
+		&i.Image,
 		&i.Type,
 		&i.Subtype,
 		&i.Style,
@@ -129,7 +132,7 @@ func (q *Queries) GetClothesById(ctx context.Context, id utils.UUID) (GetClothes
 
 const getClothesByUser = `-- name: GetClothesByUser :many
 select
-    clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons,
+    clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons, clothes.image,
     types.name as type,
     subtypes.name as subtype,
     styles.name as style,
@@ -145,6 +148,7 @@ group by
     clothes.id,
     clothes.name,
     clothes.note,
+    clothes.image,
     clothes.type_id,
     clothes.subtype_id,
     clothes.style_id,
@@ -170,6 +174,7 @@ type GetClothesByUserRow struct {
 	SubtypeID utils.UUID
 	Color     pgtype.Text
 	Seasons   []domain.Season
+	Image     string
 	Type      pgtype.Text
 	Subtype   pgtype.Text
 	Style     pgtype.Text
@@ -197,6 +202,7 @@ func (q *Queries) GetClothesByUser(ctx context.Context, userID utils.UUID) ([]Ge
 			&i.SubtypeID,
 			&i.Color,
 			&i.Seasons,
+			&i.Image,
 			&i.Type,
 			&i.Subtype,
 			&i.Style,
@@ -210,6 +216,17 @@ func (q *Queries) GetClothesByUser(ctx context.Context, userID utils.UUID) ([]Ge
 		return nil, err
 	}
 	return items, nil
+}
+
+const setClothesImage = `-- name: SetClothesImage :exec
+update clothes
+set image = $2
+where id = $1
+`
+
+func (q *Queries) SetClothesImage(ctx context.Context, iD utils.UUID, image string) error {
+	_, err := q.db.Exec(ctx, setClothesImage, iD, image)
+	return err
 }
 
 const updateClothes = `-- name: UpdateClothes :exec

@@ -11,22 +11,40 @@ import (
 )
 
 type UserImageRepository struct {
+	db      *pgxpool.Pool
 	queries *sqlc.Queries
 }
 
 func New(db *pgxpool.Pool) domain.UserImageRepository {
 	return &UserImageRepository{
 		queries: sqlc.New(db),
+		db:      db,
 	}
 }
 
 func (repo *UserImageRepository) Create(userImage *domain.UserImage) error {
-	id, err := repo.queries.CreateUserImage(context.Background(), userImage.UserID)
+	ctx := context.Background()
+
+	tx, err := repo.db.Begin(ctx)
 	if err != nil {
 		return err
 	}
+	defer tx.Rollback(ctx)
+
+	queries := repo.queries.WithTx(tx)
+
+	id, err := queries.CreateUserImage(context.Background(), userImage.UserID)
+	if err != nil {
+		return utils.PgxError(err)
+	}
 	userImage.ID = id
-	return nil
+
+	err = queries.SetUserImageUrl(context.Background(), id, userImage.Image+"/"+id.String())
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	return tx.Commit(ctx)
 }
 
 func (repo *UserImageRepository) Delete(id utils.UUID) error {
@@ -60,5 +78,6 @@ func fromSqlc(model *sqlc.UserImage) *domain.UserImage {
 			},
 		},
 		UserID: model.UserID,
+		Image:  model.Image,
 	}
 }

@@ -131,8 +131,9 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 
 //easyjson:json
 type uploadResponse struct {
-	Uuid utils.UUID
-	Msg  string
+	Uuid  utils.UUID
+	Msg   string
+	Image string
 }
 
 func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
@@ -164,6 +165,7 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	}
 
 	clothes.UserID = session.UserID
+	clothes.Image = h.cfg.Clothes
 
 	err = h.clothes.Create(&clothes)
 	if err != nil {
@@ -243,14 +245,17 @@ func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
 
 func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
 	return func(resp *domain.ClothesProcessingResponse) domain.Result {
-		// resp := response.(*domain.ClothesProcessingResponse)
+		cutImageUrl := h.cfg.Cut + "/" + resp.ClothesID.String()
+		h.clothes.SetImage(resp.ClothesID, cutImageUrl)
 
 		userChannel := cfg.ProcessingChannel + resp.UserID.String()
 
 		payload := &uploadResponse{
-			Uuid: resp.ClothesID,
-			Msg:  "processed",
+			Uuid:  resp.ClothesID,
+			Msg:   "processed",
+			Image: cutImageUrl,
 		}
+
 		bytes, err := easyjson.Marshal(payload)
 		if err != nil {
 			h.logger.Errorw(err.Error())

@@ -14,6 +14,7 @@ type Clothes struct {
 	Tags []string
 
 	UserID utils.UUID
+	Image  string
 
 	StyleID utils.UUID
 	Style   string `json:"-"`
@@ -31,6 +32,7 @@ type Clothes struct {
 type ClothesUsecase interface {
 	Create(clothes *Clothes) error
 	Update(clothes *Clothes) error
+	SetImage(id utils.UUID, path string) error
 	Get(id utils.UUID) (*Clothes, error)
 	Delete(id utils.UUID) error
 	GetByUser(userId utils.UUID, limit int) ([]Clothes, error)
@@ -39,6 +41,7 @@ type ClothesUsecase interface {
 type ClothesRepository interface {
 	Create(clothes *Clothes) error
 	Update(clothes *Clothes) error
+	SetImage(id utils.UUID, path string) error
 	Get(id utils.UUID) (*Clothes, error)
 	Delete(id utils.UUID) error
 	GetByUser(userId utils.UUID, limit int) ([]Clothes, error)

@@ -91,7 +91,10 @@ func (h *UserImageHandler) Upload(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
-	userImage := domain.UserImage{UserID: session.UserID}
+	userImage := domain.UserImage{
+		UserID: session.UserID,
+		Image:  h.cfg.FullBody,
+	}
 
 	fileHeader, err := ctx.FormFile("img")
 	if err != nil {

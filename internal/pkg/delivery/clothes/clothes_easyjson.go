@@ -42,6 +42,8 @@ func easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes(in *jlexer.Lexer, out
 			}
 		case "msg":
 			out.Msg = string(in.String())
+		case "image":
+			out.Image = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -71,6 +73,16 @@ func easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes(out *jwriter.Writer, 
 			out.RawString(prefix)
 		}
 		out.String(string(in.Msg))
+	}
+	if in.Image != "" {
+		const prefix string = ",\"image\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Image))
 	}
 	out.RawByte('}')
 }

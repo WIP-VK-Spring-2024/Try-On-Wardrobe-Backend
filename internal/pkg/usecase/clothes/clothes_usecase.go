@@ -25,6 +25,10 @@ func (c *ClothesUsecase) Update(clothes *domain.Clothes) error {
 	return c.repo.Update(clothes)
 }
 
+func (c *ClothesUsecase) SetImage(id utils.UUID, path string) error {
+	return c.repo.SetImage(id, path)
+}
+
 func (c *ClothesUsecase) Get(id utils.UUID) (*domain.Clothes, error) {
 	clothes, err := c.repo.Get(id)
 	if err != nil {

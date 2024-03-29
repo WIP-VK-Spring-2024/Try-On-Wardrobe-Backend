@@ -1284,6 +1284,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain11(in *jlexer.Lexer, out *Cloth
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
 			}
+		case "image":
+			out.Image = string(in.String())
 		case "style_id":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.StyleID).UnmarshalText(data))
@@ -1389,6 +1391,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Clot
 			out.RawString(prefix)
 		}
 		out.RawText((in.UserID).MarshalText())
+	}
+	if in.Image != "" {
+		const prefix string = ",\"image\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Image))
 	}
 	if (in.StyleID).IsDefined() {
 		const prefix string = ",\"style_id\":"
