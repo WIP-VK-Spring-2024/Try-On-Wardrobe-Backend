@@ -15,7 +15,7 @@ create table outfits(
 create table outfits_tags (
     outfit_id uuid references outfits(id),
     tag_id uuid references tags(id),
-    primary key(clothes_id, tag_id)
+    primary key(outfit_id, tag_id)
 );
 
 -- +migrate Down
