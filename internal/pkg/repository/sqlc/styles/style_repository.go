@@ -10,17 +10,17 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type StylesRepository struct {
+type StyleRepository struct {
 	queries *sqlc.Queries
 }
 
-func New(db *pgxpool.Pool) domain.StylesRepository {
-	return &StylesRepository{
+func New(db *pgxpool.Pool) domain.StyleRepository {
+	return &StyleRepository{
 		queries: sqlc.New(db),
 	}
 }
 
-func (repo *StylesRepository) GetAll() ([]domain.Style, error) {
+func (repo *StyleRepository) GetAll() ([]domain.Style, error) {
 	types, err := repo.queries.GetStyles(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)

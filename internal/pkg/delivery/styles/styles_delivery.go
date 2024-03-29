@@ -10,7 +10,7 @@ import (
 )
 
 type StylesHandler struct {
-	styles domain.StylesRepository
+	styles domain.StyleRepository
 }
 
 func New(db *pgxpool.Pool) *StylesHandler {

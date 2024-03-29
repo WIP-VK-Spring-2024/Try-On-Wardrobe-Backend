@@ -6,6 +6,6 @@ type Style struct {
 	Name string
 }
 
-type StylesRepository interface {
+type StyleRepository interface {
 	GetAll() ([]Style, error)
 }
