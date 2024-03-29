@@ -2,6 +2,7 @@ package clothes
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"strings"
 
@@ -88,7 +89,7 @@ func (h *ClothesHandler) Delete(ctx *fiber.Ctx) error {
 
 	err = h.file.Delete(ctx.UserContext(), h.cfg.Clothes, clothesID.String())
 	if err != nil {
-		middleware.LogWarning(ctx, err)
+		middleware.LogWarning(ctx, errors.Join(err, errors.New("failed deleting clothes image")))
 	}
 
 	return ctx.SendString(common.EmptyJson)
@@ -195,7 +196,7 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(&uploadResponse{
 		Uuid: clothes.ID,
-		Msg:  "created",
+		Msg:  domain.ClothesStatusCreated,
 	})
 }
 
@@ -246,13 +247,15 @@ func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
 func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
 	return func(resp *domain.ClothesProcessingResponse) domain.Result {
 		cutImageUrl := h.cfg.Cut + "/" + resp.ClothesID.String()
-		h.clothes.SetImage(resp.ClothesID, cutImageUrl)
-
-		userChannel := cfg.ProcessingChannel + resp.UserID.String()
+		err := h.clothes.SetImage(resp.ClothesID, cutImageUrl)
+		if err != nil {
+			h.logger.Errorw(err.Error())
+			return domain.ResultDiscard
+		}
 
 		payload := &uploadResponse{
 			Uuid:  resp.ClothesID,
-			Msg:   "processed",
+			Msg:   domain.ClothesStatusProcessed,
 			Image: cutImageUrl,
 		}
 
@@ -261,6 +264,8 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 			h.logger.Errorw(err.Error())
 			return domain.ResultDiscard
 		}
+
+		userChannel := cfg.ProcessingChannel + resp.UserID.String()
 
 		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(bytes))
 

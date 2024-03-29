@@ -5,6 +5,11 @@ import (
 	"try-on/internal/pkg/utils/optional"
 )
 
+const (
+	ClothesStatusCreated   = "created"
+	ClothesStatusProcessed = "processed"
+)
+
 //easyjson:json
 type Clothes struct {
 	Model

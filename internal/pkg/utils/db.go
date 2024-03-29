@@ -22,15 +22,17 @@ func PgxError(err error) error {
 
 	var appError error
 
-	switch pgErr.Code {
-	case pgerrcode.UniqueViolation:
+	switch {
+	case pgErr.Code == pgerrcode.UniqueViolation:
 		appError = app_errors.ErrAlreadyExists
-	case pgerrcode.NoData:
+	case pgErr.Code == pgerrcode.NoData:
 		appError = app_errors.ErrNotFound
-	case pgerrcode.ForeignKeyViolation:
+	case pgErr.Code == pgerrcode.ForeignKeyViolation:
 		appError = app_errors.ErrNoRelatedEntity
-	case pgerrcode.IntegrityConstraintViolation:
+	case pgerrcode.IsIntegrityConstraintViolation(pgErr.Code):
 		appError = app_errors.ErrConstraintViolation
+	default:
+		return err
 	}
 
 	return errors.Join(err, appError)

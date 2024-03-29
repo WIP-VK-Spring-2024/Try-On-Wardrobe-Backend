@@ -2,7 +2,6 @@ package ml
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"try-on/internal/pkg/common"
@@ -109,8 +108,6 @@ func getResults[T any, PT interface {
 			logger.Infow("rabbit", "error", err)
 			return rabbitmq.NackDiscard
 		}
-
-		fmt.Println("Calling callback")
 
 		return toRabbitAction(handler(resp))
 	})

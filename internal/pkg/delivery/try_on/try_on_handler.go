@@ -2,10 +2,7 @@ package try_on
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"net/http"
-	"time"
 
 	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
@@ -75,27 +72,18 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 			Image:       "/" + resp.TryOnResultDir + "/" + resp.TryOnResultID,
 		}
 
-		fmt.Println("Path to image", tryOnRes.Image)
-
 		handleResult := domain.ResultOk
 
 		err := h.results.Create(tryOnRes)
-		switch {
-		case err == nil:
-			break
-		case errors.Is(err, app_errors.ErrAlreadyExists) || errors.Is(err, app_errors.ErrNoRelatedEntity):
+		if err != nil {
 			h.logger.Errorw(err.Error())
 			handleResult = domain.ResultDiscard
-		default:
-			h.logger.Errorw(err.Error())
-			time.Sleep(time.Second) // BAD CODE
-			return domain.ResultRetry
 		}
 
 		var payload []byte
 		if handleResult == domain.ResultDiscard {
 			payload, _ = easyjson.Marshal(app_errors.ResponseError{
-				Code: http.StatusConflict,
+				Code: http.StatusInternalServerError,
 				Msg:  err.Error(),
 			})
 		} else {
@@ -103,7 +91,7 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 		}
 
 		userChannel := cfg.TryOnChannel + resp.UserID.String()
-		h.logger.Infow("centrifugo", "channel", userChannel)
+		h.logger.Infow("centrifugo", "channel", userChannel, "payload", payload)
 
 		centrifugoResp, err := h.centrifugo.Publish(
 			context.Background(),
@@ -142,8 +130,6 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
-
-	fmt.Printf("%+v\n", req)
 
 	clothes, err := h.clothes.Get(req.ClothesID)
 	if err != nil {
