@@ -101,6 +101,50 @@ func (ns NullSeason) Value() (driver.Value, error) {
 	return string(ns.Season), nil
 }
 
+type Status string
+
+const (
+	StatusActive   Status = "active"
+	StatusWishlist Status = "wishlist"
+	StatusRepair   Status = "repair"
+	StatusGiveAway Status = "give_away"
+)
+
+func (e *Status) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Status(s)
+	case string:
+		*e = Status(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Status: %T", src)
+	}
+	return nil
+}
+
+type NullStatus struct {
+	Status Status
+	Valid  bool // Valid is true if Status is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.Status, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Status.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Status), nil
+}
+
 type Clothes struct {
 	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
@@ -114,11 +158,30 @@ type Clothes struct {
 	Color     pgtype.Text
 	Seasons   []domain.Season
 	Image     string
+	Status    NullStatus
 }
 
 type ClothesTag struct {
 	ClothesID utils.UUID
 	TagID     utils.UUID
+}
+
+type Outfit struct {
+	ID         utils.UUID
+	UserID     utils.UUID
+	StyleID    utils.UUID
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	Name       pgtype.Text
+	Note       pgtype.Text
+	Image      pgtype.Text
+	Transforms []byte
+	Seasons    []domain.Season
+}
+
+type OutfitsTag struct {
+	OutfitID utils.UUID
+	TagID    utils.UUID
 }
 
 type Style struct {
