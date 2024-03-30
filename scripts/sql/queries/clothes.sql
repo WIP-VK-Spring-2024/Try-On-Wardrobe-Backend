@@ -4,7 +4,7 @@ select
     types.name as type,
     subtypes.name as subtype,
     styles.name as style,
-    array_agg(coalesce(tags.name, ''))::text[] as tags
+    array_remove(array_agg(tags.name), null)::text[] as tags
 from clothes
 left join types on types.id = clothes.type_id
 left join subtypes on subtypes.id = clothes.subtype_id
@@ -35,7 +35,7 @@ select
     types.name as type,
     subtypes.name as subtype,
     styles.name as style,
-    array_agg(coalesce(tags.name, ''))::text[] as tags
+    array_remove(array_agg(tags.name), null)::text[] as tags
 from clothes
 left join types on types.id = clothes.type_id
 left join subtypes on subtypes.id = clothes.subtype_id

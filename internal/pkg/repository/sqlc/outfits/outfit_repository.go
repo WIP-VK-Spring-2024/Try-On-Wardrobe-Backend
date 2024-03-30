@@ -3,6 +3,7 @@ package outfits
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
@@ -64,17 +65,43 @@ func (repo *OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 		updateParams.Name.Valid = true
 	}
 
-	err = repo.queries.UpdateOutfit(context.Background(), updateParams)
+	ctx := context.Background()
+	tx, err := repo.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
 
-	// TODO: Add tags
-	return utils.PgxError(err)
+	queries := repo.queries.WithTx(tx)
+
+	err = queries.UpdateOutfit(context.Background(), updateParams)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	err = queries.CreateTags(ctx, outfit.Tags)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	err = queries.DeleteOutfitTagLinks(ctx, outfit.ID, outfit.Tags)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	err = queries.CreateOutfitTagLinks(ctx, outfit.ID, outfit.Tags)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	return tx.Commit(ctx)
 }
 
 func (repo *OutfitRepository) Delete(id utils.UUID) error {
 	return utils.PgxError(repo.queries.DeleteOutfit(context.Background(), id))
 }
 
-func (repo *OutfitRepository) Get(id utils.UUID) (*domain.Outfit, error) {
+func (repo *OutfitRepository) GetById(id utils.UUID) (*domain.Outfit, error) {
 	outfit, err := repo.queries.GetOutfit(context.Background(), id)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -87,10 +114,32 @@ func (repo *OutfitRepository) GetByUser(userId utils.UUID) ([]domain.Outfit, err
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
-	return utils.Map(outfits, fromSqlc), nil
+	return utils.Map(outfits, fromGetOutfitsByUser), nil
 }
 
-func fromSqlc(model *sqlc.Outfit) *domain.Outfit {
+func (repo *OutfitRepository) Get(since time.Time, limit int) ([]domain.Outfit, error) {
+	outfits, err := repo.queries.GetOutfits(
+		context.Background(),
+		pgtype.Timestamptz{Time: since, Valid: true},
+		int32(limit),
+	)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return utils.Map(outfits, fromGetOutfits), nil
+}
+
+func fromGetOutfits(value *sqlc.GetOutfitsRow) *domain.Outfit {
+	model := sqlc.GetOutfitRow(*value)
+	return fromSqlc(&model)
+}
+
+func fromGetOutfitsByUser(value *sqlc.GetOutfitsByUserRow) *domain.Outfit {
+	model := sqlc.GetOutfitRow(*value)
+	return fromSqlc(&model)
+}
+
+func fromSqlc(model *sqlc.GetOutfitRow) *domain.Outfit {
 	result := &domain.Outfit{
 		Model: domain.Model{
 			ID: model.ID,
@@ -105,6 +154,7 @@ func fromSqlc(model *sqlc.Outfit) *domain.Outfit {
 		Note:    optional.String{NullString: sql.NullString(model.Note)},
 		Image:   model.Image.String,
 		Seasons: model.Seasons,
+		Tags:    model.Tags,
 	}
 
 	err := easyjson.Unmarshal(model.Transforms, &result.Transforms)

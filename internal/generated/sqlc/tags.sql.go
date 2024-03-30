@@ -14,11 +14,22 @@ import (
 const createClothesTagLinks = `-- name: CreateClothesTagLinks :exec
 insert into clothes_tags (clothes_id, tag_id)
     select $1, id
-    from tags where name = any($2::text[])
+    from tags where name in ($2::text[])
 `
 
 func (q *Queries) CreateClothesTagLinks(ctx context.Context, clothesID utils.UUID, tags []string) error {
 	_, err := q.db.Exec(ctx, createClothesTagLinks, clothesID, tags)
+	return err
+}
+
+const createOutfitTagLinks = `-- name: CreateOutfitTagLinks :exec
+insert into outfits_tags(outfit_id, tag_id)
+    select $1, id
+    from tags where name in ($2::text[])
+`
+
+func (q *Queries) CreateOutfitTagLinks(ctx context.Context, outfitID utils.UUID, tags []string) error {
+	_, err := q.db.Exec(ctx, createOutfitTagLinks, outfitID, tags)
 	return err
 }
 
@@ -30,6 +41,34 @@ insert into tags (name) values (
 
 func (q *Queries) CreateTags(ctx context.Context, names []string) error {
 	_, err := q.db.Exec(ctx, createTags, names)
+	return err
+}
+
+const deleteClothesTagLinks = `-- name: DeleteClothesTagLinks :exec
+delete from clothes_tags
+where clothes_id = $1 and
+    tag_id not in (
+        select id from tags
+        where name in ($2::text[])
+    )
+`
+
+func (q *Queries) DeleteClothesTagLinks(ctx context.Context, clothesID utils.UUID, tags []string) error {
+	_, err := q.db.Exec(ctx, deleteClothesTagLinks, clothesID, tags)
+	return err
+}
+
+const deleteOutfitTagLinks = `-- name: DeleteOutfitTagLinks :exec
+delete from outfits_tags
+where outfit_id = $1 and
+    tag_id not in (
+        select id from tags
+        where name in ($2::text[])
+    )
+`
+
+func (q *Queries) DeleteOutfitTagLinks(ctx context.Context, outfitID utils.UUID, tags []string) error {
+	_, err := q.db.Exec(ctx, deleteOutfitTagLinks, outfitID, tags)
 	return err
 }
 

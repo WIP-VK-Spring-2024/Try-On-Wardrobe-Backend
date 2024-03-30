@@ -39,14 +39,32 @@ func (q *Queries) DeleteOutfit(ctx context.Context, id utils.UUID) error {
 }
 
 const getOutfit = `-- name: GetOutfit :one
-select id, user_id, style_id, created_at, updated_at, name, note, image, transforms, seasons
+select
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons,
+    array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
-where id = $1
+left join outfits_tags ot on ot.outfit_id = outfits.id
+left join tags on tags.id = ot.tag_id 
+where outfits.id = $1
 `
 
-func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (Outfit, error) {
+type GetOutfitRow struct {
+	ID         utils.UUID
+	UserID     utils.UUID
+	StyleID    utils.UUID
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	Name       pgtype.Text
+	Note       pgtype.Text
+	Image      pgtype.Text
+	Transforms []byte
+	Seasons    []domain.Season
+	Tags       []string
+}
+
+func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (GetOutfitRow, error) {
 	row := q.db.QueryRow(ctx, getOutfit, id)
-	var i Outfit
+	var i GetOutfitRow
 	err := row.Scan(
 		&i.ID,
 		&i.UserID,
@@ -58,25 +76,46 @@ func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (Outfit, error) 
 		&i.Image,
 		&i.Transforms,
 		&i.Seasons,
+		&i.Tags,
 	)
 	return i, err
 }
 
-const getOutfitsByUser = `-- name: GetOutfitsByUser :many
-select id, user_id, style_id, created_at, updated_at, name, note, image, transforms, seasons
+const getOutfits = `-- name: GetOutfits :many
+select 
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons,
+    array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
-where user_id = $1
+left join outfits_tags ot on ot.outfit_id = outfits.id
+left join tags on tags.id = ot.tag_id 
+where outfits.created_at < $1
+order by outfits.created_at desc
+limit $2
 `
 
-func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID) ([]Outfit, error) {
-	rows, err := q.db.Query(ctx, getOutfitsByUser, userID)
+type GetOutfitsRow struct {
+	ID         utils.UUID
+	UserID     utils.UUID
+	StyleID    utils.UUID
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	Name       pgtype.Text
+	Note       pgtype.Text
+	Image      pgtype.Text
+	Transforms []byte
+	Seasons    []domain.Season
+	Tags       []string
+}
+
+func (q *Queries) GetOutfits(ctx context.Context, createdAt pgtype.Timestamptz, limit int32) ([]GetOutfitsRow, error) {
+	rows, err := q.db.Query(ctx, getOutfits, createdAt, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Outfit
+	var items []GetOutfitsRow
 	for rows.Next() {
-		var i Outfit
+		var i GetOutfitsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.UserID,
@@ -88,6 +127,64 @@ func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID) ([]Ou
 			&i.Image,
 			&i.Transforms,
 			&i.Seasons,
+			&i.Tags,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getOutfitsByUser = `-- name: GetOutfitsByUser :many
+select
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons,
+    array_remove(array_agg(tags.name), null)::text[] as tags
+from outfits
+left join outfits_tags ot on ot.outfit_id = outfits.id
+left join tags on tags.id = ot.tag_id 
+where outfits.user_id = $1
+order by outfits.created_at desc
+`
+
+type GetOutfitsByUserRow struct {
+	ID         utils.UUID
+	UserID     utils.UUID
+	StyleID    utils.UUID
+	CreatedAt  pgtype.Timestamptz
+	UpdatedAt  pgtype.Timestamptz
+	Name       pgtype.Text
+	Note       pgtype.Text
+	Image      pgtype.Text
+	Transforms []byte
+	Seasons    []domain.Season
+	Tags       []string
+}
+
+func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID) ([]GetOutfitsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getOutfitsByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOutfitsByUserRow
+	for rows.Next() {
+		var i GetOutfitsByUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.StyleID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.Note,
+			&i.Image,
+			&i.Transforms,
+			&i.Seasons,
+			&i.Tags,
 		); err != nil {
 			return nil, err
 		}

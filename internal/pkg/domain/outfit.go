@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"try-on/internal/pkg/utils"
 	"try-on/internal/pkg/utils/optional"
 )
@@ -17,6 +19,7 @@ type Outfit struct {
 	Image      string
 	Transforms TransformMap
 	Seasons    []Season
+	Tags       []string
 }
 
 //easyjson:json
@@ -39,6 +42,7 @@ type OutfitRepository interface {
 	Create(*Outfit) error
 	Update(*Outfit) error
 	Delete(utils.UUID) error
-	Get(utils.UUID) (*Outfit, error)
+	GetById(utils.UUID) (*Outfit, error)
+	Get(since time.Time, limit int) ([]Outfit, error)
 	GetByUser(utils.UUID) ([]Outfit, error)
 }

@@ -21,14 +21,34 @@ set image = $2
 where id = $1;
 
 -- name: GetOutfit :one
-select *
+select
+    outfits.*,
+    array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
-where id = $1;
+left join outfits_tags ot on ot.outfit_id = outfits.id
+left join tags on tags.id = ot.tag_id 
+where outfits.id = $1;
 
 -- name: GetOutfitsByUser :many
-select *
+select
+    outfits.*,
+    array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
-where user_id = $1;
+left join outfits_tags ot on ot.outfit_id = outfits.id
+left join tags on tags.id = ot.tag_id 
+where outfits.user_id = $1
+order by outfits.created_at desc;
+
+-- name: GetOutfits :many
+select 
+    outfits.*,
+    array_remove(array_agg(tags.name), null)::text[] as tags
+from outfits
+left join outfits_tags ot on ot.outfit_id = outfits.id
+left join tags on tags.id = ot.tag_id 
+where outfits.created_at < $1
+order by outfits.created_at desc
+limit $2;
 
 -- name: DeleteOutfit :exec
 delete from outfits

@@ -105,10 +105,12 @@ func (c *ClothesRepository) Update(clothes *domain.Clothes) error {
 		return utils.PgxError(err)
 	}
 
-	err = queries.CreateClothesTagLinks(ctx,
-		clothes.ID,
-		clothes.Tags,
-	)
+	err = queries.DeleteClothesTagLinks(ctx, clothes.ID, clothes.Tags)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	err = queries.CreateClothesTagLinks(ctx, clothes.ID, clothes.Tags)
 	if err != nil {
 		return utils.PgxError(err)
 	}

@@ -6,7 +6,28 @@ insert into tags (name) values (
 -- name: CreateClothesTagLinks :exec
 insert into clothes_tags (clothes_id, tag_id)
     select sqlc.arg(clothes_id), id
-    from tags where name = any(sqlc.arg(tags)::text[]);
+    from tags where name in (sqlc.arg(tags)::text[]);
+
+-- name: DeleteClothesTagLinks :exec
+delete from clothes_tags
+where clothes_id = $1 and
+    tag_id not in (
+        select id from tags
+        where name in (sqlc.arg(tags)::text[])
+    );
+
+-- name: CreateOutfitTagLinks :exec
+insert into outfits_tags(outfit_id, tag_id)
+    select sqlc.arg(outfit_id), id
+    from tags where name in (sqlc.arg(tags)::text[]);
+
+-- name: DeleteOutfitTagLinks :exec
+delete from outfits_tags
+where outfit_id = $1 and
+    tag_id not in (
+        select id from tags
+        where name in (sqlc.arg(tags)::text[])
+    );
 
 -- name: GetTags :many
 select
