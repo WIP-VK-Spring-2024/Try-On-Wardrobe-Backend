@@ -2,6 +2,7 @@
 select
     clothes.*,
     types.name as type,
+    coalesce(types.tryonable, false) as tryonable,
     subtypes.name as subtype,
     styles.name as style,
     array_remove(array_agg(tags.name), null)::text[] as tags
@@ -33,6 +34,7 @@ group by
 select
     clothes.*,
     types.name as type,
+    coalesce(types.tryonable, false) as tryonable,
     subtypes.name as subtype,
     styles.name as style,
     array_remove(array_agg(tags.name), null)::text[] as tags

@@ -38,6 +38,15 @@ type Vector struct {
 	Y int
 }
 
+type OutfitUsecase interface {
+	Create(*Outfit) error
+	Update(*Outfit) error
+	Delete(userId, outfitID utils.UUID) error
+	GetById(utils.UUID) (*Outfit, error)
+	Get(since time.Time, limit int) ([]Outfit, error)
+	GetByUser(utils.UUID) ([]Outfit, error)
+}
+
 type OutfitRepository interface {
 	Create(*Outfit) error
 	Update(*Outfit) error

@@ -14,9 +14,10 @@ const (
 type Clothes struct {
 	Model
 
-	Name string
-	Note optional.String
-	Tags []string
+	Name      string
+	Tryonable bool
+	Note      optional.String
+	Tags      []string
 
 	UserID utils.UUID
 	Image  string
@@ -39,7 +40,7 @@ type ClothesUsecase interface {
 	Update(clothes *Clothes) error
 	SetImage(id utils.UUID, path string) error
 	Get(id utils.UUID) (*Clothes, error)
-	Delete(id utils.UUID) error
+	Delete(userId, clothesId utils.UUID) error
 	GetByUser(userId utils.UUID, limit int) ([]Clothes, error)
 }
 

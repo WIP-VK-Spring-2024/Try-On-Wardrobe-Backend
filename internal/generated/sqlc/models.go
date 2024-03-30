@@ -222,6 +222,7 @@ type Type struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
+	Tryonable bool
 }
 
 type User struct {

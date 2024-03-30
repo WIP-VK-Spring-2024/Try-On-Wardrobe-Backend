@@ -2,7 +2,6 @@ package clothes
 
 import (
 	"context"
-	"errors"
 	"strconv"
 	"strings"
 
@@ -82,14 +81,14 @@ func (h *ClothesHandler) Delete(ctx *fiber.Ctx) error {
 		return app_errors.ErrNotOwner
 	}
 
-	err = h.clothes.Delete(clothesID)
+	err = h.clothes.Delete(session.UserID, clothesID)
 	if err != nil {
 		return app_errors.New(err)
 	}
 
 	err = h.file.Delete(ctx.UserContext(), h.cfg.Clothes, clothesID.String())
 	if err != nil {
-		middleware.LogWarning(ctx, errors.Join(err, errors.New("failed deleting clothes image")))
+		middleware.LogWarning(ctx, err, "clothes_id", clothesID)
 	}
 
 	return ctx.SendString(common.EmptyJson)
@@ -104,15 +103,6 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 	clothesID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrClothesIdInvalid
-	}
-
-	clothes, err := h.clothes.Get(clothesID)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	if clothes.UserID != session.UserID {
-		return app_errors.ErrNotOwner
 	}
 
 	clothesUpdate := &domain.Clothes{}
@@ -180,7 +170,7 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 		file,
 	)
 	if err != nil {
-		deleteErr := h.clothes.Delete(clothes.ID)
+		deleteErr := h.clothes.Delete(session.UserID, clothes.ID)
 		middleware.LogError(ctx, deleteErr)
 		return app_errors.New(err)
 	}

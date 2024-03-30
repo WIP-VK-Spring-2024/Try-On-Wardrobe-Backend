@@ -47,8 +47,9 @@ func (repo *TypeRepository) GetAll() ([]domain.Type, error) {
 					UpdatedAt: utils.Time{Time: t.UpdatedAt.Time},
 				},
 			},
-			Name:     t.Name,
-			Subtypes: subtypes,
+			Name:      t.Name,
+			Subtypes:  subtypes,
+			Tryonable: t.Tryonable,
 		}
 	}), nil
 }

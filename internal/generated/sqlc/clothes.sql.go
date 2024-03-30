@@ -60,6 +60,7 @@ const getClothesById = `-- name: GetClothesById :one
 select
     clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons, clothes.image, clothes.status,
     types.name as type,
+    coalesce(types.tryonable, false) as tryonable,
     subtypes.name as subtype,
     styles.name as style,
     array_remove(array_agg(tags.name), null)::text[] as tags
@@ -103,6 +104,7 @@ type GetClothesByIdRow struct {
 	Image     string
 	Status    NullStatus
 	Type      pgtype.Text
+	Tryonable bool
 	Subtype   pgtype.Text
 	Style     pgtype.Text
 	Tags      []string
@@ -126,6 +128,7 @@ func (q *Queries) GetClothesById(ctx context.Context, id utils.UUID) (GetClothes
 		&i.Image,
 		&i.Status,
 		&i.Type,
+		&i.Tryonable,
 		&i.Subtype,
 		&i.Style,
 		&i.Tags,
@@ -137,6 +140,7 @@ const getClothesByUser = `-- name: GetClothesByUser :many
 select
     clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons, clothes.image, clothes.status,
     types.name as type,
+    coalesce(types.tryonable, false) as tryonable,
     subtypes.name as subtype,
     styles.name as style,
     array_remove(array_agg(tags.name), null)::text[] as tags
@@ -181,6 +185,7 @@ type GetClothesByUserRow struct {
 	Image     string
 	Status    NullStatus
 	Type      pgtype.Text
+	Tryonable bool
 	Subtype   pgtype.Text
 	Style     pgtype.Text
 	Tags      []string
@@ -210,6 +215,7 @@ func (q *Queries) GetClothesByUser(ctx context.Context, userID utils.UUID) ([]Ge
 			&i.Image,
 			&i.Status,
 			&i.Type,
+			&i.Tryonable,
 			&i.Subtype,
 			&i.Style,
 			&i.Tags,

@@ -14,6 +14,7 @@
     "cut": "cut",
     "fullBody": "photos",
     "tryOn": "try-on",
+    "outfits": "outfits",
     "s3": {
       "endpoint": "https://hb.ru-msk.vkcs.cloud",
       "bucket": "try_on_wardrobe_images"

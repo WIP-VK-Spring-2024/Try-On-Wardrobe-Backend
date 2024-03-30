@@ -14,6 +14,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.69
 	github.com/rubenv/sql-migrate v1.6.1
 	github.com/spf13/viper v1.18.2
+	github.com/valyala/fasthttp v1.51.0
 	github.com/wagslane/go-rabbitmq v0.13.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.21.0
@@ -55,7 +56,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect

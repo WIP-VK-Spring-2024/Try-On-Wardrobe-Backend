@@ -30,6 +30,7 @@ type Static struct {
 	Cut      string
 	FullBody string
 	TryOn    string
+	Outfits  string
 	S3       S3
 }
 

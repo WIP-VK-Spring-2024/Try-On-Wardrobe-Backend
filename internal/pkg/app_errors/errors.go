@@ -16,6 +16,7 @@ var (
 	ErrUnimplemented       = errors.New("method unimplemented")
 	ErrNoRelatedEntity     = errors.New("related resource not found")
 	ErrConstraintViolation = errors.New("constraint violated")
+	ErrNotOwner            = errors.New("must be the owner to delete or edit this resource")
 )
 
 var (
@@ -24,10 +25,10 @@ var (
 		Code: http.StatusBadRequest,
 	}
 
-	ErrNotOwner = &ResponseError{
-		Msg:  "must be the owner to delete or edit this resource",
-		Code: http.StatusForbidden,
-	}
+	// ErrNotOwner = &ResponseError{
+	// 	Msg:  "must be the owner to delete or edit this resource",
+	// 	Code: http.StatusForbidden,
+	// }
 
 	ErrUnauthorized = &ResponseError{
 		Msg:  "credentials missing or invalid",
@@ -52,6 +53,11 @@ var (
 	ErrTryOnIdInvalid = &ResponseError{
 		Code: http.StatusBadRequest,
 		Msg:  "try on result ID is missing or isn't a valid uuid",
+	}
+
+	ErrOutfitIdInvalid = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "outfit ID is missing or isn't a valid uuid",
 	}
 )
 
@@ -81,6 +87,9 @@ func New(err error) error {
 	switch {
 	case errors.Is(err, ErrAlreadyExists):
 		code = http.StatusConflict
+
+	case errors.Is(err, ErrNotOwner):
+		code = http.StatusForbidden
 
 	case errors.Is(err, ErrNotFound) || errors.Is(err, ErrNoRelatedEntity):
 		code = http.StatusNotFound

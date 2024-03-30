@@ -3,8 +3,9 @@ package domain
 //easyjson:json
 type Type struct {
 	Model
-	Name     string
-	Subtypes []Subtype
+	Name      string
+	Tryonable bool
+	Subtypes  []Subtype
 }
 
 type TypeRepository interface {

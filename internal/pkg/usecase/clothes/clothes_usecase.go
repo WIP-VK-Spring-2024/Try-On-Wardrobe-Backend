@@ -3,6 +3,7 @@ package clothes
 import (
 	"slices"
 
+	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
@@ -22,6 +23,15 @@ func (c *ClothesUsecase) Create(clothes *domain.Clothes) error {
 }
 
 func (c *ClothesUsecase) Update(clothes *domain.Clothes) error {
+	old, err := c.repo.Get(clothes.ID)
+	if err != nil {
+		return err
+	}
+
+	if old.UserID != clothes.UserID {
+		return app_errors.ErrNotOwner
+	}
+
 	return c.repo.Update(clothes)
 }
 
@@ -42,7 +52,15 @@ func (c *ClothesUsecase) Get(id utils.UUID) (*domain.Clothes, error) {
 	return clothes, nil
 }
 
-func (c *ClothesUsecase) Delete(id utils.UUID) error {
+func (c *ClothesUsecase) Delete(userId, id utils.UUID) error {
+	clothes, err := c.repo.Get(id)
+	if err != nil {
+		return err
+	}
+
+	if clothes.UserID != userId {
+		return app_errors.ErrNotOwner
+	}
 	return c.repo.Delete(id)
 }
 
