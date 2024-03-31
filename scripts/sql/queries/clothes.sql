@@ -26,6 +26,7 @@ group by
     clothes.seasons,
     clothes.created_at,
     clothes.updated_at,
+    tryonable,
     type,
     subtype,
     style;
@@ -58,6 +59,7 @@ group by
     clothes.seasons,
     clothes.created_at,
     clothes.updated_at,
+    tryonable,
     type,
     subtype,
     style
