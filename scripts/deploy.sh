@@ -12,4 +12,4 @@ until (( RETRIES == MAX_RETRIES )) || curl -sSf http://localhost/api/heartbeat >
     sleep $RETRY_INTERVAL
 done
 
-(( RETRIES >= MAX_RETRIES ))
+(( RETRIES < MAX_RETRIES ))
