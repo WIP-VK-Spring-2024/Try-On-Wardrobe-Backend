@@ -185,8 +185,9 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(&uploadResponse{
-		Uuid: clothes.ID,
-		Msg:  domain.ClothesStatusCreated,
+		Uuid:  clothes.ID,
+		Msg:   domain.ClothesStatusCreated,
+		Image: h.cfg.Clothes + "/" + clothes.ID.String(),
 	})
 }
 
@@ -234,6 +235,20 @@ func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
 	}()
 }
 
+//easyjson:json
+type processingResponse struct {
+	uploadResponse
+	classification classificationResult
+}
+
+//easyjson:json
+type classificationResult struct {
+	Types    utils.UUID
+	Subtypes []utils.UUID // maybe only one should be returned?
+	Seasons  []string
+	Tags     []string
+}
+
 func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
 	return func(resp *domain.ClothesProcessingResponse) domain.Result {
 		cutImageUrl := h.cfg.Cut + "/" + resp.ClothesID.String()
@@ -243,10 +258,13 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 			return domain.ResultDiscard
 		}
 
-		payload := &uploadResponse{
-			Uuid:  resp.ClothesID,
-			Msg:   domain.ClothesStatusProcessed,
-			Image: cutImageUrl,
+		payload := &processingResponse{
+			uploadResponse: uploadResponse{
+				Uuid:  resp.ClothesID,
+				Msg:   domain.ClothesStatusProcessed,
+				Image: cutImageUrl,
+			},
+			classification: classificationResult{},
 		}
 
 		bytes, err := easyjson.Marshal(payload)

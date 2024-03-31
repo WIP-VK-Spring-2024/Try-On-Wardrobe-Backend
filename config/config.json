@@ -7,6 +7,10 @@
     "processingChannel": "processing:user#"
   },
 
+  "classification": {
+    "threshold": 0.75
+  },
+
   "static": {
     "type": "http",
     "dir": "static",

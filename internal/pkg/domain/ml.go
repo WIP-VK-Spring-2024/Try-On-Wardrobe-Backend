@@ -18,16 +18,34 @@ type ClothesProcessingModel interface {
 
 //easyjson:json
 type ClothesProcessingRequest struct {
-	UserID     utils.UUID
-	ClothesID  utils.UUID
-	ClothesDir string
+	UserID         utils.UUID
+	ClothesID      utils.UUID
+	ClothesDir     string
+	Classification ClothesClassificationRequest
 }
 
 //easyjson:json
 type ClothesProcessingResponse struct {
-	UserID    utils.UUID
-	ClothesID utils.UUID
-	ResultDir string
+	UserID         utils.UUID
+	ClothesID      utils.UUID
+	ResultDir      string
+	Classification ClothesClassificationResponse
+}
+
+//easyjson:json
+type ClothesClassificationRequest struct {
+	Tags          []string
+	Categories    []string
+	Subcategories []string
+	Seasons       []string
+}
+
+//easyjson:json
+type ClothesClassificationResponse struct {
+	Types    utils.UUID
+	Subtypes []utils.UUID // maybe only one should be returned?
+	Seasons  []string
+	Tags     []string
 }
 
 //easyjson:json

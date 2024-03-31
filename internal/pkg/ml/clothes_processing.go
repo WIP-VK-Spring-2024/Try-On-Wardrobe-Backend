@@ -7,18 +7,29 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/sqlc/subtypes"
+	"try-on/internal/pkg/repository/sqlc/types"
+	"try-on/internal/pkg/utils"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mailru/easyjson"
 	"github.com/mailru/easyjson/jlexer"
 	"github.com/wagslane/go-rabbitmq"
 	"go.uber.org/zap"
+	"golang.org/x/exp/maps"
 )
 
 type ClothesProcessor struct {
 	publisher *rabbitmq.Publisher
 	rabbit    *rabbitmq.Conn
-	tryOn     config.RabbitQueue
-	process   config.RabbitQueue
+
+	tryOn   config.RabbitQueue
+	process config.RabbitQueue
+
+	cfg *config.Classification
+
+	types    domain.TypeRepository
+	subtypes domain.SubtypeRepository
 }
 
 func (p *ClothesProcessor) Close() {
@@ -29,6 +40,8 @@ func New(
 	tryOn config.RabbitQueue,
 	process config.RabbitQueue,
 	rabbit *rabbitmq.Conn,
+	cfg *config.Classification,
+	db *pgxpool.Pool,
 ) (domain.ClothesProcessingModel, error) {
 	publisher, err := rabbitmq.NewPublisher(
 		rabbit,
@@ -42,6 +55,9 @@ func New(
 		rabbit:    rabbit,
 		tryOn:     tryOn,
 		process:   process,
+		cfg:       cfg,
+		types:     types.New(db),
+		subtypes:  subtypes.New(db),
 	}, nil
 }
 
@@ -51,8 +67,46 @@ func (p *ClothesProcessor) GetTryOnResults(logger *zap.SugaredLogger, handler fu
 	return getResults(p, p.tryOn, logger, handler)
 }
 
+//easyjson:json
+type processingResult struct {
+	UserID         utils.UUID
+	ClothesID      utils.UUID
+	ResultDir      string
+	Classification classification
+}
+
+//easyjson:json
+type classification struct {
+	Tags          map[string]float32
+	Categories    map[string]float32
+	Subcategories map[string]float32
+	Seasons       map[string]float32
+}
+
+func (p *ClothesProcessor) notPassesThreshold(_ string, value float32) bool {
+	return value < p.cfg.Threshold
+}
+
 func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
-	return getResults(p, p.process, logger, handler)
+	return getResults(p, p.process, logger, func(result *processingResult) domain.Result {
+		maps.DeleteFunc(result.Classification.Tags, p.notPassesThreshold)
+
+		maps.DeleteFunc(result.Classification.Seasons, p.notPassesThreshold)
+
+		maps.DeleteFunc(result.Classification.Subcategories, p.notPassesThreshold)
+
+		// TODO: Get type/subtype ids based on ML classifiers from repos
+
+		return handler(&domain.ClothesProcessingResponse{
+			UserID:    result.UserID,
+			ClothesID: result.ClothesID,
+			ResultDir: result.ResultDir,
+			Classification: domain.ClothesClassificationResponse{
+				Tags:    utils.SortedKeysByValue(result.Classification.Tags),
+				Seasons: maps.Keys(result.Classification.Seasons),
+			},
+		})
+	})
 }
 
 func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) error {

@@ -7,6 +7,7 @@ import (
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
+	utils "try-on/internal/pkg/utils"
 )
 
 // suppress unused package warning
@@ -109,4 +110,294 @@ func (v *uploadResponse) UnmarshalJSON(data []byte) error {
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *uploadResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes(l, v)
+}
+func easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes1(in *jlexer.Lexer, out *processingResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "uuid":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Uuid).UnmarshalText(data))
+			}
+		case "msg":
+			out.Msg = string(in.String())
+		case "image":
+			out.Image = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes1(out *jwriter.Writer, in processingResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if (in.Uuid).IsDefined() {
+		const prefix string = ",\"uuid\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.RawText((in.Uuid).MarshalText())
+	}
+	if in.Msg != "" {
+		const prefix string = ",\"msg\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Msg))
+	}
+	if in.Image != "" {
+		const prefix string = ",\"image\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Image))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v processingResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes1(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v processingResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes1(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *processingResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes1(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *processingResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes1(l, v)
+}
+func easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes2(in *jlexer.Lexer, out *classificationResult) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "types":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Types).UnmarshalText(data))
+			}
+		case "subtypes":
+			if in.IsNull() {
+				in.Skip()
+				out.Subtypes = nil
+			} else {
+				in.Delim('[')
+				if out.Subtypes == nil {
+					if !in.IsDelim(']') {
+						out.Subtypes = make([]utils.UUID, 0, 4)
+					} else {
+						out.Subtypes = []utils.UUID{}
+					}
+				} else {
+					out.Subtypes = (out.Subtypes)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v1 utils.UUID
+					if data := in.UnsafeBytes(); in.Ok() {
+						in.AddError((v1).UnmarshalText(data))
+					}
+					out.Subtypes = append(out.Subtypes, v1)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "seasons":
+			if in.IsNull() {
+				in.Skip()
+				out.Seasons = nil
+			} else {
+				in.Delim('[')
+				if out.Seasons == nil {
+					if !in.IsDelim(']') {
+						out.Seasons = make([]string, 0, 4)
+					} else {
+						out.Seasons = []string{}
+					}
+				} else {
+					out.Seasons = (out.Seasons)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v2 string
+					v2 = string(in.String())
+					out.Seasons = append(out.Seasons, v2)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "tags":
+			if in.IsNull() {
+				in.Skip()
+				out.Tags = nil
+			} else {
+				in.Delim('[')
+				if out.Tags == nil {
+					if !in.IsDelim(']') {
+						out.Tags = make([]string, 0, 4)
+					} else {
+						out.Tags = []string{}
+					}
+				} else {
+					out.Tags = (out.Tags)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v3 string
+					v3 = string(in.String())
+					out.Tags = append(out.Tags, v3)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes2(out *jwriter.Writer, in classificationResult) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if (in.Types).IsDefined() {
+		const prefix string = ",\"types\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.RawText((in.Types).MarshalText())
+	}
+	if len(in.Subtypes) != 0 {
+		const prefix string = ",\"subtypes\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v4, v5 := range in.Subtypes {
+				if v4 > 0 {
+					out.RawByte(',')
+				}
+				out.RawText((v5).MarshalText())
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Seasons) != 0 {
+		const prefix string = ",\"seasons\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v6, v7 := range in.Seasons {
+				if v6 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v7))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Tags) != 0 {
+		const prefix string = ",\"tags\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v8, v9 := range in.Tags {
+				if v8 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v9))
+			}
+			out.RawByte(']')
+		}
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v classificationResult) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes2(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v classificationResult) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes2(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *classificationResult) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes2(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *classificationResult) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes2(l, v)
 }

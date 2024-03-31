@@ -1570,6 +1570,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain13(in *jlexer.Lexer, out *Cloth
 			}
 		case "result_dir":
 			out.ResultDir = string(in.String())
+		case "classification":
+			(out.Classification).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -1609,6 +1611,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain13(out *jwriter.Writer, in Clot
 			out.RawString(prefix)
 		}
 		out.String(string(in.ResultDir))
+	}
+	if true {
+		const prefix string = ",\"classification\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.Classification).MarshalEasyJSON(out)
 	}
 	out.RawByte('}')
 }
@@ -1665,6 +1677,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain14(in *jlexer.Lexer, out *Cloth
 			}
 		case "clothes_dir":
 			out.ClothesDir = string(in.String())
+		case "classification":
+			(out.Classification).UnmarshalEasyJSON(in)
 		default:
 			in.SkipRecursive()
 		}
@@ -1705,6 +1719,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain14(out *jwriter.Writer, in Clot
 		}
 		out.String(string(in.ClothesDir))
 	}
+	if true {
+		const prefix string = ",\"classification\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.Classification).MarshalEasyJSON(out)
+	}
 	out.RawByte('}')
 }
 
@@ -1731,7 +1755,427 @@ func (v *ClothesProcessingRequest) UnmarshalJSON(data []byte) error {
 func (v *ClothesProcessingRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain14(l, v)
 }
-func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(in *jlexer.Lexer, out *Clothes) {
+func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(in *jlexer.Lexer, out *ClothesClassificationResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "types":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.Types).UnmarshalText(data))
+			}
+		case "subtypes":
+			if in.IsNull() {
+				in.Skip()
+				out.Subtypes = nil
+			} else {
+				in.Delim('[')
+				if out.Subtypes == nil {
+					if !in.IsDelim(']') {
+						out.Subtypes = make([]utils.UUID, 0, 4)
+					} else {
+						out.Subtypes = []utils.UUID{}
+					}
+				} else {
+					out.Subtypes = (out.Subtypes)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v12 utils.UUID
+					if data := in.UnsafeBytes(); in.Ok() {
+						in.AddError((v12).UnmarshalText(data))
+					}
+					out.Subtypes = append(out.Subtypes, v12)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "seasons":
+			if in.IsNull() {
+				in.Skip()
+				out.Seasons = nil
+			} else {
+				in.Delim('[')
+				if out.Seasons == nil {
+					if !in.IsDelim(']') {
+						out.Seasons = make([]string, 0, 4)
+					} else {
+						out.Seasons = []string{}
+					}
+				} else {
+					out.Seasons = (out.Seasons)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v13 string
+					v13 = string(in.String())
+					out.Seasons = append(out.Seasons, v13)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "tags":
+			if in.IsNull() {
+				in.Skip()
+				out.Tags = nil
+			} else {
+				in.Delim('[')
+				if out.Tags == nil {
+					if !in.IsDelim(']') {
+						out.Tags = make([]string, 0, 4)
+					} else {
+						out.Tags = []string{}
+					}
+				} else {
+					out.Tags = (out.Tags)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v14 string
+					v14 = string(in.String())
+					out.Tags = append(out.Tags, v14)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(out *jwriter.Writer, in ClothesClassificationResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if (in.Types).IsDefined() {
+		const prefix string = ",\"types\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.RawText((in.Types).MarshalText())
+	}
+	if len(in.Subtypes) != 0 {
+		const prefix string = ",\"subtypes\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v15, v16 := range in.Subtypes {
+				if v15 > 0 {
+					out.RawByte(',')
+				}
+				out.RawText((v16).MarshalText())
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Seasons) != 0 {
+		const prefix string = ",\"seasons\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v17, v18 := range in.Seasons {
+				if v17 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v18))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Tags) != 0 {
+		const prefix string = ",\"tags\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v19, v20 := range in.Tags {
+				if v19 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v20))
+			}
+			out.RawByte(']')
+		}
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ClothesClassificationResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ClothesClassificationResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ClothesClassificationResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ClothesClassificationResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(l, v)
+}
+func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain16(in *jlexer.Lexer, out *ClothesClassificationRequest) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "tags":
+			if in.IsNull() {
+				in.Skip()
+				out.Tags = nil
+			} else {
+				in.Delim('[')
+				if out.Tags == nil {
+					if !in.IsDelim(']') {
+						out.Tags = make([]string, 0, 4)
+					} else {
+						out.Tags = []string{}
+					}
+				} else {
+					out.Tags = (out.Tags)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v21 string
+					v21 = string(in.String())
+					out.Tags = append(out.Tags, v21)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "categories":
+			if in.IsNull() {
+				in.Skip()
+				out.Categories = nil
+			} else {
+				in.Delim('[')
+				if out.Categories == nil {
+					if !in.IsDelim(']') {
+						out.Categories = make([]string, 0, 4)
+					} else {
+						out.Categories = []string{}
+					}
+				} else {
+					out.Categories = (out.Categories)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v22 string
+					v22 = string(in.String())
+					out.Categories = append(out.Categories, v22)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "subcategories":
+			if in.IsNull() {
+				in.Skip()
+				out.Subcategories = nil
+			} else {
+				in.Delim('[')
+				if out.Subcategories == nil {
+					if !in.IsDelim(']') {
+						out.Subcategories = make([]string, 0, 4)
+					} else {
+						out.Subcategories = []string{}
+					}
+				} else {
+					out.Subcategories = (out.Subcategories)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v23 string
+					v23 = string(in.String())
+					out.Subcategories = append(out.Subcategories, v23)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		case "seasons":
+			if in.IsNull() {
+				in.Skip()
+				out.Seasons = nil
+			} else {
+				in.Delim('[')
+				if out.Seasons == nil {
+					if !in.IsDelim(']') {
+						out.Seasons = make([]string, 0, 4)
+					} else {
+						out.Seasons = []string{}
+					}
+				} else {
+					out.Seasons = (out.Seasons)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v24 string
+					v24 = string(in.String())
+					out.Seasons = append(out.Seasons, v24)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain16(out *jwriter.Writer, in ClothesClassificationRequest) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if len(in.Tags) != 0 {
+		const prefix string = ",\"tags\":"
+		first = false
+		out.RawString(prefix[1:])
+		{
+			out.RawByte('[')
+			for v25, v26 := range in.Tags {
+				if v25 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v26))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Categories) != 0 {
+		const prefix string = ",\"categories\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v27, v28 := range in.Categories {
+				if v27 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v28))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Subcategories) != 0 {
+		const prefix string = ",\"subcategories\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v29, v30 := range in.Subcategories {
+				if v29 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v30))
+			}
+			out.RawByte(']')
+		}
+	}
+	if len(in.Seasons) != 0 {
+		const prefix string = ",\"seasons\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v31, v32 := range in.Seasons {
+				if v31 > 0 {
+					out.RawByte(',')
+				}
+				out.String(string(v32))
+			}
+			out.RawByte(']')
+		}
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ClothesClassificationRequest) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain16(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ClothesClassificationRequest) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain16(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ClothesClassificationRequest) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain16(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ClothesClassificationRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain16(l, v)
+}
+func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain17(in *jlexer.Lexer, out *Clothes) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1774,9 +2218,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(in *jlexer.Lexer, out *Cloth
 					out.Tags = (out.Tags)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v12 string
-					v12 = string(in.String())
-					out.Tags = append(out.Tags, v12)
+					var v33 string
+					v33 = string(in.String())
+					out.Tags = append(out.Tags, v33)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1819,9 +2263,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(in *jlexer.Lexer, out *Cloth
 					out.Seasons = (out.Seasons)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v13 Season
-					v13 = Season(in.String())
-					out.Seasons = append(out.Seasons, v13)
+					var v34 Season
+					v34 = Season(in.String())
+					out.Seasons = append(out.Seasons, v34)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -1844,7 +2288,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(in *jlexer.Lexer, out *Cloth
 		in.Consumed()
 	}
 }
-func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(out *jwriter.Writer, in Clothes) {
+func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain17(out *jwriter.Writer, in Clothes) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1884,11 +2328,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(out *jwriter.Writer, in Clot
 		}
 		{
 			out.RawByte('[')
-			for v14, v15 := range in.Tags {
-				if v14 > 0 {
+			for v35, v36 := range in.Tags {
+				if v35 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v15))
+				out.String(string(v36))
 			}
 			out.RawByte(']')
 		}
@@ -1963,11 +2407,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(out *jwriter.Writer, in Clot
 		}
 		{
 			out.RawByte('[')
-			for v16, v17 := range in.Seasons {
-				if v16 > 0 {
+			for v37, v38 := range in.Seasons {
+				if v37 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v17))
+				out.String(string(v38))
 			}
 			out.RawByte(']')
 		}
@@ -1998,23 +2442,23 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(out *jwriter.Writer, in Clot
 // MarshalJSON supports json.Marshaler interface
 func (v Clothes) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(&w, v)
+	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain17(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Clothes) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(w, v)
+	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain17(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Clothes) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(&r, v)
+	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain17(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Clothes) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(l, v)
+	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain17(l, v)
 }

@@ -70,6 +70,8 @@ func (app *App) Run() error {
 		app.cfg.Rabbit.TryOn,
 		app.cfg.Rabbit.Process,
 		rabbitConn,
+		&app.cfg.Classification,
+		pg,
 	)
 	if err != nil {
 		return err

@@ -11,15 +11,16 @@ import (
 )
 
 type Config struct {
-	Addr       string
-	Static     Static
-	Centrifugo Centrifugo
-	Postgres   Postgres
-	Session    Session
-	Cors       Cors
-	Sql        Sql
-	S3         S3
-	Rabbit     Rabbit
+	Addr           string
+	Static         Static
+	Centrifugo     Centrifugo
+	Postgres       Postgres
+	Session        Session
+	Cors           Cors
+	Sql            Sql
+	S3             S3
+	Rabbit         Rabbit
+	Classification Classification
 }
 
 type Static struct {
@@ -32,6 +33,10 @@ type Static struct {
 	TryOn    string
 	Outfits  string
 	S3       S3
+}
+
+type Classification struct {
+	Threshold float32
 }
 
 type HttpApi struct {
