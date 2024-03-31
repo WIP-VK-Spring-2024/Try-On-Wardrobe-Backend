@@ -47,6 +47,7 @@ services:
   
   nginx:
     image: nginx:1.25.4-alpine
+    restart: unless-stopped
     depends_on:
       - app
       - centrifugo

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"try-on/internal/middleware"
+	"try-on/internal/middleware/heartbeat"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/delivery/styles"
@@ -129,6 +130,11 @@ func (app *App) Run() error {
 		middleware.AddLogger(app.logger),
 		checkSession,
 	)
+
+	app.api.Get("/heartbeat", heartbeat.Hearbeat(heartbeat.Dependencies{
+		DB:         pg,
+		Centrifugo: centrifugoConn,
+	}))
 
 	app.api.Post("/register", sessionHandler.Register)
 	app.api.Post("/login", sessionHandler.Login)
