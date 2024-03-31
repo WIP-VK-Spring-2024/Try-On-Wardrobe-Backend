@@ -46,7 +46,7 @@ select
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
 left join tags on tags.id = ot.tag_id 
-where outfits.created_at < $1
+where outfits.public == true and outfits.created_at < $1
 order by outfits.created_at desc
 limit $2;
 

@@ -177,6 +177,7 @@ type Outfit struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
+	Public     pgtype.Bool
 }
 
 type OutfitsTag struct {

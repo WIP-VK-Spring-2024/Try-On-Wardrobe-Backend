@@ -39,14 +39,23 @@ type imageUploadedResponse struct {
 }
 
 func (h *UserImageHandler) GetByID(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
 	userImageID, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
-		return app_errors.ErrClothesIdInvalid
+		return app_errors.ErrUserImageIdInvalid
 	}
 
 	userImage, err := h.userImages.Get(userImageID)
 	if err != nil {
 		return app_errors.New(err)
+	}
+
+	if userImage.UserID != session.UserID {
+		return app_errors.ErrNotOwner
 	}
 
 	return ctx.JSON(userImage)
