@@ -7,7 +7,7 @@ RETRY_INTERVAL=1
 MAX_RETRIES=15
 RETRIES=0
 
-until (( RETRIES == MAX_RETRIES )) || curl -sSf http://localhost/api/heartbeat; do
+until (( RETRIES == MAX_RETRIES )) || curl -sSf http://localhost/api/heartbeat > /dev/null; do
     (( RETRIES++ ))
     sleep $RETRY_INTERVAL
 done
