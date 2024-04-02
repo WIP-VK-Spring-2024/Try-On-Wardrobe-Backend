@@ -64,7 +64,12 @@ type TryOnRequest struct {
 	UserImageID  utils.UUID
 	UserImageDir string
 	ClothesDir   string
-	Clothes      map[utils.UUID]string
+	Clothes      []TryOnClothesInfo
+}
+
+type TryOnClothesInfo struct {
+	ClothesID utils.UUID
+	Category  string
 }
 
 //easyjson:json

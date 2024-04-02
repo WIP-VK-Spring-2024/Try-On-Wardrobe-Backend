@@ -65,7 +65,7 @@ func (u OutfitUsecase) Get(since time.Time, limit int) ([]domain.Outfit, error) 
 	return u.repo.Get(since, limit)
 }
 
-func (u OutfitUsecase) GetClothesInfo(outfitId utils.UUID) (map[utils.UUID]string, error) {
+func (u OutfitUsecase) GetClothesInfo(outfitId utils.UUID) ([]domain.TryOnClothesInfo, error) {
 	return u.repo.GetClothesInfo(outfitId)
 }
 

@@ -117,17 +117,18 @@ func (repo OutfitRepository) GetByUser(userId utils.UUID) ([]domain.Outfit, erro
 	return utils.Map(outfits, fromGetOutfitsByUser), nil
 }
 
-func (repo OutfitRepository) GetClothesInfo(outfitId utils.UUID) (map[utils.UUID]string, error) {
+func (repo OutfitRepository) GetClothesInfo(outfitId utils.UUID) ([]domain.TryOnClothesInfo, error) {
 	clothesInfoSlice, err := repo.queries.GetOutfitClothesInfo(context.Background(), outfitId)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
 
-	result := make(map[utils.UUID]string, len(clothesInfoSlice))
-	for _, clothesInfo := range clothesInfoSlice {
-		result[clothesInfo.ID] = clothesInfo.Category
-	}
-	return result, nil
+	return utils.Map(clothesInfoSlice, func(t *sqlc.GetOutfitClothesInfoRow) *domain.TryOnClothesInfo {
+		return &domain.TryOnClothesInfo{
+			ClothesID: t.ID,
+			Category:  t.Category,
+		}
+	}), nil
 }
 
 func (repo OutfitRepository) Get(since time.Time, limit int) ([]domain.Outfit, error) {
