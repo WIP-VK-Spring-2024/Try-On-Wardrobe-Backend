@@ -20,7 +20,7 @@ func New(db *pgxpool.Pool) domain.SubtypeRepository {
 	}
 }
 
-func (repo *SubtypeRepository) GetAll() ([]domain.Subtype, error) {
+func (repo SubtypeRepository) GetAll() ([]domain.Subtype, error) {
 	types, err := repo.queries.GetSubtypes(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)

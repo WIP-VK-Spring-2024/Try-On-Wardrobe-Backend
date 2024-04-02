@@ -20,13 +20,13 @@ func New(db *pgxpool.Pool) domain.TagRepository {
 	}
 }
 
-func (repo *TagRepository) Get(limit, offset int) ([]domain.Tag, error) {
+func (repo TagRepository) Get(limit, offset int) ([]domain.Tag, error) {
 	tags, err := repo.queries.GetTags(context.Background(), int32(limit), int32(offset))
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
 
-	return utils.Map(tags, func(t *sqlc.GetTagsRow) *domain.Tag {
+	return utils.Map(tags, func(t *sqlc.Tag) *domain.Tag {
 		return &domain.Tag{
 			Model:    domain.Model{ID: t.ID},
 			Name:     t.Name,

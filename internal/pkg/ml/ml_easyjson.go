@@ -7,6 +7,7 @@ import (
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
+	domain "try-on/internal/pkg/domain"
 )
 
 // suppress unused package warning
@@ -124,7 +125,7 @@ func (v *processingResult) UnmarshalJSON(data []byte) error {
 func (v *processingResult) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonD1312a8fDecodeTryOnInternalPkgMl(l, v)
 }
-func easyjsonD1312a8fDecodeTryOnInternalPkgMl1(in *jlexer.Lexer, out *classification) {
+func easyjsonD1312a8fDecodeTryOnInternalPkgMl1(in *jlexer.Lexer, out *classificationModelResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -209,12 +210,12 @@ func easyjsonD1312a8fDecodeTryOnInternalPkgMl1(in *jlexer.Lexer, out *classifica
 			} else {
 				in.Delim('{')
 				if !in.IsDelim('}') {
-					out.Seasons = make(map[string]float32)
+					out.Seasons = make(map[domain.Season]float32)
 				} else {
 					out.Seasons = nil
 				}
 				for !in.IsDelim('}') {
-					key := string(in.String())
+					key := domain.Season(in.String())
 					in.WantColon()
 					var v4 float32
 					v4 = float32(in.Float32())
@@ -233,7 +234,7 @@ func easyjsonD1312a8fDecodeTryOnInternalPkgMl1(in *jlexer.Lexer, out *classifica
 		in.Consumed()
 	}
 }
-func easyjsonD1312a8fEncodeTryOnInternalPkgMl1(out *jwriter.Writer, in classification) {
+func easyjsonD1312a8fEncodeTryOnInternalPkgMl1(out *jwriter.Writer, in classificationModelResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -333,25 +334,25 @@ func easyjsonD1312a8fEncodeTryOnInternalPkgMl1(out *jwriter.Writer, in classific
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v classification) MarshalJSON() ([]byte, error) {
+func (v classificationModelResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	easyjsonD1312a8fEncodeTryOnInternalPkgMl1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v classification) MarshalEasyJSON(w *jwriter.Writer) {
+func (v classificationModelResponse) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonD1312a8fEncodeTryOnInternalPkgMl1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *classification) UnmarshalJSON(data []byte) error {
+func (v *classificationModelResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjsonD1312a8fDecodeTryOnInternalPkgMl1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *classification) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *classificationModelResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonD1312a8fDecodeTryOnInternalPkgMl1(l, v)
 }

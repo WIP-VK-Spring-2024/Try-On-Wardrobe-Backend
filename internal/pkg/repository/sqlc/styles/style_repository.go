@@ -20,7 +20,7 @@ func New(db *pgxpool.Pool) domain.StyleRepository {
 	}
 }
 
-func (repo *StyleRepository) GetAll() ([]domain.Style, error) {
+func (repo StyleRepository) GetAll() ([]domain.Style, error) {
 	types, err := repo.queries.GetStyles(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)

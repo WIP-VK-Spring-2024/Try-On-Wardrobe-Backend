@@ -20,7 +20,7 @@ $$ LANGUAGE plpgsql;
 
 create or replace trigger trigger_tag_use_count
     after insert or delete
-    on "clothes_tags"
+    on clothes_tags
     for each row
     execute procedure handle_tag_use_count();
 

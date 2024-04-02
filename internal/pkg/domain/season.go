@@ -8,3 +8,5 @@ const (
 	Summer Season = "summer"
 	Autumn Season = "autumn"
 )
+
+var Seasons = []Season{Winter, Spring, Summer, Autumn}

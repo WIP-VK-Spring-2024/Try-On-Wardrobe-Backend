@@ -1,14 +1,14 @@
 package ml
 
 import (
+	"cmp"
 	"context"
 	"time"
 
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/repository/sqlc/subtypes"
-	"try-on/internal/pkg/repository/sqlc/types"
+	"try-on/internal/pkg/repository/sqlc/classification"
 	"try-on/internal/pkg/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -28,8 +28,7 @@ type ClothesProcessor struct {
 
 	cfg *config.Classification
 
-	types    domain.TypeRepository
-	subtypes domain.SubtypeRepository
+	classificationRepo domain.ClothesClassificationRepository
 }
 
 func (p *ClothesProcessor) Close() {
@@ -51,13 +50,12 @@ func New(
 	}
 
 	return &ClothesProcessor{
-		publisher: publisher,
-		rabbit:    rabbit,
-		tryOn:     tryOn,
-		process:   process,
-		cfg:       cfg,
-		types:     types.New(db),
-		subtypes:  subtypes.New(db),
+		publisher:          publisher,
+		rabbit:             rabbit,
+		tryOn:              tryOn,
+		process:            process,
+		cfg:                cfg,
+		classificationRepo: classification.New(db),
 	}, nil
 }
 
@@ -72,38 +70,91 @@ type processingResult struct {
 	UserID         utils.UUID
 	ClothesID      utils.UUID
 	ResultDir      string
-	Classification classification
+	Classification classificationModelResponse
 }
 
 //easyjson:json
-type classification struct {
+type classificationModelResponse struct {
 	Tags          map[string]float32
 	Categories    map[string]float32
 	Subcategories map[string]float32
-	Seasons       map[string]float32
+	Seasons       map[domain.Season]float32
+	Styles        map[string]float32
 }
 
-func (p *ClothesProcessor) notPassesThreshold(_ string, value float32) bool {
-	return value < p.cfg.Threshold
+func notPassesThreshold[T ~string](threshold float32) func(_ T, value float32) bool {
+	return func(_ T, value float32) bool {
+		return value < threshold
+	}
+}
+
+func maxKey[K comparable, V cmp.Ordered](input map[K]V) K {
+	var curMax V
+	var result K
+
+	for key, value := range input {
+		if value > curMax {
+			curMax = value
+			result = key
+		}
+	}
+
+	return result
+}
+
+func filterSubcategories(subcategories map[string]float32, threshold float32) []string {
+	tmp := maps.Clone(subcategories)
+	maps.DeleteFunc(tmp, notPassesThreshold[string](threshold))
+
+	if len(tmp) != 0 {
+		return maps.Keys(tmp)
+	}
+
+	sorted := utils.SortedKeysByValue(subcategories)
+	return sorted[:len(sorted)/2]
 }
 
 func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
 	return getResults(p, p.process, logger, func(result *processingResult) domain.Result {
-		maps.DeleteFunc(result.Classification.Tags, p.notPassesThreshold)
+		maps.DeleteFunc(result.Classification.Tags, notPassesThreshold[string](p.cfg.Threshold))
 
-		maps.DeleteFunc(result.Classification.Seasons, p.notPassesThreshold)
+		maps.DeleteFunc(result.Classification.Seasons, notPassesThreshold[domain.Season](p.cfg.Threshold))
 
-		maps.DeleteFunc(result.Classification.Subcategories, p.notPassesThreshold)
+		styleId, err := p.classificationRepo.GetStyleId(maxKey(result.Classification.Styles))
+		if err != nil {
+			logger.Errorw(err.Error())
+			return domain.ResultDiscard
+		}
 
-		// TODO: Get type/subtype ids based on ML classifiers from repos
+		typeId, err := p.classificationRepo.GetTypeId(maxKey(result.Classification.Categories))
+		if err != nil {
+			logger.Errorw(err.Error())
+			return domain.ResultDiscard
+		}
+
+		subcategories := filterSubcategories(result.Classification.Subcategories, p.cfg.Threshold)
+		subtypeIds, err := p.classificationRepo.GetSubtypeIds(subcategories)
+		if err != nil {
+			logger.Errorw(err.Error())
+			return domain.ResultDiscard
+		}
+
+		tags, err := p.classificationRepo.GetTags(utils.SortedKeysByValue(result.Classification.Tags))
+		if err != nil {
+			logger.Errorw(err.Error())
+			return domain.ResultDiscard
+		}
 
 		return handler(&domain.ClothesProcessingResponse{
 			UserID:    result.UserID,
 			ClothesID: result.ClothesID,
 			ResultDir: result.ResultDir,
 			Classification: domain.ClothesClassificationResponse{
-				Tags:    utils.SortedKeysByValue(result.Classification.Tags),
-				Seasons: maps.Keys(result.Classification.Seasons),
+				Tags:     tags,
+				Seasons:  maps.Keys(result.Classification.Seasons),
+				Style:    styleId,
+				Type:     typeId,
+				Subtypes: subtypeIds,
 			},
 		})
 	})
@@ -114,6 +165,11 @@ func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) 
 }
 
 func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingRequest) error {
+	classificationRequest, err := p.classificationRepo.GetClassifications()
+	if err != nil {
+		return err
+	}
+	opts.Classification = *classificationRequest
 	return p.publish(ctx, opts, p.process.Request)
 }
 

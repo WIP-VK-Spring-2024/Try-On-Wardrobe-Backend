@@ -12,6 +12,56 @@ import (
 	"try-on/internal/pkg/utils"
 )
 
+const getSubtypeEngNames = `-- name: GetSubtypeEngNames :many
+select eng_name
+from subtypes
+`
+
+func (q *Queries) GetSubtypeEngNames(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, getSubtypeEngNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var eng_name string
+		if err := rows.Scan(&eng_name); err != nil {
+			return nil, err
+		}
+		items = append(items, eng_name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSubtypeIdsByEngName = `-- name: GetSubtypeIdsByEngName :many
+select id from types
+where eng_name in ($1::text[])
+`
+
+func (q *Queries) GetSubtypeIdsByEngName(ctx context.Context, engNames []string) ([]utils.UUID, error) {
+	rows, err := q.db.Query(ctx, getSubtypeIdsByEngName, engNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []utils.UUID
+	for rows.Next() {
+		var id utils.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSubtypes = `-- name: GetSubtypes :many
 select id, created_at, updated_at, name, type_id, eng_name from subtypes
 `
@@ -41,6 +91,44 @@ func (q *Queries) GetSubtypes(ctx context.Context) ([]Subtype, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const getTypeEngNames = `-- name: GetTypeEngNames :many
+select eng_name
+from types
+`
+
+func (q *Queries) GetTypeEngNames(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, getTypeEngNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var eng_name string
+		if err := rows.Scan(&eng_name); err != nil {
+			return nil, err
+		}
+		items = append(items, eng_name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTypeIdByEngName = `-- name: GetTypeIdByEngName :one
+select id from types
+where eng_name = $1
+limit 1
+`
+
+func (q *Queries) GetTypeIdByEngName(ctx context.Context, engName string) (utils.UUID, error) {
+	row := q.db.QueryRow(ctx, getTypeIdByEngName, engName)
+	var id utils.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getTypes = `-- name: GetTypes :many

@@ -20,7 +20,7 @@ func New(db *pgxpool.Pool) domain.TryOnResultRepository {
 	}
 }
 
-func (repo *TryOnResultRepository) Create(res *domain.TryOnResult) error {
+func (repo TryOnResultRepository) Create(res *domain.TryOnResult) error {
 	id, err := repo.queries.CreateTryOnResult(
 		context.Background(),
 		sqlc.CreateTryOnResultParams{
@@ -37,12 +37,12 @@ func (repo *TryOnResultRepository) Create(res *domain.TryOnResult) error {
 	return nil
 }
 
-func (repo *TryOnResultRepository) Delete(id utils.UUID) error {
+func (repo TryOnResultRepository) Delete(id utils.UUID) error {
 	err := repo.queries.DeleteTryOnResult(context.Background(), id)
 	return utils.PgxError(err)
 }
 
-func (repo *TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnResult, error) {
+func (repo TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnResult, error) {
 	results, err := repo.queries.GetTryOnResultsByUser(context.Background(), userID)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -50,7 +50,7 @@ func (repo *TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnR
 	return utils.Map(results, fromSqlc), nil
 }
 
-func (repo *TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.TryOnResult, error) {
+func (repo TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.TryOnResult, error) {
 	results, err := repo.queries.GetTryOnResultsByClothes(context.Background(), clothesID)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -58,7 +58,7 @@ func (repo *TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.
 	return utils.Map(results, fromSqlc), nil
 }
 
-func (repo *TryOnResultRepository) Get(userImageID, clothesID utils.UUID) (*domain.TryOnResult, error) {
+func (repo TryOnResultRepository) Get(userImageID, clothesID utils.UUID) (*domain.TryOnResult, error) {
 	result, err := repo.queries.GetTryOnResult(context.Background(), userImageID, clothesID)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -66,7 +66,7 @@ func (repo *TryOnResultRepository) Get(userImageID, clothesID utils.UUID) (*doma
 	return fromSqlc(&result), nil
 }
 
-func (repo *TryOnResultRepository) Rate(id utils.UUID, rating int) error {
+func (repo TryOnResultRepository) Rate(id utils.UUID, rating int) error {
 	err := repo.queries.RateTryOnResult(context.Background(), id, int32(rating))
 	return utils.PgxError(err)
 }

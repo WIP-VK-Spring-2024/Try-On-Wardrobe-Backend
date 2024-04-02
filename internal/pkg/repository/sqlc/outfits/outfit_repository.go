@@ -28,7 +28,7 @@ func New(db *pgxpool.Pool) domain.OutfitRepository {
 	}
 }
 
-func (repo *OutfitRepository) Create(outfit *domain.Outfit) error {
+func (repo OutfitRepository) Create(outfit *domain.Outfit) error {
 	transforms, err := easyjson.Marshal(outfit.Transforms)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ func (repo *OutfitRepository) Create(outfit *domain.Outfit) error {
 	return nil
 }
 
-func (repo *OutfitRepository) Update(outfit *domain.Outfit) (err error) {
+func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 	var transforms []byte
 	if outfit.Transforms != nil {
 		transforms, err = easyjson.Marshal(outfit.Transforms)
@@ -97,11 +97,11 @@ func (repo *OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 	return tx.Commit(ctx)
 }
 
-func (repo *OutfitRepository) Delete(id utils.UUID) error {
+func (repo OutfitRepository) Delete(id utils.UUID) error {
 	return utils.PgxError(repo.queries.DeleteOutfit(context.Background(), id))
 }
 
-func (repo *OutfitRepository) GetById(id utils.UUID) (*domain.Outfit, error) {
+func (repo OutfitRepository) GetById(id utils.UUID) (*domain.Outfit, error) {
 	outfit, err := repo.queries.GetOutfit(context.Background(), id)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -109,7 +109,7 @@ func (repo *OutfitRepository) GetById(id utils.UUID) (*domain.Outfit, error) {
 	return fromSqlc(&outfit), nil
 }
 
-func (repo *OutfitRepository) GetByUser(userId utils.UUID) ([]domain.Outfit, error) {
+func (repo OutfitRepository) GetByUser(userId utils.UUID) ([]domain.Outfit, error) {
 	outfits, err := repo.queries.GetOutfitsByUser(context.Background(), userId)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -117,7 +117,7 @@ func (repo *OutfitRepository) GetByUser(userId utils.UUID) ([]domain.Outfit, err
 	return utils.Map(outfits, fromGetOutfitsByUser), nil
 }
 
-func (repo *OutfitRepository) Get(since time.Time, limit int) ([]domain.Outfit, error) {
+func (repo OutfitRepository) Get(since time.Time, limit int) ([]domain.Outfit, error) {
 	outfits, err := repo.queries.GetOutfits(
 		context.Background(),
 		pgtype.Timestamptz{Time: since, Valid: true},

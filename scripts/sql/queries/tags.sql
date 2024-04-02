@@ -30,10 +30,22 @@ where outfit_id = $1 and
     );
 
 -- name: GetTags :many
-select
-    id, 
-    name,
-    use_count
+select *
 from tags
 order by use_count desc
 limit $1 offset $2;
+
+-- name: GetTagEngNames :many
+select eng_name
+from tags
+where eng_name is not null
+order by use_count desc
+limit $1 offset $2;
+
+-- name: GetTagsByEngName :many
+select tags.name
+from tags
+join unnest(sqlc.arg(eng_names)::text[])
+    with ordinality t(eng_name, ord)
+    on tags.eng_name = t.eng_name
+order by t.ord;

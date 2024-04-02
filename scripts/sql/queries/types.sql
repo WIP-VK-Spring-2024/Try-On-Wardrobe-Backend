@@ -16,10 +16,19 @@ order by types.created_at, types.name;
 -- name: GetSubtypes :many
 select * from subtypes;
 
--- -- name: GetTypeIdsByEngName :many
--- select id from types
--- where eng_name in ($1::text[]);
+-- name: GetTypeIdByEngName :one
+select id from types
+where eng_name = $1
+limit 1;
 
--- -- name: GetSubtypeIdsByEngName :many
--- select id from types
--- where eng_name in ($1::text[]);
+-- name: GetSubtypeIdsByEngName :many
+select id from types
+where eng_name in (sqlc.arg(eng_names)::text[]);
+
+-- name: GetTypeEngNames :many
+select eng_name
+from types;
+
+-- name: GetSubtypeEngNames :many
+select eng_name
+from subtypes;

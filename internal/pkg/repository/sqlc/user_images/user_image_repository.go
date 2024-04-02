@@ -22,7 +22,7 @@ func New(db *pgxpool.Pool) domain.UserImageRepository {
 	}
 }
 
-func (repo *UserImageRepository) Create(userImage *domain.UserImage) error {
+func (repo UserImageRepository) Create(userImage *domain.UserImage) error {
 	ctx := context.Background()
 
 	tx, err := repo.db.Begin(ctx)
@@ -47,12 +47,12 @@ func (repo *UserImageRepository) Create(userImage *domain.UserImage) error {
 	return tx.Commit(ctx)
 }
 
-func (repo *UserImageRepository) Delete(id utils.UUID) error {
+func (repo UserImageRepository) Delete(id utils.UUID) error {
 	err := repo.queries.DeleteTryOnResult(context.Background(), id)
 	return utils.PgxError(err)
 }
 
-func (repo *UserImageRepository) GetByUser(userID utils.UUID) ([]domain.UserImage, error) {
+func (repo UserImageRepository) GetByUser(userID utils.UUID) ([]domain.UserImage, error) {
 	userImages, err := repo.queries.GetUserImageByUser(context.Background(), userID)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -60,7 +60,7 @@ func (repo *UserImageRepository) GetByUser(userID utils.UUID) ([]domain.UserImag
 	return utils.Map(userImages, fromSqlc), nil
 }
 
-func (repo *UserImageRepository) Get(id utils.UUID) (*domain.UserImage, error) {
+func (repo UserImageRepository) Get(id utils.UUID) (*domain.UserImage, error) {
 	userImage, err := repo.queries.GetUserImageByID(context.Background(), id)
 	if err != nil {
 		return nil, utils.PgxError(err)

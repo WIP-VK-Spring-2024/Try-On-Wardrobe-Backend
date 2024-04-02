@@ -20,7 +20,7 @@ func New(db *pgxpool.Pool) domain.TypeRepository {
 	}
 }
 
-func (repo *TypeRepository) GetAll() ([]domain.Type, error) {
+func (repo TypeRepository) GetAll() ([]domain.Type, error) {
 	types, err := repo.queries.GetTypes(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)

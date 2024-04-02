@@ -208,6 +208,7 @@ type Tag struct {
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 	UseCount  int32
+	EngName   pgtype.Text
 }
 
 type TryOnResult struct {

@@ -8,6 +8,7 @@ package sqlc
 import (
 	"context"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"try-on/internal/pkg/utils"
 )
 
@@ -72,35 +73,90 @@ func (q *Queries) DeleteOutfitTagLinks(ctx context.Context, outfitID utils.UUID,
 	return err
 }
 
+const getTagEngNames = `-- name: GetTagEngNames :many
+select eng_name
+from tags
+where eng_name is not null
+order by use_count desc
+limit $1 offset $2
+`
+
+func (q *Queries) GetTagEngNames(ctx context.Context, limit int32, offset int32) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getTagEngNames, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var eng_name pgtype.Text
+		if err := rows.Scan(&eng_name); err != nil {
+			return nil, err
+		}
+		items = append(items, eng_name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getTags = `-- name: GetTags :many
-select
-    id, 
-    name,
-    use_count
+select id, created_at, updated_at, name, use_count, eng_name
 from tags
 order by use_count desc
 limit $1 offset $2
 `
 
-type GetTagsRow struct {
-	ID       utils.UUID
-	Name     string
-	UseCount int32
-}
-
-func (q *Queries) GetTags(ctx context.Context, limit int32, offset int32) ([]GetTagsRow, error) {
+func (q *Queries) GetTags(ctx context.Context, limit int32, offset int32) ([]Tag, error) {
 	rows, err := q.db.Query(ctx, getTags, limit, offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetTagsRow
+	var items []Tag
 	for rows.Next() {
-		var i GetTagsRow
-		if err := rows.Scan(&i.ID, &i.Name, &i.UseCount); err != nil {
+		var i Tag
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.UseCount,
+			&i.EngName,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTagsByEngName = `-- name: GetTagsByEngName :many
+select tags.name
+from tags
+join unnest($1::text[])
+    with ordinality t(eng_name, ord)
+    on tags.eng_name = t.eng_name
+order by t.ord
+`
+
+func (q *Queries) GetTagsByEngName(ctx context.Context, engNames []string) ([]string, error) {
+	rows, err := q.db.Query(ctx, getTagsByEngName, engNames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
