@@ -232,6 +232,33 @@ func (q *Queries) GetClothesByUser(ctx context.Context, userID utils.UUID) ([]Ge
 	return items, nil
 }
 
+const getClothesIdByOutfit = `-- name: GetClothesIdByOutfit :many
+select c.id
+from clothes c
+join outfits o on o.transforms ? c.id
+where o.id = $1
+`
+
+func (q *Queries) GetClothesIdByOutfit(ctx context.Context, id utils.UUID) ([]utils.UUID, error) {
+	rows, err := q.db.Query(ctx, getClothesIdByOutfit, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []utils.UUID
+	for rows.Next() {
+		var id utils.UUID
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const setClothesImage = `-- name: SetClothesImage :exec
 update clothes
 set image = $2

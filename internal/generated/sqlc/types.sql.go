@@ -13,7 +13,7 @@ import (
 )
 
 const getSubtypes = `-- name: GetSubtypes :many
-select id, created_at, updated_at, name, type_id from subtypes
+select id, created_at, updated_at, name, type_id, eng_name from subtypes
 `
 
 func (q *Queries) GetSubtypes(ctx context.Context) ([]Subtype, error) {
@@ -31,6 +31,7 @@ func (q *Queries) GetSubtypes(ctx context.Context) ([]Subtype, error) {
 			&i.UpdatedAt,
 			&i.Name,
 			&i.TypeID,
+			&i.EngName,
 		); err != nil {
 			return nil, err
 		}
@@ -44,7 +45,7 @@ func (q *Queries) GetSubtypes(ctx context.Context) ([]Subtype, error) {
 
 const getTypes = `-- name: GetTypes :many
 select
-    types.id, types.created_at, types.updated_at, types.name, types.tryonable,
+    types.id, types.created_at, types.updated_at, types.name, types.tryonable, types.eng_name,
     array_agg(subtypes.id order by subtypes.name)::uuid[] as subtype_ids,
     array_agg(subtypes.name order by subtypes.name)::text[] as subtype_names,
     array_agg(subtypes.created_at order by subtypes.name)::timestamp[] as subtypes_created_at
@@ -64,6 +65,7 @@ type GetTypesRow struct {
 	UpdatedAt         pgtype.Timestamptz
 	Name              string
 	Tryonable         bool
+	EngName           string
 	SubtypeIds        []utils.UUID
 	SubtypeNames      []string
 	SubtypesCreatedAt []pgtype.Timestamp
@@ -84,6 +86,7 @@ func (q *Queries) GetTypes(ctx context.Context) ([]GetTypesRow, error) {
 			&i.UpdatedAt,
 			&i.Name,
 			&i.Tryonable,
+			&i.EngName,
 			&i.SubtypeIds,
 			&i.SubtypeNames,
 			&i.SubtypesCreatedAt,

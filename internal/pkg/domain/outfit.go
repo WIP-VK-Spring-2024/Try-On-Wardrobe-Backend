@@ -14,6 +14,8 @@ type Outfit struct {
 	UserID  utils.UUID
 	StyleID utils.UUID
 
+	Public bool
+
 	Name       string
 	Note       optional.String
 	Image      string

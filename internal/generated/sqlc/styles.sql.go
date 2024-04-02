@@ -27,7 +27,7 @@ func (q *Queries) CreateStyle(ctx context.Context, name string) (utils.UUID, err
 }
 
 const getStyles = `-- name: GetStyles :many
-select id, created_at, updated_at, name from styles
+select id, created_at, updated_at, name, eng_name from styles
 `
 
 func (q *Queries) GetStyles(ctx context.Context) ([]Style, error) {
@@ -44,6 +44,7 @@ func (q *Queries) GetStyles(ctx context.Context) ([]Style, error) {
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.Name,
+			&i.EngName,
 		); err != nil {
 			return nil, err
 		}

@@ -96,3 +96,9 @@ set name = coalesce($2, name),
     seasons = coalesce(sqlc.arg(seasons), seasons)::season[],
     updated_at = now()
 where id = $1;
+
+-- name: GetClothesIdByOutfit :many
+select c.id
+from clothes c
+join outfits o on o.transforms ? c.id
+where o.id = $1;

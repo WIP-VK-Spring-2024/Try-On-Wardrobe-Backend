@@ -15,3 +15,11 @@ order by types.created_at, types.name;
 
 -- name: GetSubtypes :many
 select * from subtypes;
+
+-- -- name: GetTypeIdsByEngName :many
+-- select id from types
+-- where eng_name in ($1::text[]);
+
+-- -- name: GetSubtypeIdsByEngName :many
+-- select id from types
+-- where eng_name in ($1::text[]);

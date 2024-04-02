@@ -59,7 +59,7 @@ type GetOutfitRow struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     pgtype.Bool
+	Public     bool
 	Tags       []string
 }
 
@@ -106,7 +106,7 @@ type GetOutfitsRow struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     pgtype.Bool
+	Public     bool
 	Tags       []string
 }
 
@@ -165,7 +165,7 @@ type GetOutfitsByUserRow struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     pgtype.Bool
+	Public     bool
 	Tags       []string
 }
 

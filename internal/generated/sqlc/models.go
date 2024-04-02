@@ -177,7 +177,7 @@ type Outfit struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     pgtype.Bool
+	Public     bool
 }
 
 type OutfitsTag struct {
@@ -190,6 +190,7 @@ type Style struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
+	EngName   string
 }
 
 type Subtype struct {
@@ -198,6 +199,7 @@ type Subtype struct {
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 	TypeID    utils.UUID
+	EngName   string
 }
 
 type Tag struct {
@@ -224,6 +226,7 @@ type Type struct {
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 	Tryonable bool
+	EngName   string
 }
 
 type User struct {
