@@ -53,3 +53,14 @@ limit $2;
 -- name: DeleteOutfit :exec
 delete from outfits
 where id = $1;
+
+-- name: GetOutfitClothesInfo :many
+select
+    clothes.id,
+    case when clothes.type = 'Верх' then 'upper_body'
+         when clothes.type = 'Низ' then 'lower_body'
+         when clothes.type = 'Платья' then 'dresses'
+         else '' end as category
+from outfits
+join clothes on outfit.transforms ? clothes.id
+where outfits.id = $1 and category <> '';

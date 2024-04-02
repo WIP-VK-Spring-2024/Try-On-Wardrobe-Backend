@@ -46,6 +46,7 @@ type OutfitUsecase interface {
 	Delete(userId, outfitID utils.UUID) error
 	GetById(utils.UUID) (*Outfit, error)
 	Get(since time.Time, limit int) ([]Outfit, error)
+	GetClothesInfo(utils.UUID) (map[utils.UUID]string, error)
 	GetByUser(utils.UUID) ([]Outfit, error)
 }
 
@@ -55,5 +56,6 @@ type OutfitRepository interface {
 	Delete(utils.UUID) error
 	GetById(utils.UUID) (*Outfit, error)
 	Get(since time.Time, limit int) ([]Outfit, error)
+	GetClothesInfo(utils.UUID) (map[utils.UUID]string, error)
 	GetByUser(utils.UUID) ([]Outfit, error)
 }

@@ -83,6 +83,43 @@ func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (GetOutfitRow, e
 	return i, err
 }
 
+const getOutfitClothesInfo = `-- name: GetOutfitClothesInfo :many
+select
+    clothes.id,
+    case when clothes.type = 'Верх' then 'upper_body'
+         when clothes.type = 'Низ' then 'lower_body'
+         when clothes.type = 'Платья' then 'dresses'
+         else '' end as category
+from outfits
+join clothes on outfit.transforms ? clothes.id
+where outfits.id = $1 and category <> ''
+`
+
+type GetOutfitClothesInfoRow struct {
+	ID       utils.UUID
+	Category string
+}
+
+func (q *Queries) GetOutfitClothesInfo(ctx context.Context, id utils.UUID) ([]GetOutfitClothesInfoRow, error) {
+	rows, err := q.db.Query(ctx, getOutfitClothesInfo, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOutfitClothesInfoRow
+	for rows.Next() {
+		var i GetOutfitClothesInfoRow
+		if err := rows.Scan(&i.ID, &i.Category); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOutfits = `-- name: GetOutfits :many
 select 
     outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public,

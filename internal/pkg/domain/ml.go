@@ -62,10 +62,9 @@ type ClothesClassificationResponse struct { // End-user response
 type TryOnRequest struct {
 	UserID       utils.UUID
 	UserImageID  utils.UUID
-	ClothesID    utils.UUID
 	UserImageDir string
 	ClothesDir   string
-	Category     string
+	Clothes      map[utils.UUID]string
 }
 
 //easyjson:json

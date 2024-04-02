@@ -12,6 +12,7 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/try_on"
 	"try-on/internal/pkg/repository/sqlc/user_images"
+	"try-on/internal/pkg/usecase/outfits"
 	"try-on/internal/pkg/utils"
 	"try-on/internal/pkg/utils/translate"
 
@@ -23,10 +24,13 @@ import (
 )
 
 type TryOnHandler struct {
-	model      domain.ClothesProcessingModel
+	model domain.ClothesProcessingModel
+
 	clothes    domain.ClothesUsecase
+	outfits    domain.OutfitUsecase
 	userImages domain.UserImageRepository
 	results    domain.TryOnResultRepository
+
 	centrifugo centrifugo.CentrifugoApiClient
 
 	logger *zap.SugaredLogger
@@ -44,6 +48,7 @@ func New(
 		clothes:    clothes,
 		userImages: user_images.New(db),
 		results:    try_on.New(db),
+		outfits:    outfits.NewWithSqlcRepo(db),
 		logger:     logger,
 		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
 	}
@@ -145,11 +150,57 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 
 	err = h.model.TryOn(ctx.UserContext(), domain.TryOnRequest{
 		UserID:       session.UserID,
-		ClothesID:    req.ClothesID,
 		UserImageID:  req.UserImageID,
 		UserImageDir: cfg.Static.FullBody,
 		ClothesDir:   cfg.Static.Cut,
-		Category:     translate.ClothesTypeToTryOnCategory(clothes.Type),
+		Clothes: map[utils.UUID]string{
+			req.ClothesID: translate.ClothesTypeToTryOnCategory(clothes.Type),
+		},
+	})
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
+}
+
+//easyjson:json
+type tryOnOutfitRequest struct {
+	OutfitID    utils.UUID
+	UserImageID utils.UUID
+}
+
+func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	var req tryOnOutfitRequest
+	err := easyjson.Unmarshal(ctx.Body(), &req)
+	if err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+
+	clothesInfo, err := h.outfits.GetClothesInfo(req.OutfitID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	_, err = h.userImages.Get(req.UserImageID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	cfg := middleware.Config(ctx)
+
+	err = h.model.TryOn(ctx.UserContext(), domain.TryOnRequest{
+		UserID:       session.UserID,
+		UserImageID:  req.UserImageID,
+		UserImageDir: cfg.Static.FullBody,
+		ClothesDir:   cfg.Static.Cut,
+		Clothes:      clothesInfo,
 	})
 	if err != nil {
 		return app_errors.New(err)
