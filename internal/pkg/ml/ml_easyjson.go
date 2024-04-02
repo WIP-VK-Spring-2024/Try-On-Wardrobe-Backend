@@ -224,6 +224,26 @@ func easyjsonD1312a8fDecodeTryOnInternalPkgMl1(in *jlexer.Lexer, out *classifica
 				}
 				in.Delim('}')
 			}
+		case "styles":
+			if in.IsNull() {
+				in.Skip()
+			} else {
+				in.Delim('{')
+				if !in.IsDelim('}') {
+					out.Styles = make(map[string]float32)
+				} else {
+					out.Styles = nil
+				}
+				for !in.IsDelim('}') {
+					key := string(in.String())
+					in.WantColon()
+					var v5 float32
+					v5 = float32(in.Float32())
+					(out.Styles)[key] = v5
+					in.WantComma()
+				}
+				in.Delim('}')
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -244,16 +264,16 @@ func easyjsonD1312a8fEncodeTryOnInternalPkgMl1(out *jwriter.Writer, in classific
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('{')
-			v5First := true
-			for v5Name, v5Value := range in.Tags {
-				if v5First {
-					v5First = false
+			v6First := true
+			for v6Name, v6Value := range in.Tags {
+				if v6First {
+					v6First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v5Name))
+				out.String(string(v6Name))
 				out.RawByte(':')
-				out.Float32(float32(v5Value))
+				out.Float32(float32(v6Value))
 			}
 			out.RawByte('}')
 		}
@@ -268,16 +288,16 @@ func easyjsonD1312a8fEncodeTryOnInternalPkgMl1(out *jwriter.Writer, in classific
 		}
 		{
 			out.RawByte('{')
-			v6First := true
-			for v6Name, v6Value := range in.Categories {
-				if v6First {
-					v6First = false
+			v7First := true
+			for v7Name, v7Value := range in.Categories {
+				if v7First {
+					v7First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v6Name))
+				out.String(string(v7Name))
 				out.RawByte(':')
-				out.Float32(float32(v6Value))
+				out.Float32(float32(v7Value))
 			}
 			out.RawByte('}')
 		}
@@ -292,16 +312,16 @@ func easyjsonD1312a8fEncodeTryOnInternalPkgMl1(out *jwriter.Writer, in classific
 		}
 		{
 			out.RawByte('{')
-			v7First := true
-			for v7Name, v7Value := range in.Subcategories {
-				if v7First {
-					v7First = false
+			v8First := true
+			for v8Name, v8Value := range in.Subcategories {
+				if v8First {
+					v8First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v7Name))
+				out.String(string(v8Name))
 				out.RawByte(':')
-				out.Float32(float32(v7Value))
+				out.Float32(float32(v8Value))
 			}
 			out.RawByte('}')
 		}
@@ -316,16 +336,40 @@ func easyjsonD1312a8fEncodeTryOnInternalPkgMl1(out *jwriter.Writer, in classific
 		}
 		{
 			out.RawByte('{')
-			v8First := true
-			for v8Name, v8Value := range in.Seasons {
-				if v8First {
-					v8First = false
+			v9First := true
+			for v9Name, v9Value := range in.Seasons {
+				if v9First {
+					v9First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v8Name))
+				out.String(string(v9Name))
 				out.RawByte(':')
-				out.Float32(float32(v8Value))
+				out.Float32(float32(v9Value))
+			}
+			out.RawByte('}')
+		}
+	}
+	if len(in.Styles) != 0 {
+		const prefix string = ",\"styles\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('{')
+			v10First := true
+			for v10Name, v10Value := range in.Styles {
+				if v10First {
+					v10First = false
+				} else {
+					out.RawByte(',')
+				}
+				out.String(string(v10Name))
+				out.RawByte(':')
+				out.Float32(float32(v10Value))
 			}
 			out.RawByte('}')
 		}

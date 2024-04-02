@@ -179,6 +179,9 @@ func (h *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
 
 func (h *TryOnHandler) GetByUser(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
 
 	results, err := h.results.GetByUser(session.UserID)
 	if err != nil {
@@ -186,4 +189,29 @@ func (h *TryOnHandler) GetByUser(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(results)
+}
+
+//easyjson:json
+type ratingRequest struct {
+	Rating int
+}
+
+func (h *TryOnHandler) Rate(ctx *fiber.Ctx) error {
+	tryOnResultId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrTryOnIdInvalid
+	}
+
+	var req ratingRequest
+	if err := easyjson.Unmarshal(ctx.Body(), &req); err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+
+	err = h.results.Rate(tryOnResultId, req.Rating)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
 }

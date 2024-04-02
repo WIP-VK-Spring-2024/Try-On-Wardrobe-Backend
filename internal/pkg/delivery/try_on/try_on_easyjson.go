@@ -100,3 +100,70 @@ func (v *tryOnRequest) UnmarshalJSON(data []byte) error {
 func (v *tryOnRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson569002f9DecodeTryOnInternalPkgDeliveryTryOn(l, v)
 }
+func easyjson569002f9DecodeTryOnInternalPkgDeliveryTryOn1(in *jlexer.Lexer, out *ratingRequest) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "rating":
+			out.Rating = int(in.Int())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson569002f9EncodeTryOnInternalPkgDeliveryTryOn1(out *jwriter.Writer, in ratingRequest) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if in.Rating != 0 {
+		const prefix string = ",\"rating\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.Int(int(in.Rating))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v ratingRequest) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson569002f9EncodeTryOnInternalPkgDeliveryTryOn1(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v ratingRequest) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson569002f9EncodeTryOnInternalPkgDeliveryTryOn1(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *ratingRequest) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson569002f9DecodeTryOnInternalPkgDeliveryTryOn1(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *ratingRequest) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson569002f9DecodeTryOnInternalPkgDeliveryTryOn1(l, v)
+}
