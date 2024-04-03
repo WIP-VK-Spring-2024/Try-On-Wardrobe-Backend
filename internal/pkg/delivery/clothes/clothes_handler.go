@@ -114,6 +114,7 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 	clothesUpdate.ID = clothesID
+	// clothesUpdate.UserID = session.UserID
 
 	if len(clothesUpdate.Tags) > 0 {
 		err = h.tags.Create(clothesUpdate.Tags)
