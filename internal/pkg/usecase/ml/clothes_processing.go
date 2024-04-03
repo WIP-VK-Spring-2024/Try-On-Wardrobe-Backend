@@ -164,8 +164,10 @@ func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) 
 	return p.publish(ctx, opts, p.tryOn.Request)
 }
 
+const tagLimit = 10
+
 func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingRequest) error {
-	classificationRequest, err := p.classificationRepo.GetClassifications()
+	classificationRequest, err := p.classificationRepo.GetClassifications(tagLimit)
 	if err != nil {
 		return err
 	}

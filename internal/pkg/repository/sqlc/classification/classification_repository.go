@@ -21,9 +21,7 @@ func New(db *pgxpool.Pool) domain.ClothesClassificationRepository {
 	}
 }
 
-const tagLimit = 10
-
-func (c ClothesClassificationRepository) GetClassifications() (*domain.ClothesClassificationRequest, error) {
+func (c ClothesClassificationRepository) GetClassifications(tagLimit int32) (*domain.ClothesClassificationRequest, error) {
 	tagNames, err := c.queries.GetTagEngNames(context.Background(), tagLimit, 0)
 	if err != nil {
 		return nil, utils.PgxError(err)

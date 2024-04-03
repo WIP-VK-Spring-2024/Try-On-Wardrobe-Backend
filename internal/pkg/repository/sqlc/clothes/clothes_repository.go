@@ -43,11 +43,6 @@ func (c *ClothesRepository) Create(clothes *domain.Clothes) error {
 		Color:     pgtype.Text(clothes.Color.NullString),
 	}
 
-	err = queries.CreateTags(ctx, clothes.Tags)
-	if err != nil {
-		return utils.PgxError(err)
-	}
-
 	clothesId, err := queries.CreateClothes(ctx, createParams)
 	if err != nil {
 		return utils.PgxError(err)
@@ -56,13 +51,6 @@ func (c *ClothesRepository) Create(clothes *domain.Clothes) error {
 	clothes.ID = clothesId
 
 	err = queries.SetClothesImage(ctx, clothesId, clothes.Image+"/"+clothesId.String())
-	if err != nil {
-		return utils.PgxError(err)
-	}
-
-	err = queries.CreateClothesTagLinks(ctx, clothes.ID,
-		clothes.Tags,
-	)
 	if err != nil {
 		return utils.PgxError(err)
 	}
@@ -100,10 +88,10 @@ func (c *ClothesRepository) Update(clothes *domain.Clothes) error {
 		return utils.PgxError(err)
 	}
 
-	err = queries.CreateTags(ctx, clothes.Tags)
-	if err != nil {
-		return utils.PgxError(err)
-	}
+	// err = queries.CreateTags(ctx, clothes.Tags)
+	// if err != nil {
+	// 	return utils.PgxError(err)
+	// }
 
 	err = queries.DeleteClothesTagLinks(ctx, clothes.ID, clothes.Tags)
 	if err != nil {

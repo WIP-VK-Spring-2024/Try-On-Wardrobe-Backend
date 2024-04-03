@@ -45,6 +45,15 @@ func (q *Queries) CreateTags(ctx context.Context, names []string) error {
 	return err
 }
 
+const createTagsWithEng = `-- name: CreateTagsWithEng :exec
+insert into tags (name, eng_name) values ($1, $2::text)
+`
+
+func (q *Queries) CreateTagsWithEng(ctx context.Context, name string, column2 string) error {
+	_, err := q.db.Exec(ctx, createTagsWithEng, name, column2)
+	return err
+}
+
 const deleteClothesTagLinks = `-- name: DeleteClothesTagLinks :exec
 delete from clothes_tags
 where clothes_id = $1 and
@@ -71,6 +80,31 @@ where outfit_id = $1 and
 func (q *Queries) DeleteOutfitTagLinks(ctx context.Context, outfitID utils.UUID, tags []string) error {
 	_, err := q.db.Exec(ctx, deleteOutfitTagLinks, outfitID, tags)
 	return err
+}
+
+const getNotCreatedTags = `-- name: GetNotCreatedTags :many
+select name::text from unnest($1::text[]) as t(name)
+    where name not in (select name from tags)
+`
+
+func (q *Queries) GetNotCreatedTags(ctx context.Context, names []string) ([]string, error) {
+	rows, err := q.db.Query(ctx, getNotCreatedTags, names)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getTagEngNames = `-- name: GetTagEngNames :many
@@ -162,4 +196,15 @@ func (q *Queries) GetTagsByEngName(ctx context.Context, engNames []string) ([]st
 		return nil, err
 	}
 	return items, nil
+}
+
+const setTagEngName = `-- name: SetTagEngName :exec
+update tags
+set eng_name = $2::text
+where name = $1
+`
+
+func (q *Queries) SetTagEngName(ctx context.Context, name string, engName string) error {
+	_, err := q.db.Exec(ctx, setTagEngName, name, engName)
+	return err
 }

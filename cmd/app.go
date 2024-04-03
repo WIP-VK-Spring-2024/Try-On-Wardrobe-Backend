@@ -13,8 +13,9 @@ import (
 	"try-on/internal/pkg/delivery/tags"
 	"try-on/internal/pkg/delivery/types"
 	"try-on/internal/pkg/delivery/user_images"
-	"try-on/internal/pkg/file_manager"
-	"try-on/internal/pkg/ml"
+	"try-on/internal/pkg/usecase/file_manager"
+	"try-on/internal/pkg/usecase/ml"
+	"try-on/internal/pkg/usecase/translator/gtranslate"
 	"try-on/internal/pkg/utils"
 
 	clothes "try-on/internal/pkg/delivery/clothes"
@@ -23,6 +24,7 @@ import (
 
 	clothesRepo "try-on/internal/pkg/repository/sqlc/clothes"
 	clothesUsecase "try-on/internal/pkg/usecase/clothes"
+	tagsUsecase "try-on/internal/pkg/usecase/tags"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
@@ -106,9 +108,11 @@ func (app *App) Run() error {
 		return err
 	}
 
+	tagUsecase := tagsUsecase.New(pg, &gtranslate.GoogleTranslator{})
+
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(pg))
 
-	clothesHandler := clothes.New(clothesUsecase, clothesProcessor, fileManager, &app.cfg.Static, app.logger, centrifugoConn)
+	clothesHandler := clothes.New(clothesUsecase, tagUsecase, clothesProcessor, fileManager, &app.cfg.Static, app.logger, centrifugoConn)
 
 	tryOnHandler := tryOn.New(
 		pg, clothesProcessor,

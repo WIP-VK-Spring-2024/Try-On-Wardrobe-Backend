@@ -21,6 +21,7 @@ import (
 
 type ClothesHandler struct {
 	clothes domain.ClothesUsecase
+	tags    domain.TagUsecase
 	file    domain.FileManager
 	model   domain.ClothesProcessingModel
 	cfg     *config.Static
@@ -31,6 +32,7 @@ type ClothesHandler struct {
 
 func New(
 	clothes domain.ClothesUsecase,
+	tags domain.TagUsecase,
 	model domain.ClothesProcessingModel,
 	fileManager domain.FileManager,
 	cfg *config.Static,
@@ -39,6 +41,7 @@ func New(
 ) *ClothesHandler {
 	return &ClothesHandler{
 		clothes:    clothes,
+		tags:       tags,
 		file:       fileManager,
 		model:      model,
 		cfg:        cfg,
@@ -111,6 +114,13 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 	clothesUpdate.ID = clothesID
+
+	if len(clothesUpdate.Tags) > 1 {
+		err = h.tags.Create(clothesUpdate.Tags)
+		if err != nil {
+			return app_errors.New(err)
+		}
+	}
 
 	err = h.clothes.Update(clothesUpdate)
 	if err != nil {
