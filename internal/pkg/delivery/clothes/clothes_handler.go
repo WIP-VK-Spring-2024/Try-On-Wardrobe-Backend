@@ -115,7 +115,7 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 	}
 	clothesUpdate.ID = clothesID
 
-	if len(clothesUpdate.Tags) > 1 {
+	if len(clothesUpdate.Tags) > 0 {
 		err = h.tags.Create(clothesUpdate.Tags)
 		if err != nil {
 			return app_errors.New(err)

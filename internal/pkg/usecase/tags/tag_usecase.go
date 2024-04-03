@@ -1,6 +1,8 @@
 package tags
 
 import (
+	"log"
+
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/tags"
 	"try-on/internal/pkg/utils"
@@ -25,10 +27,12 @@ func (t TagUsecase) Get(limit, offset int) ([]domain.Tag, error) {
 }
 
 func (t TagUsecase) Create(tags []string) error {
+	log.Println("Got tags:", tags)
 	notCreated, err := t.repo.GetNotCreated(tags)
 	if err != nil {
 		return err
 	}
+	log.Println("Creating tags:", notCreated)
 
 	engNames, err := t.getEngNames(notCreated)
 	if err != nil {
