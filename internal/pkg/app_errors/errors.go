@@ -113,7 +113,7 @@ func New(err error) error {
 
 	log.Println("Code is", code)
 
-	return ResponseError{
+	return &ResponseError{
 		Code: code,
 		Msg:  err.Error(),
 	}
