@@ -15,6 +15,7 @@ left join tags on clothes_tags.tag_id = tags.id
 where clothes.id = $1
 group by
     clothes.id,
+    clothes.user_id,
     clothes.name,
     clothes.note,
     clothes.image,
@@ -48,6 +49,7 @@ left join tags on clothes_tags.tag_id = tags.id
 where clothes.user_id = $1
 group by
     clothes.id,
+    clothes.user_id,
     clothes.name,
     clothes.note,
     clothes.image,
