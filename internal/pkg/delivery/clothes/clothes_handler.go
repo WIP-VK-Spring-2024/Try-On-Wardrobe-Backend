@@ -2,7 +2,6 @@ package clothes
 
 import (
 	"context"
-	"log"
 	"strconv"
 	"strings"
 
@@ -115,7 +114,16 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 	clothesUpdate.ID = clothesID
-	// clothesUpdate.UserID = session.UserID
+	clothesUpdate.UserID = session.UserID
+
+	clothes, err := h.clothes.Get(clothesID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	if clothes.UserID != session.UserID {
+		return app_errors.New(app_errors.ErrNotOwner)
+	}
 
 	if len(clothesUpdate.Tags) > 0 {
 		err = h.tags.Create(clothesUpdate.Tags)
@@ -126,7 +134,6 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 
 	err = h.clothes.Update(clothesUpdate)
 	if err != nil {
-		log.Println("Wrapping error with http code")
 		return app_errors.New(err)
 	}
 
