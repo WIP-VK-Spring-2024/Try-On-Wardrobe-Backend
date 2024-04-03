@@ -2,6 +2,7 @@ package app_errors
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"runtime"
 )
@@ -101,6 +102,7 @@ func New(err error) error {
 		code = http.StatusBadRequest
 
 	default:
+		log.Println("Nothing matches, internal error")
 		_, file, line, _ := runtime.Caller(1)
 		return &InternalError{
 			Err:  err,
@@ -108,6 +110,8 @@ func New(err error) error {
 			Line: line,
 		}
 	}
+
+	log.Println("Code is", code)
 
 	return ResponseError{
 		Code: code,

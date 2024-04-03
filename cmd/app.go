@@ -203,6 +203,8 @@ func errorHandler(ctx *fiber.Ctx, err error) error {
 
 	msg := "Internal Server Error"
 
+	log.Println("Error in handler:", err)
+
 	var errorMsg *app_errors.ResponseError
 	if errors.As(err, &errorMsg) {
 		return ctx.Status(errorMsg.Code).JSON(errorMsg)

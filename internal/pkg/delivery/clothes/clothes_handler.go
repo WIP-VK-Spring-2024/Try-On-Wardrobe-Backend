@@ -2,6 +2,7 @@ package clothes
 
 import (
 	"context"
+	"log"
 	"strconv"
 	"strings"
 
@@ -125,6 +126,7 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 
 	err = h.clothes.Update(clothesUpdate)
 	if err != nil {
+		log.Println("Wrapping error with http code")
 		return app_errors.New(err)
 	}
 
