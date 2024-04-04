@@ -3,7 +3,6 @@ package clothes
 import (
 	"context"
 	"strconv"
-	"strings"
 
 	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
@@ -166,14 +165,6 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	defer file.Close()
 
 	var clothes domain.Clothes
-	if err := ctx.BodyParser(&clothes); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
-	}
-
-	if len(clothes.Tags) == 1 {
-		clothes.Tags = strings.Split(clothes.Tags[0], ",")
-	}
 
 	clothes.UserID = session.UserID
 	clothes.Image = h.cfg.Clothes

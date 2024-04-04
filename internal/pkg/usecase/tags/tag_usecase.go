@@ -57,8 +57,8 @@ const clothesPrefix = "одежда "
 
 func (t TagUsecase) getEngNames(tags []string) ([]string, error) {
 	engNames := make([]string, 0, len(tags))
-	for _, tag := range tags {
 
+	for _, tag := range tags {
 		engName, err := t.translator.Translate(clothesPrefix+tag, domain.LanguageRU, domain.LanguageEN)
 		if err != nil {
 			return nil, err

@@ -4,12 +4,15 @@ insert into tags (name) values (
 ) on conflict do nothing;
 
 -- name: CreateTagsWithEng :exec
-insert into tags (name, eng_name) values ($1, $2::text);
+insert into tags (name, eng_name)
+values ($1, sqlc.arg(eng_name)::text)
+on conflict do nothing;
 
 -- name: CreateClothesTagLinks :exec
 insert into clothes_tags (clothes_id, tag_id)
     select sqlc.arg(clothes_id), id
-    from tags where name = any(sqlc.arg(tags)::text[]);
+    from tags where name = any(sqlc.arg(tags)::text[])
+on conflict do nothing;
 
 -- name: DeleteClothesTagLinks :exec
 delete from clothes_tags
@@ -22,7 +25,8 @@ where clothes_id = $1 and
 -- name: CreateOutfitTagLinks :exec
 insert into outfits_tags(outfit_id, tag_id)
     select sqlc.arg(outfit_id), id
-    from tags where name = any(sqlc.arg(tags)::text[]);
+    from tags where name = any(sqlc.arg(tags)::text[])
+on conflict do nothing;
 
 -- name: DeleteOutfitTagLinks :exec
 delete from outfits_tags
@@ -69,4 +73,7 @@ where name = $1;
 
 -- name: GetNotCreatedTags :many
 select name::text from unnest(sqlc.arg(names)::text[]) as t(name)
+    where name not in (select name from tags);
+
+select name::text from unnest('{"Кожа", "Новое", "Для спортзала"}'::text[]) as t(name)
     where name not in (select name from tags);

@@ -26,8 +26,20 @@ select
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
-left join tags on tags.id = ot.tag_id 
-where outfits.id = $1;
+left join tags on tags.id = ot.tag_id
+where outfits.id = $1
+group by
+    outfits.id,
+    outfits.user_id,
+    outfits.style_id,
+    outfits.created_at,
+    outfits.updated_at,
+    outfits.name,
+    outfits.note,
+    outfits.image,
+    outfits.transforms,
+    outfits.seasons,
+    outfits.public;
 
 -- name: GetOutfitsByUser :many
 select
@@ -37,6 +49,18 @@ from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
 left join tags on tags.id = ot.tag_id 
 where outfits.user_id = $1
+group by
+    outfits.id,
+    outfits.user_id,
+    outfits.style_id,
+    outfits.created_at,
+    outfits.updated_at,
+    outfits.name,
+    outfits.note,
+    outfits.image,
+    outfits.transforms,
+    outfits.seasons,
+    outfits.public
 order by outfits.created_at desc;
 
 -- name: GetOutfits :many
@@ -46,10 +70,43 @@ select
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
 left join tags on tags.id = ot.tag_id 
-where outfits.public == true and outfits.created_at < $1
+where outfits.public = true and outfits.created_at < $1
+group by
+    outfits.id,
+    outfits.user_id,
+    outfits.style_id,
+    outfits.created_at,
+    outfits.updated_at,
+    outfits.name,
+    outfits.note,
+    outfits.image,
+    outfits.transforms,
+    outfits.seasons,
+    outfits.public
 order by outfits.created_at desc
 limit $2;
 
+select 
+    outfits.*,
+    array_remove(array_agg(tags.name), null)::text[] as tags
+from outfits
+left join outfits_tags ot on ot.outfit_id = outfits.id
+left join tags on tags.id = ot.tag_id 
+where outfits.public = true
+group by
+    outfits.id,
+    outfits.user_id,
+    outfits.style_id,
+    outfits.created_at,
+    outfits.updated_at,
+    outfits.name,
+    outfits.note,
+    outfits.image,
+    outfits.transforms,
+    outfits.seasons,
+    outfits.public
+order by outfits.created_at desc
+limit 1;
 -- name: DeleteOutfit :exec
 delete from outfits
 where id = $1;

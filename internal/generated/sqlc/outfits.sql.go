@@ -44,8 +44,20 @@ select
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
-left join tags on tags.id = ot.tag_id 
+left join tags on tags.id = ot.tag_id
 where outfits.id = $1
+group by
+    outfits.id,
+    outfits.user_id,
+    outfits.style_id,
+    outfits.created_at,
+    outfits.updated_at,
+    outfits.name,
+    outfits.note,
+    outfits.image,
+    outfits.transforms,
+    outfits.seasons,
+    outfits.public
 `
 
 type GetOutfitRow struct {
@@ -127,7 +139,19 @@ select
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
 left join tags on tags.id = ot.tag_id 
-where outfits.public == true and outfits.created_at < $1
+where outfits.public = true and outfits.created_at < $1
+group by
+    outfits.id,
+    outfits.user_id,
+    outfits.style_id,
+    outfits.created_at,
+    outfits.updated_at,
+    outfits.name,
+    outfits.note,
+    outfits.image,
+    outfits.transforms,
+    outfits.seasons,
+    outfits.public
 order by outfits.created_at desc
 limit $2
 `
@@ -188,6 +212,18 @@ from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
 left join tags on tags.id = ot.tag_id 
 where outfits.user_id = $1
+group by
+    outfits.id,
+    outfits.user_id,
+    outfits.style_id,
+    outfits.created_at,
+    outfits.updated_at,
+    outfits.name,
+    outfits.note,
+    outfits.image,
+    outfits.transforms,
+    outfits.seasons,
+    outfits.public
 order by outfits.created_at desc
 `
 
