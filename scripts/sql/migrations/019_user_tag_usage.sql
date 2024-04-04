@@ -31,7 +31,7 @@ returns trigger as $$
 
             insert into user_tag_usage(user_id, tag_id)
             values (tag_link_user_id, new.tag_id)
-            on conflict do update set usage = usage + 1;
+            on conflict(user_id, tag_id) do update set usage = usage + 1;
             return new;
         end if;
     end
@@ -63,7 +63,7 @@ returns trigger as $$
 
             insert into user_tag_usage(user_id, tag_id)
             values (tag_link_user_id, new.tag_id)
-            on conflict do update set usage = usage + 1;
+            on conflict(user_id, tag_id) do update set usage = usage + 1;
             return new;
         end if;
     end
