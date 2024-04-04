@@ -29,10 +29,10 @@ returns trigger as $$
                 from clothes
                 where id = new.clothes_id;
 
-            insert into user_tag_usage as ut(user_id, tag_id)
+            insert into user_tag_usage(user_id, tag_id)
                 values (tag_link_user_id, new.tag_id)
                 on conflict(user_id, tag_id) do update
-                set ut.usage = ut.usage + 1;
+                set usage = user_tag_usage.usage + 1;
             return new;
         end if;
     end
@@ -62,10 +62,10 @@ returns trigger as $$
                 from outfits
                 where id = new.outfit_id;
 
-            insert into user_tag_usage as ut(user_id, tag_id)
+            insert into user_tag_usage(user_id, tag_id)
                 values (tag_link_user_id, new.tag_id)
                 on conflict(user_id, tag_id) do update
-                set ut.usage = ut.usage + 1;
+                set usage = user_tag_usage.usage + 1;
             return new;
         end if;
     end
