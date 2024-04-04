@@ -9,6 +9,7 @@ import (
 	"try-on/internal/middleware/heartbeat"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
+	"try-on/internal/pkg/delivery/outfits"
 	"try-on/internal/pkg/delivery/styles"
 	"try-on/internal/pkg/delivery/tags"
 	"try-on/internal/pkg/delivery/types"
@@ -112,13 +113,23 @@ func (app *App) Run() error {
 
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(pg))
 
-	clothesHandler := clothes.New(clothesUsecase, tagUsecase, clothesProcessor, fileManager, &app.cfg.Static, app.logger, centrifugoConn)
+	clothesHandler := clothes.New(
+		clothesUsecase,
+		tagUsecase,
+		clothesProcessor,
+		fileManager,
+		&app.cfg.Static,
+		app.logger,
+		centrifugoConn,
+	)
 
 	tryOnHandler := tryOn.New(
 		pg, clothesProcessor,
 		clothesUsecase, app.logger,
 		centrifugoConn,
 	)
+
+	outfitHandler := outfits.New(pg, fileManager)
 
 	userImageHandler := user_images.New(pg, fileManager, &app.cfg.Static)
 
@@ -168,6 +179,12 @@ func (app *App) Run() error {
 	app.api.Get("/try-on", tryOnHandler.GetByUser)
 	app.api.Get("/try-on/:id", tryOnHandler.GetTryOnResult)
 	app.api.Patch("/try-on/:id/rate", tryOnHandler.Rate)
+
+	app.api.Post("/outfits", outfitHandler.Create)
+	app.api.Get("/outfits", outfitHandler.Get)
+	app.api.Get("/outfits/:id", outfitHandler.GetById)
+	app.api.Delete("/outfits/:id", outfitHandler.Delete)
+	app.api.Put("/outfits/:id", outfitHandler.Update)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 

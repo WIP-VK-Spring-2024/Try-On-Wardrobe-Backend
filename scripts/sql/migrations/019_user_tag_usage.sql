@@ -16,7 +16,7 @@ returns trigger as $$
             select user_id
             into tag_link_user_id
             from clothes
-            where clothes_id = old.clothes_id;
+            where id = old.clothes_id;
 
             update user_tag_usage
             set usage = usage - 1
@@ -27,7 +27,7 @@ returns trigger as $$
             select user_id
             into tag_link_user_id
             from clothes
-            where clothes_id = new.clothes_id;
+            where id = new.clothes_id;
 
             insert into user_tag_usage(user_id, tag_id)
             values (tag_link_user_id, new.tag_id)
@@ -48,7 +48,7 @@ returns trigger as $$
             select user_id
             into tag_link_user_id
             from outfits
-            where outfit_id = old.outfit_id;
+            where id = old.outfit_id;
 
             update user_tag_usage
             set usage = usage - 1
@@ -59,7 +59,7 @@ returns trigger as $$
             select user_id
             into tag_link_user_id
             from outfits
-            where outfit_id = new.outfit_id;
+            where id = new.outfit_id;
 
             insert into user_tag_usage(user_id, tag_id)
             values (tag_link_user_id, new.tag_id)
@@ -86,8 +86,8 @@ create trigger trigger_user_outfits_tag_usage
 -- +migrate Down
 drop table user_tag_usage;
 
-drop trigger trigger_user_clothes_tag_usage;
+drop trigger trigger_user_clothes_tag_usage on clothes_tags;
 drop function handle_user_clothes_tag_usage;
 
-drop trigger trigger_user_outfits_tag_usage;
+drop trigger trigger_user_outfits_tag_usage on outfits_tags;
 drop function handle_user_outfits_tag_usage;

@@ -53,13 +53,17 @@ func (t TagUsecase) SetEngNames(tags []string) error {
 	return t.repo.SetEngNames(tags, engNames)
 }
 
+const clothesPrefix = "одежда "
+
 func (t TagUsecase) getEngNames(tags []string) ([]string, error) {
 	engNames := make([]string, 0, len(tags))
 	for _, tag := range tags {
-		engName, err := t.translator.Translate(tag, domain.LanguageRU, domain.LanguageEN)
+
+		engName, err := t.translator.Translate(clothesPrefix+tag, domain.LanguageRU, domain.LanguageEN)
 		if err != nil {
 			return nil, err
 		}
+
 		engNames = append(engNames, strings.ToLower(engName))
 	}
 	return engNames, nil
