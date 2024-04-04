@@ -114,19 +114,25 @@ type S3 struct {
 	SecretKey string
 }
 
+var envBoundConfigValues = []string{
+	"postgres.host",
+	"postgres.port",
+	"postgres.password",
+	"session.secret",
+	"static.s3.accessKey",
+	"static.s3.secretKey",
+	"rabbit.password",
+	"static.httpapi.token",
+	"rabbit.host",
+	"static.httpapi.endpoint",
+}
+
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {
 	viper.SetConfigFile(configPath)
 
-	viper.BindEnv("postgres.host")
-	viper.BindEnv("postgres.port")
-	viper.BindEnv("postgres.password")
-	viper.BindEnv("session.secret")
-	viper.BindEnv("static.s3.accessKey")
-	viper.BindEnv("static.s3.secretKey")
-	viper.BindEnv("rabbit.password")
-	viper.BindEnv("static.httpapi.token")
-	viper.BindEnv("rabbit.host")
-	viper.BindEnv("static.httpapi.endpoint")
+	for _, value := range envBoundConfigValues {
+		viper.BindEnv(value)
+	}
 
 	cfg := Config{}
 

@@ -88,7 +88,7 @@ func notPassesThreshold[T ~string](threshold float32) func(_ T, value float32) b
 	}
 }
 
-func maxKey[K comparable, V cmp.Ordered](input map[K]V) K {
+func maxKey[M ~map[K]V, K comparable, V cmp.Ordered](input M) K {
 	var curMax V
 	var result K
 
@@ -167,7 +167,7 @@ func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) 
 const tagLimit = 10
 
 func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingRequest) error {
-	classificationRequest, err := p.classificationRepo.GetClassifications(tagLimit)
+	classificationRequest, err := p.classificationRepo.GetClassifications(opts.UserID, tagLimit)
 	if err != nil {
 		return err
 	}

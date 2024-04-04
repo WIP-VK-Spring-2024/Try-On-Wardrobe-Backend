@@ -17,7 +17,7 @@ type ClothesProcessingModel interface {
 }
 
 type ClothesClassificationRepository interface {
-	GetClassifications(tagLimit int32) (*ClothesClassificationRequest, error)
+	GetClassifications(userId utils.UUID, tagLimit int32) (*ClothesClassificationRequest, error)
 	GetTypeId(engName string) (utils.UUID, error)
 	GetSubtypeIds(engNames []string) ([]utils.UUID, error)
 	GetStyleId(engName string) (utils.UUID, error)

@@ -247,3 +247,9 @@ type UserImage struct {
 	UserID    utils.UUID
 	Image     string
 }
+
+type UserTagUsage struct {
+	UserID utils.UUID
+	TagID  utils.UUID
+	Usage  pgtype.Int4
+}

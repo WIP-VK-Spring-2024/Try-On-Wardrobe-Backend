@@ -107,16 +107,16 @@ func (q *Queries) GetNotCreatedTags(ctx context.Context, names []string) ([]stri
 	return items, nil
 }
 
-const getTagEngNames = `-- name: GetTagEngNames :many
+const getPopularTagEngNames = `-- name: GetPopularTagEngNames :many
 select eng_name
-from tags
-where eng_name is not null
-order by use_count desc
-limit $1 offset $2
+    from tags
+    where eng_name is not null
+    order by use_count desc
+    limit $1
 `
 
-func (q *Queries) GetTagEngNames(ctx context.Context, limit int32, offset int32) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getTagEngNames, limit, offset)
+func (q *Queries) GetPopularTagEngNames(ctx context.Context, limit int32) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getPopularTagEngNames, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -191,6 +191,35 @@ func (q *Queries) GetTagsByEngName(ctx context.Context, engNames []string) ([]st
 			return nil, err
 		}
 		items = append(items, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getUserFavouriteTagEngNames = `-- name: GetUserFavouriteTagEngNames :many
+select t.eng_name
+    from tags t
+    join user_tag_usage u on u.tag_id = t.tag_id
+    where u.user_id = $1 and eng_name is not null
+    order by usage desc
+    limit $2
+`
+
+func (q *Queries) GetUserFavouriteTagEngNames(ctx context.Context, userID utils.UUID, limit int32) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, getUserFavouriteTagEngNames, userID, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var eng_name pgtype.Text
+		if err := rows.Scan(&eng_name); err != nil {
+			return nil, err
+		}
+		items = append(items, eng_name)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

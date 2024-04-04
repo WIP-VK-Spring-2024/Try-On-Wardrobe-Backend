@@ -38,12 +38,21 @@ from tags
 order by use_count desc
 limit $1 offset $2;
 
--- name: GetTagEngNames :many
+-- name: GetPopularTagEngNames :many
 select eng_name
-from tags
-where eng_name is not null
-order by use_count desc
-limit $1 offset $2;
+    from tags
+    where eng_name is not null
+    order by use_count desc
+    limit $1;
+
+-- name: GetUserFavouriteTagEngNames :many
+select t.eng_name
+    from tags t
+    join user_tag_usage u on u.tag_id = t.tag_id
+    where u.user_id = $1 and eng_name is not null
+    order by usage desc
+    limit $2;
+
 
 -- name: GetTagsByEngName :many
 select tags.name

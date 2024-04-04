@@ -15,7 +15,7 @@ create or replace function handle_tag_use_count() returns trigger as $$
         end if;
         return null;
     end
-$$ LANGUAGE plpgsql;
+$$ language plpgsql;
 -- +migrate StatementEnd
 
 create or replace trigger trigger_tag_use_count

@@ -21,11 +21,18 @@ func New(db *pgxpool.Pool) domain.ClothesClassificationRepository {
 	}
 }
 
-func (c ClothesClassificationRepository) GetClassifications(tagLimit int32) (*domain.ClothesClassificationRequest, error) {
-	tagNames, err := c.queries.GetTagEngNames(context.Background(), tagLimit, 0)
+func (c ClothesClassificationRepository) GetClassifications(userId utils.UUID, tagLimit int32) (*domain.ClothesClassificationRequest, error) {
+	tagNames, err := c.queries.GetPopularTagEngNames(context.Background(), tagLimit)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
+
+	userTagNames, err := c.queries.GetUserFavouriteTagEngNames(context.Background(), userId, tagLimit)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	tagNames = append(tagNames, userTagNames...)
 
 	styleNames, err := c.queries.GetStyleEngNames(context.Background())
 	if err != nil {
