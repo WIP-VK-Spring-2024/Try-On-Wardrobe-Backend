@@ -30,6 +30,7 @@ type TransformMap map[utils.UUID]Transform
 //easyjson:json
 type Transform struct {
 	Pos      Vector
+	Size     Vector
 	Rotation int
 	Scale    float32
 }

@@ -909,6 +909,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain8(in *jlexer.Lexer, out *Transf
 		switch key {
 		case "pos":
 			(out.Pos).UnmarshalEasyJSON(in)
+		case "size":
+			(out.Size).UnmarshalEasyJSON(in)
 		case "rotation":
 			out.Rotation = int(in.Int())
 		case "scale":
@@ -932,6 +934,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain8(out *jwriter.Writer, in Trans
 		first = false
 		out.RawString(prefix[1:])
 		(in.Pos).MarshalEasyJSON(out)
+	}
+	if true {
+		const prefix string = ",\"size\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		(in.Size).MarshalEasyJSON(out)
 	}
 	if in.Rotation != 0 {
 		const prefix string = ",\"rotation\":"
