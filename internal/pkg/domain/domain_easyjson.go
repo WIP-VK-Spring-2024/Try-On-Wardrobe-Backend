@@ -414,7 +414,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain3(out *jwriter.Writer, in TryOn
 		out.RawString(prefix[1:])
 		out.String(string(in.Image))
 	}
-	if in.Rating != 0 {
+	{
 		const prefix string = ",\"rating\":"
 		if first {
 			first = false
@@ -426,42 +426,22 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain3(out *jwriter.Writer, in TryOn
 	}
 	if (in.UserImageID).IsDefined() {
 		const prefix string = ",\"user_image_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.UserImageID).MarshalText())
 	}
 	if (in.ClothesID).IsDefined() {
 		const prefix string = ",\"clothes_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.ClothesID).MarshalText())
 	}
 	if (in.ID).IsDefined() {
 		const prefix string = ",\"uuid\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.ID).MarshalText())
 	}
 	if (in.CreatedAt).IsDefined() {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')

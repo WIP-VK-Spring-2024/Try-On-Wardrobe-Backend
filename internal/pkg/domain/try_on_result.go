@@ -7,7 +7,7 @@ type TryOnResult struct {
 	Model
 
 	Image       string
-	Rating      int
+	Rating      int `json:"rating,!omitempty"`
 	UserImageID utils.UUID
 	ClothesID   utils.UUID
 }

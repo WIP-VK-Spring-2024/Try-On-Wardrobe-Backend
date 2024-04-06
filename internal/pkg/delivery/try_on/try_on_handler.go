@@ -262,6 +262,13 @@ func (h *TryOnHandler) Rate(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
+	if req.Rating > 1 {
+		req.Rating = 1
+	}
+	if req.Rating < -1 {
+		req.Rating = -1
+	}
+
 	err = h.results.Rate(tryOnResultId, req.Rating)
 	if err != nil {
 		return app_errors.New(err)
