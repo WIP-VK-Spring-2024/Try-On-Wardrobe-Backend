@@ -10,7 +10,7 @@ alter table clothes alter column image set not null;
 alter table user_images add column image varchar;
 
 update user_images
-set image = 'people/' || id::text
+set image = 'photos/' || id::text
 where image is null;
 
 alter table user_images alter column image set not null;

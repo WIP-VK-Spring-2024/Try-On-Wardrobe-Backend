@@ -40,6 +40,8 @@ func easyjson661d13f0DecodeTryOnInternalPkgDeliveryUserImages(in *jlexer.Lexer, 
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.Uuid).UnmarshalText(data))
 			}
+		case "image":
+			out.Image = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -59,6 +61,16 @@ func easyjson661d13f0EncodeTryOnInternalPkgDeliveryUserImages(out *jwriter.Write
 		first = false
 		out.RawString(prefix[1:])
 		out.RawText((in.Uuid).MarshalText())
+	}
+	if in.Image != "" {
+		const prefix string = ",\"image\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Image))
 	}
 	out.RawByte('}')
 }
