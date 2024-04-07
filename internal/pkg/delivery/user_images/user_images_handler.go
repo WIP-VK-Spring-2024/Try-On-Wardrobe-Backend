@@ -35,7 +35,8 @@ func New(
 
 //easyjson:json
 type imageUploadedResponse struct {
-	Uuid utils.UUID
+	Uuid  utils.UUID
+	Image string
 }
 
 func (h *UserImageHandler) GetByID(ctx *fiber.Ctx) error {
@@ -135,7 +136,8 @@ func (h *UserImageHandler) Upload(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(&imageUploadedResponse{
-		Uuid: userImage.ID,
+		Uuid:  userImage.ID,
+		Image: userImage.Image,
 	})
 }
 

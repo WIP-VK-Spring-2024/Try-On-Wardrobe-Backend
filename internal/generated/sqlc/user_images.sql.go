@@ -12,8 +12,8 @@ import (
 )
 
 const createUserImage = `-- name: CreateUserImage :one
-insert into user_images(user_id)
-values ($1)
+insert into user_images(user_id, image)
+values ($1, '')
 returning id
 `
 

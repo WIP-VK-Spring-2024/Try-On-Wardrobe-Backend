@@ -39,7 +39,9 @@ func (repo UserImageRepository) Create(userImage *domain.UserImage) error {
 	}
 	userImage.ID = id
 
-	err = queries.SetUserImageUrl(context.Background(), id, userImage.Image+"/"+id.String())
+	userImage.Image = userImage.Image + "/" + id.String()
+
+	err = queries.SetUserImageUrl(context.Background(), id, userImage.Image)
 	if err != nil {
 		return utils.PgxError(err)
 	}
