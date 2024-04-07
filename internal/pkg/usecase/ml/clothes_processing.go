@@ -3,8 +3,10 @@ package ml
 import (
 	"cmp"
 	"context"
+	"slices"
 	"time"
 
+	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
@@ -161,16 +163,62 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 }
 
 func (p *ClothesProcessor) TryOn(ctx context.Context, opts domain.TryOnRequest) error {
+	if err := validateTryOnCategories(opts.Clothes); err != nil {
+		return err
+	}
 	return p.publish(ctx, opts, p.tryOn.Request)
 }
 
+func validateTryOnCategories(clothes []domain.TryOnClothesInfo) error {
+	if len(clothes) < 1 || len(clothes) > 2 {
+		return app_errors.ErrTryOnInvalidClothesNum
+	}
+
+	dressIdx := slices.IndexFunc(clothes, func(c domain.TryOnClothesInfo) bool {
+		return c.Category == domain.TryOnCategoryDress
+	})
+	if dressIdx != -1 && len(clothes) != 1 {
+		return app_errors.ErrTryOnInvalidClothesType
+	}
+
+	upperCount := utils.Count(clothes, func(c domain.TryOnClothesInfo) bool {
+		return c.Category == domain.TryOnCategoryUpper
+	})
+	if upperCount > 1 {
+		return app_errors.ErrTryOnInvalidClothesType
+	}
+
+	lowerCount := utils.Count(clothes, func(c domain.TryOnClothesInfo) bool {
+		return c.Category == domain.TryOnCategoryLower
+	})
+	if lowerCount > 1 {
+		return app_errors.ErrTryOnInvalidClothesType
+	}
+
+	return nil
+}
+
 const tagLimit = 10
+
+const clothesSuffix = " clothes"
+
+func addClothesSuffix(seasons []string) []string {
+	result := make([]string, 0, len(seasons))
+
+	for _, season := range seasons {
+		result = append(result, season+clothesSuffix)
+	}
+	return result
+}
 
 func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProcessingRequest) error {
 	classificationRequest, err := p.classificationRepo.GetClassifications(opts.UserID, tagLimit)
 	if err != nil {
 		return err
 	}
+
+	classificationRequest.Seasons = addClothesSuffix(classificationRequest.Seasons)
+
 	opts.Classification = *classificationRequest
 	return p.publish(ctx, opts, p.process.Request)
 }

@@ -8,6 +8,12 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	TryOnCategoryDress = "dresses"
+	TryOnCategoryUpper = "upper_body"
+	TryOnCategoryLower = "lower_body"
+)
+
 type ClothesProcessingModel interface {
 	Process(ctx context.Context, opts ClothesProcessingRequest) error
 	TryOn(ctx context.Context, opts TryOnRequest) error
@@ -46,7 +52,7 @@ type ClothesClassificationRequest struct { // Request to ML-server
 	Styles        []string
 	Categories    []string
 	Subcategories []string
-	Seasons       []Season
+	Seasons       []string
 }
 
 //easyjson:json
@@ -67,6 +73,7 @@ type TryOnRequest struct {
 	Clothes      []TryOnClothesInfo
 }
 
+//easyjson:json
 type TryOnClothesInfo struct {
 	ClothesID utils.UUID
 	Category  string

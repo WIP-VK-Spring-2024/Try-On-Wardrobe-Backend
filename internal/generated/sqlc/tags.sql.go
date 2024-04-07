@@ -205,7 +205,7 @@ func (q *Queries) GetTagsByEngName(ctx context.Context, engNames []string) ([]st
 const getUserFavouriteTagEngNames = `-- name: GetUserFavouriteTagEngNames :many
 select t.eng_name
     from tags t
-    join user_tag_usage u on u.tag_id = t.tag_id
+    join user_tag_usage u on u.tag_id = t.id
     where u.user_id = $1 and eng_name is not null
     order by usage desc
     limit $2

@@ -9,4 +9,4 @@ const (
 	Autumn Season = "autumn"
 )
 
-var Seasons = []Season{Winter, Spring, Summer, Autumn}
+var Seasons = []string{string(Winter), string(Spring), string(Summer), string(Autumn)}

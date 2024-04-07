@@ -15,7 +15,7 @@ type Clothes struct {
 	Model
 
 	Name      string
-	Tryonable bool
+	Tryonable bool `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	Note      optional.String
 	Tags      []string
 
@@ -40,6 +40,7 @@ type ClothesUsecase interface {
 	Update(clothes *Clothes) error
 	SetImage(id utils.UUID, path string) error
 	Get(id utils.UUID) (*Clothes, error)
+	GetTryOnInfo(ids []utils.UUID) ([]TryOnClothesInfo, error)
 	Delete(userId, clothesId utils.UUID) error
 	GetByUser(userId utils.UUID, limit int) ([]Clothes, error)
 }
@@ -49,6 +50,7 @@ type ClothesRepository interface {
 	Update(clothes *Clothes) error
 	SetImage(id utils.UUID, path string) error
 	Get(id utils.UUID) (*Clothes, error)
+	GetTryOnInfo(ids []utils.UUID) ([]TryOnClothesInfo, error)
 	Delete(id utils.UUID) error
 	GetByUser(userId utils.UUID, limit int) ([]Clothes, error)
 }

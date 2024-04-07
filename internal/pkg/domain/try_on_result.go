@@ -7,7 +7,7 @@ type TryOnResult struct {
 	Model
 
 	Image       string
-	Rating      int `json:"rating,!omitempty"`
+	Rating      int `json:"rating,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	UserImageID utils.UUID
 	ClothesID   utils.UUID
 }

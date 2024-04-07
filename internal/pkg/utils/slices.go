@@ -39,3 +39,13 @@ func Zip[T any, U any, V any](first []T, second []U, mapFunc func(T, U) V) []V {
 	}
 	return result
 }
+
+func Count[T any, S ~[]T](slice S, predicate func(T) bool) int {
+	count := 0
+	for _, item := range slice {
+		if predicate(item) {
+			count += 1
+		}
+	}
+	return count
+}

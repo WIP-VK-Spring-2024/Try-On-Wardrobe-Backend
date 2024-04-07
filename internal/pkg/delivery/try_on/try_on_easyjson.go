@@ -7,6 +7,7 @@ import (
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
+	utils "try-on/internal/pkg/utils"
 )
 
 // suppress unused package warning
@@ -37,8 +38,29 @@ func easyjson569002f9DecodeTryOnInternalPkgDeliveryTryOn(in *jlexer.Lexer, out *
 		}
 		switch key {
 		case "clothes_id":
-			if data := in.UnsafeBytes(); in.Ok() {
-				in.AddError((out.ClothesID).UnmarshalText(data))
+			if in.IsNull() {
+				in.Skip()
+				out.ClothesID = nil
+			} else {
+				in.Delim('[')
+				if out.ClothesID == nil {
+					if !in.IsDelim(']') {
+						out.ClothesID = make([]utils.UUID, 0, 4)
+					} else {
+						out.ClothesID = []utils.UUID{}
+					}
+				} else {
+					out.ClothesID = (out.ClothesID)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v1 utils.UUID
+					if data := in.UnsafeBytes(); in.Ok() {
+						in.AddError((v1).UnmarshalText(data))
+					}
+					out.ClothesID = append(out.ClothesID, v1)
+					in.WantComma()
+				}
+				in.Delim(']')
 			}
 		case "user_image_id":
 			if data := in.UnsafeBytes(); in.Ok() {
@@ -58,11 +80,20 @@ func easyjson569002f9EncodeTryOnInternalPkgDeliveryTryOn(out *jwriter.Writer, in
 	out.RawByte('{')
 	first := true
 	_ = first
-	if (in.ClothesID).IsDefined() {
+	if len(in.ClothesID) != 0 {
 		const prefix string = ",\"clothes_id\":"
 		first = false
 		out.RawString(prefix[1:])
-		out.RawText((in.ClothesID).MarshalText())
+		{
+			out.RawByte('[')
+			for v2, v3 := range in.ClothesID {
+				if v2 > 0 {
+					out.RawByte(',')
+				}
+				out.RawText((v3).MarshalText())
+			}
+			out.RawByte(']')
+		}
 	}
 	if (in.UserImageID).IsDefined() {
 		const prefix string = ",\"user_image_id\":"

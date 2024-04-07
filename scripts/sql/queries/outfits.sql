@@ -107,6 +107,7 @@ group by
     outfits.public
 order by outfits.created_at desc
 limit 1;
+
 -- name: DeleteOutfit :exec
 delete from outfits
 where id = $1;
@@ -114,10 +115,7 @@ where id = $1;
 -- name: GetOutfitClothesInfo :many
 select
     clothes.id,
-    case when clothes.type = 'Верх' then 'upper_body'
-         when clothes.type = 'Низ' then 'lower_body'
-         when clothes.type = 'Платья' then 'dresses'
-         else '' end as category
+    try_on_type(clothes.type) as category
 from outfits
 join clothes on outfit.transforms ? clothes.id
 where outfits.id = $1 and category <> '';

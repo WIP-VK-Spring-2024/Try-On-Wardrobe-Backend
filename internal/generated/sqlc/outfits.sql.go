@@ -98,10 +98,7 @@ func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (GetOutfitRow, e
 const getOutfitClothesInfo = `-- name: GetOutfitClothesInfo :many
 select
     clothes.id,
-    case when clothes.type = 'Верх' then 'upper_body'
-         when clothes.type = 'Низ' then 'lower_body'
-         when clothes.type = 'Платья' then 'dresses'
-         else '' end as category
+    try_on_type(clothes.type) as category
 from outfits
 join clothes on outfit.transforms ? clothes.id
 where outfits.id = $1 and category <> ''

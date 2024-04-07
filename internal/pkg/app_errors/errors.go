@@ -7,16 +7,18 @@ import (
 )
 
 var (
-	ErrNotFound            = errors.New("requested resource does not exist")
-	ErrInvalidCredentials  = errors.New("invalid credentials")
-	ErrAlreadyExists       = errors.New("resource already exists")
-	ErrTokenMalformed      = errors.New("token malformed or missing")
-	ErrInvalidSignature    = errors.New("token has invalid signature")
-	ErrTokenExpired        = errors.New("token has expired")
-	ErrUnimplemented       = errors.New("method unimplemented")
-	ErrNoRelatedEntity     = errors.New("related resource not found")
-	ErrConstraintViolation = errors.New("constraint violated")
-	ErrNotOwner            = errors.New("must be the owner to delete or edit this resource")
+	ErrNotFound                = errors.New("requested resource does not exist")
+	ErrInvalidCredentials      = errors.New("invalid credentials")
+	ErrAlreadyExists           = errors.New("resource already exists")
+	ErrTokenMalformed          = errors.New("token malformed or missing")
+	ErrInvalidSignature        = errors.New("token has invalid signature")
+	ErrTokenExpired            = errors.New("token has expired")
+	ErrUnimplemented           = errors.New("method unimplemented")
+	ErrNoRelatedEntity         = errors.New("related resource not found")
+	ErrConstraintViolation     = errors.New("constraint violated")
+	ErrNotOwner                = errors.New("must be the owner to delete or edit this resource")
+	ErrTryOnInvalidClothesNum  = errors.New("try on requires at least 1 garment, but not more than 2")
+	ErrTryOnInvalidClothesType = errors.New("try on requires 1 dress, or a maximum of 1 of upper body and 1 lower body garments")
 )
 
 var (
@@ -88,16 +90,15 @@ func New(err error) error {
 	case errors.Is(err, ErrAlreadyExists):
 		code = http.StatusConflict
 
-	case errors.Is(err, ErrNotOwner):
+	case errors.Is(err, ErrNotOwner) || errors.Is(err, ErrInvalidCredentials):
 		code = http.StatusForbidden
 
 	case errors.Is(err, ErrNotFound) || errors.Is(err, ErrNoRelatedEntity):
 		code = http.StatusNotFound
 
-	case errors.Is(err, ErrInvalidCredentials):
-		code = http.StatusForbidden
-
-	case errors.Is(err, ErrConstraintViolation):
+	case errors.Is(err, ErrConstraintViolation) ||
+		errors.Is(err, ErrTryOnInvalidClothesNum) ||
+		errors.Is(err, ErrTryOnInvalidClothesType):
 		code = http.StatusBadRequest
 
 	default:

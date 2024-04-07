@@ -75,11 +75,9 @@ where id = $1;
 insert into clothes(
     name,
     user_id,
-    type_id,
-    subtype_id,
-    color
+    image
 )
-values ($1, $2, $3, $4, $5)
+values ($1, $2, $3)
 returning id;
 
 -- name: SetClothesImage :exec
@@ -104,3 +102,10 @@ select c.id
 from clothes c
 join outfits o on o.transforms ? c.id
 where o.id = $1;
+
+-- name: GetClothesTryOnInfo :many
+select
+    clothes.id,
+    try_on_type(clothes.type) as category
+from clothes
+where clothes.id = any(sqlc.arg(ids)::uuid[]) and category <> '';

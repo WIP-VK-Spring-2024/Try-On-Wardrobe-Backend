@@ -25,7 +25,7 @@ func New(db *pgxpool.Pool) domain.ClothesRepository {
 	}
 }
 
-func (c *ClothesRepository) Create(clothes *domain.Clothes) error {
+func (c ClothesRepository) Create(clothes *domain.Clothes) error {
 	ctx := context.Background()
 
 	tx, err := c.db.Begin(ctx)
@@ -36,11 +36,9 @@ func (c *ClothesRepository) Create(clothes *domain.Clothes) error {
 
 	queries := c.queries.WithTx(tx)
 	createParams := sqlc.CreateClothesParams{
-		UserID:    clothes.UserID,
-		Name:      clothes.Name,
-		TypeID:    clothes.TypeID,
-		SubtypeID: clothes.SubtypeID,
-		Color:     pgtype.Text(clothes.Color.NullString),
+		UserID: clothes.UserID,
+		Name:   clothes.Name,
+		Image:  clothes.Image,
 	}
 
 	clothesId, err := queries.CreateClothes(ctx, createParams)
@@ -58,11 +56,24 @@ func (c *ClothesRepository) Create(clothes *domain.Clothes) error {
 	return tx.Commit(ctx)
 }
 
-func (c *ClothesRepository) SetImage(id utils.UUID, path string) error {
+func (c ClothesRepository) SetImage(id utils.UUID, path string) error {
 	return utils.PgxError(c.queries.SetClothesImage(context.Background(), id, path))
 }
 
-func (c *ClothesRepository) Update(clothes *domain.Clothes) error {
+func (c ClothesRepository) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothesInfo, error) {
+	clothesInfo, err := c.queries.GetClothesTryOnInfo(context.Background(), ids)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return utils.Map(clothesInfo, func(t *sqlc.GetClothesTryOnInfoRow) *domain.TryOnClothesInfo {
+		return &domain.TryOnClothesInfo{
+			ClothesID: t.ID,
+			Category:  t.Category,
+		}
+	}), nil
+}
+
+func (c ClothesRepository) Update(clothes *domain.Clothes) error {
 	ctx := context.Background()
 
 	tx, err := c.db.Begin(ctx)
@@ -101,7 +112,7 @@ func (c *ClothesRepository) Update(clothes *domain.Clothes) error {
 	return tx.Commit(ctx)
 }
 
-func (c *ClothesRepository) Get(id utils.UUID) (*domain.Clothes, error) {
+func (c ClothesRepository) Get(id utils.UUID) (*domain.Clothes, error) {
 	clothes, err := c.queries.GetClothesById(context.Background(), id)
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -111,11 +122,11 @@ func (c *ClothesRepository) Get(id utils.UUID) (*domain.Clothes, error) {
 	return fromSqlc(&clothesCompat), nil
 }
 
-func (c *ClothesRepository) Delete(id utils.UUID) error {
+func (c ClothesRepository) Delete(id utils.UUID) error {
 	return utils.PgxError(c.queries.DeleteClothes(context.Background(), id))
 }
 
-func (c *ClothesRepository) GetByUser(userID utils.UUID, _ int) ([]domain.Clothes, error) {
+func (c ClothesRepository) GetByUser(userID utils.UUID, _ int) ([]domain.Clothes, error) {
 	clothes, err := c.queries.GetClothesByUser(context.Background(), userID)
 	if err != nil {
 		return nil, utils.PgxError(err)

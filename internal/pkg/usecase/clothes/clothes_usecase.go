@@ -16,28 +16,27 @@ func New(repo domain.ClothesRepository) domain.ClothesUsecase {
 	}
 }
 
-func (c *ClothesUsecase) Create(clothes *domain.Clothes) error {
+func (c ClothesUsecase) Create(clothes *domain.Clothes) error {
 	return c.repo.Create(clothes)
 }
 
-func (c *ClothesUsecase) Update(clothes *domain.Clothes) error {
+func (c ClothesUsecase) Update(clothes *domain.Clothes) error {
 	return c.repo.Update(clothes)
 }
 
-func (c *ClothesUsecase) SetImage(id utils.UUID, path string) error {
+func (c ClothesUsecase) SetImage(id utils.UUID, path string) error {
 	return c.repo.SetImage(id, path)
 }
 
-func (c *ClothesUsecase) Get(id utils.UUID) (*domain.Clothes, error) {
-	clothes, err := c.repo.Get(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return clothes, nil
+func (c ClothesUsecase) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothesInfo, error) {
+	return c.repo.GetTryOnInfo(ids)
 }
 
-func (c *ClothesUsecase) Delete(userId, id utils.UUID) error {
+func (c ClothesUsecase) Get(id utils.UUID) (*domain.Clothes, error) {
+	return c.repo.Get(id)
+}
+
+func (c ClothesUsecase) Delete(userId, id utils.UUID) error {
 	clothes, err := c.repo.Get(id)
 	if err != nil {
 		return err
@@ -49,7 +48,7 @@ func (c *ClothesUsecase) Delete(userId, id utils.UUID) error {
 	return c.repo.Delete(id)
 }
 
-func (c *ClothesUsecase) GetByUser(userID utils.UUID, limit int) ([]domain.Clothes, error) {
+func (c ClothesUsecase) GetByUser(userID utils.UUID, limit int) ([]domain.Clothes, error) {
 	clothes, err := c.repo.GetByUser(userID, limit)
 	if err != nil {
 		return nil, err

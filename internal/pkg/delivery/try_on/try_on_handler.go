@@ -14,7 +14,6 @@ import (
 	"try-on/internal/pkg/repository/sqlc/user_images"
 	"try-on/internal/pkg/usecase/outfits"
 	"try-on/internal/pkg/utils"
-	"try-on/internal/pkg/utils/translate"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -119,7 +118,7 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 
 //easyjson:json
 type tryOnRequest struct {
-	ClothesID   utils.UUID
+	ClothesID   []utils.UUID
 	UserImageID utils.UUID
 }
 
@@ -136,7 +135,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	clothes, err := h.clothes.Get(req.ClothesID)
+	clothes, err := h.clothes.GetTryOnInfo(req.ClothesID)
 	if err != nil {
 		return app_errors.New(err)
 	}
@@ -153,12 +152,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		UserImageID:  req.UserImageID,
 		UserImageDir: cfg.Static.FullBody,
 		ClothesDir:   cfg.Static.Cut,
-		Clothes: []domain.TryOnClothesInfo{
-			{
-				ClothesID: req.ClothesID,
-				Category:  translate.ClothesTypeToTryOnCategory(clothes.Type),
-			},
-		},
+		Clothes:      clothes,
 	})
 	if err != nil {
 		return app_errors.New(err)

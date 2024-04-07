@@ -155,6 +155,7 @@ func (h *ClothesHandler) Upload(ctx *fiber.Ctx) error {
 	fileHeader, err := ctx.FormFile("img")
 	if err != nil {
 		middleware.LogWarning(ctx, err)
+		middleware.LogError(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 

@@ -280,7 +280,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain2(out *jwriter.Writer, in Type)
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	if in.Tryonable {
+	{
 		const prefix string = ",\"tryonable\":"
 		if first {
 			first = false
@@ -292,12 +292,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain2(out *jwriter.Writer, in Type)
 	}
 	if len(in.Subtypes) != 0 {
 		const prefix string = ",\"subtypes\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v2, v3 := range in.Subtypes {
@@ -311,22 +306,12 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain2(out *jwriter.Writer, in Type)
 	}
 	if (in.ID).IsDefined() {
 		const prefix string = ",\"uuid\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.ID).MarshalText())
 	}
 	if (in.CreatedAt).IsDefined() {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')
@@ -639,7 +624,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain5(in *jlexer.Lexer, out *TryOnR
 				}
 				for !in.IsDelim(']') {
 					var v4 TryOnClothesInfo
-					easyjson3e1fa5ecDecodeTryOnInternalPkgDomain6(in, &v4)
+					(v4).UnmarshalEasyJSON(in)
 					out.Clothes = append(out.Clothes, v4)
 					in.WantComma()
 				}
@@ -709,7 +694,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain5(out *jwriter.Writer, in TryOn
 				if v5 > 0 {
 					out.RawByte(',')
 				}
-				easyjson3e1fa5ecEncodeTryOnInternalPkgDomain6(out, v6)
+				(v6).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -796,6 +781,30 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain6(out *jwriter.Writer, in TryOn
 		out.String(string(in.Category))
 	}
 	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v TryOnClothesInfo) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain6(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v TryOnClothesInfo) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson3e1fa5ecEncodeTryOnInternalPkgDomain6(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *TryOnClothesInfo) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain6(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *TryOnClothesInfo) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson3e1fa5ecDecodeTryOnInternalPkgDomain6(l, v)
 }
 func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain7(in *jlexer.Lexer, out *TransformMap) {
 	isTopLevel := in.IsStart()
@@ -2162,16 +2171,16 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain17(in *jlexer.Lexer, out *Cloth
 				in.Delim('[')
 				if out.Seasons == nil {
 					if !in.IsDelim(']') {
-						out.Seasons = make([]Season, 0, 4)
+						out.Seasons = make([]string, 0, 4)
 					} else {
-						out.Seasons = []Season{}
+						out.Seasons = []string{}
 					}
 				} else {
 					out.Seasons = (out.Seasons)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v28 Season
-					v28 = Season(in.String())
+					var v28 string
+					v28 = string(in.String())
 					out.Seasons = append(out.Seasons, v28)
 					in.WantComma()
 				}
@@ -2431,7 +2440,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain18(out *jwriter.Writer, in Clot
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
 	}
-	if in.Tryonable {
+	{
 		const prefix string = ",\"tryonable\":"
 		if first {
 			first = false
@@ -2443,22 +2452,12 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain18(out *jwriter.Writer, in Clot
 	}
 	if (in.Note).IsDefined() {
 		const prefix string = ",\"note\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		(in.Note).MarshalEasyJSON(out)
 	}
 	if len(in.Tags) != 0 {
 		const prefix string = ",\"tags\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v41, v42 := range in.Tags {
@@ -2472,72 +2471,37 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain18(out *jwriter.Writer, in Clot
 	}
 	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.UserID).MarshalText())
 	}
 	if in.Image != "" {
 		const prefix string = ",\"image\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Image))
 	}
 	if (in.StyleID).IsDefined() {
 		const prefix string = ",\"style_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.StyleID).MarshalText())
 	}
 	if (in.TypeID).IsDefined() {
 		const prefix string = ",\"type_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.TypeID).MarshalText())
 	}
 	if (in.SubtypeID).IsDefined() {
 		const prefix string = ",\"subtype_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.SubtypeID).MarshalText())
 	}
 	if (in.Color).IsDefined() {
 		const prefix string = ",\"color\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		(in.Color).MarshalEasyJSON(out)
 	}
 	if len(in.Seasons) != 0 {
 		const prefix string = ",\"seasons\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v43, v44 := range in.Seasons {
@@ -2551,22 +2515,12 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain18(out *jwriter.Writer, in Clot
 	}
 	if (in.ID).IsDefined() {
 		const prefix string = ",\"uuid\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.ID).MarshalText())
 	}
 	if (in.CreatedAt).IsDefined() {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	out.RawByte('}')

@@ -4,7 +4,7 @@ package domain
 type Type struct {
 	Model
 	Name      string
-	Tryonable bool
+	Tryonable bool `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	Subtypes  []Subtype
 }
 

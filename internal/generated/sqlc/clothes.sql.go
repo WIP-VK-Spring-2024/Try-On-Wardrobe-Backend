@@ -17,30 +17,20 @@ const createClothes = `-- name: CreateClothes :one
 insert into clothes(
     name,
     user_id,
-    type_id,
-    subtype_id,
-    color
+    image
 )
-values ($1, $2, $3, $4, $5)
+values ($1, $2, $3)
 returning id
 `
 
 type CreateClothesParams struct {
-	Name      string
-	UserID    utils.UUID
-	TypeID    utils.UUID
-	SubtypeID utils.UUID
-	Color     pgtype.Text
+	Name   string
+	UserID utils.UUID
+	Image  string
 }
 
 func (q *Queries) CreateClothes(ctx context.Context, arg CreateClothesParams) (utils.UUID, error) {
-	row := q.db.QueryRow(ctx, createClothes,
-		arg.Name,
-		arg.UserID,
-		arg.TypeID,
-		arg.SubtypeID,
-		arg.Color,
-	)
+	row := q.db.QueryRow(ctx, createClothes, arg.Name, arg.UserID, arg.Image)
 	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -254,6 +244,39 @@ func (q *Queries) GetClothesIdByOutfit(ctx context.Context, id utils.UUID) ([]ut
 			return nil, err
 		}
 		items = append(items, id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getClothesTryOnInfo = `-- name: GetClothesTryOnInfo :many
+select
+    clothes.id,
+    try_on_type(clothes.type) as category
+from clothes
+where clothes.id = any($1::uuid[]) and category <> ''
+`
+
+type GetClothesTryOnInfoRow struct {
+	ID       utils.UUID
+	Category string
+}
+
+func (q *Queries) GetClothesTryOnInfo(ctx context.Context, ids []utils.UUID) ([]GetClothesTryOnInfoRow, error) {
+	rows, err := q.db.Query(ctx, getClothesTryOnInfo, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetClothesTryOnInfoRow
+	for rows.Next() {
+		var i GetClothesTryOnInfoRow
+		if err := rows.Scan(&i.ID, &i.Category); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
