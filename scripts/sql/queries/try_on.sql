@@ -13,7 +13,7 @@ where id = $1;
 -- name: GetTryOnResult :one
 select try_on_results.*
 from try_on_results
-where user_image_id = $1 and clothes_id = $2;
+where id = $1;
 
 -- name: GetTryOnResultsByUser :many
 select try_on_results.*
@@ -24,7 +24,7 @@ where u.user_id = $1;
 -- name: GetTryOnResultsByClothes :many
 select *
 from try_on_results
-where clothes_id = $1;
+where $1::uuid = any(clothes_id);
 
 -- name: RateTryOnResult :exec
 update try_on_results

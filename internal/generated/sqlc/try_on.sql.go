@@ -21,7 +21,7 @@ returning id
 `
 
 type CreateTryOnResultParams struct {
-	ClothesID   utils.UUID
+	ClothesID   []utils.UUID
 	UserImageID utils.UUID
 	Image       string
 }
@@ -46,11 +46,11 @@ func (q *Queries) DeleteTryOnResult(ctx context.Context, id utils.UUID) error {
 const getTryOnResult = `-- name: GetTryOnResult :one
 select try_on_results.id, try_on_results.created_at, try_on_results.updated_at, try_on_results.rating, try_on_results.image, try_on_results.user_image_id, try_on_results.clothes_id
 from try_on_results
-where user_image_id = $1 and clothes_id = $2
+where id = $1
 `
 
-func (q *Queries) GetTryOnResult(ctx context.Context, userImageID utils.UUID, clothesID utils.UUID) (TryOnResult, error) {
-	row := q.db.QueryRow(ctx, getTryOnResult, userImageID, clothesID)
+func (q *Queries) GetTryOnResult(ctx context.Context, id utils.UUID) (TryOnResult, error) {
+	row := q.db.QueryRow(ctx, getTryOnResult, id)
 	var i TryOnResult
 	err := row.Scan(
 		&i.ID,
@@ -67,11 +67,11 @@ func (q *Queries) GetTryOnResult(ctx context.Context, userImageID utils.UUID, cl
 const getTryOnResultsByClothes = `-- name: GetTryOnResultsByClothes :many
 select id, created_at, updated_at, rating, image, user_image_id, clothes_id
 from try_on_results
-where clothes_id = $1
+where $1::uuid = any(clothes_id)
 `
 
-func (q *Queries) GetTryOnResultsByClothes(ctx context.Context, clothesID utils.UUID) ([]TryOnResult, error) {
-	rows, err := q.db.Query(ctx, getTryOnResultsByClothes, clothesID)
+func (q *Queries) GetTryOnResultsByClothes(ctx context.Context, dollar_1 utils.UUID) ([]TryOnResult, error) {
+	rows, err := q.db.Query(ctx, getTryOnResultsByClothes, dollar_1)
 	if err != nil {
 		return nil, err
 	}

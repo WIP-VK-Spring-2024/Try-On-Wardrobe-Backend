@@ -218,7 +218,7 @@ type TryOnResult struct {
 	Rating      pgtype.Int4
 	Image       string
 	UserImageID utils.UUID
-	ClothesID   utils.UUID
+	ClothesID   []utils.UUID
 }
 
 type Type struct {

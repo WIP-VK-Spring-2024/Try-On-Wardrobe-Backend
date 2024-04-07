@@ -58,8 +58,8 @@ func (repo TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.T
 	return utils.Map(results, fromSqlc), nil
 }
 
-func (repo TryOnResultRepository) Get(userImageID, clothesID utils.UUID) (*domain.TryOnResult, error) {
-	result, err := repo.queries.GetTryOnResult(context.Background(), userImageID, clothesID)
+func (repo TryOnResultRepository) Get(id utils.UUID) (*domain.TryOnResult, error) {
+	result, err := repo.queries.GetTryOnResult(context.Background(), id)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}

@@ -207,17 +207,12 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 }
 
 func (h *TryOnHandler) GetTryOnResult(ctx *fiber.Ctx) error {
-	userImageID, err := utils.ParseUUID(ctx.Query("photo_id"))
+	id, err := utils.ParseUUID(ctx.Query("photo_id"))
 	if err != nil {
-		return app_errors.ErrUserImageIdInvalid
+		return app_errors.ErrTryOnIdInvalid
 	}
 
-	clothesID, err := utils.ParseUUID(ctx.Query("clothes_id"))
-	if err != nil {
-		return app_errors.ErrClothesIdInvalid
-	}
-
-	result, err := h.results.Get(userImageID, clothesID)
+	result, err := h.results.Get(id)
 	if err != nil {
 		return app_errors.New(err)
 	}

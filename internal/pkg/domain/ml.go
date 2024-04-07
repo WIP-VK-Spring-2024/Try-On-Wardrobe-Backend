@@ -82,7 +82,7 @@ type TryOnClothesInfo struct {
 //easyjson:json
 type TryOnResponse struct {
 	UserID         utils.UUID
-	ClothesID      utils.UUID
+	ClothesID      []utils.UUID
 	UserImageID    utils.UUID
 	TryOnResultID  string
 	TryOnResultDir string
