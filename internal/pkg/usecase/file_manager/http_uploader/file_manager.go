@@ -64,7 +64,11 @@ func (fm *FileManager) Save(ctx context.Context, dir, name string, input io.Read
 }
 
 func (fm *FileManager) Delete(ctx context.Context, dir, name string) error {
-	req, err := http.NewRequestWithContext(ctx, http.MethodDelete, fm.cfg.Endpoint+fm.cfg.DeleteUrl+"/"+dir+"/"+name, nil)
+	req, err := http.NewRequestWithContext(
+		ctx, http.MethodDelete,
+		fm.cfg.Endpoint+fm.cfg.DeleteUrl+"/"+name+"?folder="+dir,
+		nil,
+	)
 	if err != nil {
 		return err
 	}
