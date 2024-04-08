@@ -3,6 +3,7 @@ package outfits
 import (
 	"context"
 	"database/sql"
+	"log"
 	"time"
 
 	"try-on/internal/generated/sqlc"
@@ -190,6 +191,7 @@ func fromSqlc(model *sqlc.GetOutfitRow) *domain.Outfit {
 	err := easyjson.Unmarshal(model.Transforms, &result.Transforms)
 	if err != nil {
 		zap.S().Errorw("outfit transform map unmarshalling" + err.Error())
+		log.Println(err)
 	}
 
 	return result
