@@ -68,7 +68,8 @@ func (h *OutfitHandler) Get(ctx *fiber.Ctx) error {
 
 //easyjson:json
 type createdResponse struct {
-	Uuid utils.UUID
+	Uuid  utils.UUID
+	Image string
 }
 
 func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
@@ -95,6 +96,7 @@ func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 	outfit.UserID = session.UserID
+	outfit.Image = h.cfg.Outfits
 
 	err = h.outfits.Create(&outfit)
 	if err != nil {
@@ -110,7 +112,8 @@ func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(&createdResponse{
-		Uuid: outfit.ID,
+		Uuid:  outfit.ID,
+		Image: outfit.Image,
 	})
 }
 

@@ -29,18 +29,32 @@ func New(db *pgxpool.Pool) domain.OutfitRepository {
 }
 
 func (repo OutfitRepository) Create(outfit *domain.Outfit) error {
+	ctx := context.Background()
+	tx, err := repo.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	queries := repo.queries.WithTx(tx)
+
 	transforms, err := easyjson.Marshal(outfit.Transforms)
 	if err != nil {
 		return err
 	}
 
-	id, err := repo.queries.CreateOutfit(context.Background(), outfit.UserID, transforms)
+	id, err := queries.CreateOutfit(context.Background(), outfit.UserID, transforms)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	err = queries.SetOutfitImage(ctx, id, outfit.Image+"/"+id.String())
 	if err != nil {
 		return utils.PgxError(err)
 	}
 
 	outfit.ID = id
-	return nil
+	return tx.Commit(ctx)
 }
 
 func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {

@@ -274,12 +274,12 @@ func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID) ([]Ge
 
 const setOutfitImage = `-- name: SetOutfitImage :exec
 update outfits
-set image = $2
+set image = $2::text
 where id = $1
 `
 
-func (q *Queries) SetOutfitImage(ctx context.Context, iD utils.UUID, image pgtype.Text) error {
-	_, err := q.db.Exec(ctx, setOutfitImage, iD, image)
+func (q *Queries) SetOutfitImage(ctx context.Context, iD utils.UUID, column2 string) error {
+	_, err := q.db.Exec(ctx, setOutfitImage, iD, column2)
 	return err
 }
 

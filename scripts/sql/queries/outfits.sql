@@ -17,7 +17,7 @@ where id = $1;
 
 -- name: SetOutfitImage :exec
 update outfits
-set image = $2
+set image = $2::text
 where id = $1;
 
 -- name: GetOutfit :one
