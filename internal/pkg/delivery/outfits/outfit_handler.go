@@ -27,6 +27,7 @@ func New(db *pgxpool.Pool, file domain.FileManager, cfg *config.Static) *OutfitH
 	return &OutfitHandler{
 		outfits: outfitUsecase.New(outfitRepo.New(db)),
 		file:    file,
+		cfg:     cfg,
 	}
 }
 
