@@ -148,9 +148,9 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 		}
 
 		return handler(&domain.ClothesProcessingResponse{
-			UserID:    result.UserID,
-			ClothesID: result.ClothesID,
-			ResultDir: result.ResultDir,
+			UserID:     result.UserID,
+			ClothesID:  result.ClothesID,
+			ClothesDir: result.ResultDir,
 			Classification: domain.ClothesClassificationResponse{
 				Tags:     tags,
 				Seasons:  maps.Keys(result.Classification.Seasons),

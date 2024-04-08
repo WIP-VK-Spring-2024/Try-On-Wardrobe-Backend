@@ -70,10 +70,15 @@ func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 
 func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.TryOnResponse) domain.Result {
 	return func(resp *domain.TryOnResponse) domain.Result {
+		clothesIds := make([]utils.UUID, 0, len(resp.Clothes))
+		for _, clothes := range resp.Clothes {
+			clothesIds = append(clothesIds, clothes.ClothesID)
+		}
+
 		tryOnRes := &domain.TryOnResult{
 			UserImageID: resp.UserImageID,
-			ClothesID:   resp.ClothesID,
-			Image:       "/" + resp.TryOnResultDir + "/" + resp.TryOnResultID,
+			ClothesID:   clothesIds,
+			Image:       "/" + resp.TryOnDir + "/" + resp.TryOnID,
 		}
 
 		handleResult := domain.ResultOk

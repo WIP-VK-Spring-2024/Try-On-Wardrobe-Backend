@@ -508,27 +508,25 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain4(in *jlexer.Lexer, out *TryOnR
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
 			}
-		case "clothes_id":
+		case "clothes":
 			if in.IsNull() {
 				in.Skip()
-				out.ClothesID = nil
+				out.Clothes = nil
 			} else {
 				in.Delim('[')
-				if out.ClothesID == nil {
+				if out.Clothes == nil {
 					if !in.IsDelim(']') {
-						out.ClothesID = make([]utils.UUID, 0, 4)
+						out.Clothes = make([]TryOnClothesInfo, 0, 2)
 					} else {
-						out.ClothesID = []utils.UUID{}
+						out.Clothes = []TryOnClothesInfo{}
 					}
 				} else {
-					out.ClothesID = (out.ClothesID)[:0]
+					out.Clothes = (out.Clothes)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v7 utils.UUID
-					if data := in.UnsafeBytes(); in.Ok() {
-						in.AddError((v7).UnmarshalText(data))
-					}
-					out.ClothesID = append(out.ClothesID, v7)
+					var v7 TryOnClothesInfo
+					(v7).UnmarshalEasyJSON(in)
+					out.Clothes = append(out.Clothes, v7)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -537,10 +535,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain4(in *jlexer.Lexer, out *TryOnR
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserImageID).UnmarshalText(data))
 			}
-		case "try_on_result_id":
-			out.TryOnResultID = string(in.String())
-		case "try_on_result_dir":
-			out.TryOnResultDir = string(in.String())
+		case "try_on_id":
+			out.TryOnID = string(in.String())
+		case "try_on_dir":
+			out.TryOnDir = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -561,8 +559,8 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain4(out *jwriter.Writer, in TryOn
 		out.RawString(prefix[1:])
 		out.RawText((in.UserID).MarshalText())
 	}
-	if len(in.ClothesID) != 0 {
-		const prefix string = ",\"clothes_id\":"
+	if len(in.Clothes) != 0 {
+		const prefix string = ",\"clothes\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
@@ -571,11 +569,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain4(out *jwriter.Writer, in TryOn
 		}
 		{
 			out.RawByte('[')
-			for v8, v9 := range in.ClothesID {
+			for v8, v9 := range in.Clothes {
 				if v8 > 0 {
 					out.RawByte(',')
 				}
-				out.RawText((v9).MarshalText())
+				(v9).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
@@ -590,25 +588,25 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain4(out *jwriter.Writer, in TryOn
 		}
 		out.RawText((in.UserImageID).MarshalText())
 	}
-	if in.TryOnResultID != "" {
-		const prefix string = ",\"try_on_result_id\":"
+	if in.TryOnID != "" {
+		const prefix string = ",\"try_on_id\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.TryOnResultID))
+		out.String(string(in.TryOnID))
 	}
-	if in.TryOnResultDir != "" {
-		const prefix string = ",\"try_on_result_dir\":"
+	if in.TryOnDir != "" {
+		const prefix string = ",\"try_on_dir\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.TryOnResultDir))
+		out.String(string(in.TryOnDir))
 	}
 	out.RawByte('}')
 }
@@ -1714,8 +1712,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain14(in *jlexer.Lexer, out *Cloth
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ClothesID).UnmarshalText(data))
 			}
-		case "result_dir":
-			out.ResultDir = string(in.String())
+		case "clothes_dir":
+			out.ClothesDir = string(in.String())
 		case "classification":
 			(out.Classification).UnmarshalEasyJSON(in)
 		default:
@@ -1748,15 +1746,15 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain14(out *jwriter.Writer, in Clot
 		}
 		out.RawText((in.ClothesID).MarshalText())
 	}
-	if in.ResultDir != "" {
-		const prefix string = ",\"result_dir\":"
+	if in.ClothesDir != "" {
+		const prefix string = ",\"clothes_dir\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.String(string(in.ResultDir))
+		out.String(string(in.ClothesDir))
 	}
 	if true {
 		const prefix string = ",\"classification\":"

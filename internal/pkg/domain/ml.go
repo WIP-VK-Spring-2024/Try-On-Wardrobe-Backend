@@ -42,7 +42,7 @@ type ClothesProcessingRequest struct {
 type ClothesProcessingResponse struct {
 	UserID         utils.UUID
 	ClothesID      utils.UUID
-	ResultDir      string
+	ClothesDir     string
 	Classification ClothesClassificationResponse
 }
 
@@ -81,9 +81,9 @@ type TryOnClothesInfo struct {
 
 //easyjson:json
 type TryOnResponse struct {
-	UserID         utils.UUID
-	ClothesID      []utils.UUID
-	UserImageID    utils.UUID
-	TryOnResultID  string
-	TryOnResultDir string
+	UserID      utils.UUID
+	Clothes     []TryOnClothesInfo
+	UserImageID utils.UUID
+	TryOnID     string
+	TryOnDir    string
 }
