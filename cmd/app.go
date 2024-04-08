@@ -181,7 +181,8 @@ func (app *App) Run() error {
 	app.api.Patch("/try-on/:id/rate", tryOnHandler.Rate)
 
 	app.api.Post("/outfits", outfitHandler.Create)
-	app.api.Get("/outfits", outfitHandler.Get)
+	app.api.Get("/outfits", outfitHandler.GetByUser)
+	app.api.Get("/posts", outfitHandler.Get)
 	app.api.Get("/outfits/:id", outfitHandler.GetById)
 	app.api.Delete("/outfits/:id", outfitHandler.Delete)
 	app.api.Put("/outfits/:id", outfitHandler.Update)

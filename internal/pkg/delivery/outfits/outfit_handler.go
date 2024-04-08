@@ -67,6 +67,20 @@ func (h *OutfitHandler) Get(ctx *fiber.Ctx) error {
 	return ctx.JSON(outfits)
 }
 
+func (h *OutfitHandler) GetByUser(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	outfits, err := h.outfits.GetByUser(session.UserID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(outfits)
+}
+
 //easyjson:json
 type createdResponse struct {
 	Uuid  utils.UUID
