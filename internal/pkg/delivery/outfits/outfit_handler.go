@@ -14,6 +14,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
+	easyjson "github.com/mailru/easyjson"
 	"github.com/valyala/fasthttp"
 )
 
@@ -106,7 +107,10 @@ func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
 	defer file.Close()
 
 	var outfit domain.Outfit
-	if err := ctx.BodyParser(&outfit); err != nil {
+
+	transforms := ctx.FormValue("transforms")
+
+	if err := easyjson.Unmarshal([]byte(transforms), &outfit.Transforms); err != nil {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
