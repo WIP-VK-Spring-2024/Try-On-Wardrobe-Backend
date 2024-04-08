@@ -29,16 +29,12 @@ type TransformMap map[utils.UUID]Transform
 
 //easyjson:json
 type Transform struct {
-	Pos      Vector
-	Size     Vector
-	Rotation int
-	Scale    float32
-}
-
-//easyjson:json
-type Vector struct {
-	X int
-	Y int
+	X      int
+	Y      int
+	Width  int
+	Height int
+	Angle  int
+	Scale  float32
 }
 
 type OutfitUsecase interface {
