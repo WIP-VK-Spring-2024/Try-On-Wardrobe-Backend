@@ -142,6 +142,11 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
+	id, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrOutfitIdInvalid
+	}
+
 	var outfit domain.Outfit
 
 	if err := ctx.BodyParser(&outfit); err != nil {
@@ -149,6 +154,7 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 	outfit.UserID = session.UserID
+	outfit.ID = id
 
 	transforms := ctx.FormValue("transforms")
 
@@ -157,7 +163,7 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	err := h.outfits.Update(&outfit)
+	err = h.outfits.Update(&outfit)
 	if err != nil {
 		return app_errors.New(err)
 	}
