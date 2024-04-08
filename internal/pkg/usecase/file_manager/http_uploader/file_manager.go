@@ -73,6 +73,7 @@ func (fm *FileManager) Delete(ctx context.Context, dir, name string) error {
 		return err
 	}
 
+	req.Header.Set(fm.cfg.TokenHeader, fm.cfg.Token)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
