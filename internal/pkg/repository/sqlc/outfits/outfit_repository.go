@@ -47,8 +47,9 @@ func (repo OutfitRepository) Create(outfit *domain.Outfit) error {
 	if err != nil {
 		return utils.PgxError(err)
 	}
+	outfit.Image = outfit.Image + "/" + id.String()
 
-	err = queries.SetOutfitImage(ctx, id, outfit.Image+"/"+id.String())
+	err = queries.SetOutfitImage(ctx, id, outfit.Image)
 	if err != nil {
 		return utils.PgxError(err)
 	}
