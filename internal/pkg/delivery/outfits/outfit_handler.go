@@ -143,11 +143,19 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 	}
 
 	var outfit domain.Outfit
+
 	if err := ctx.BodyParser(&outfit); err != nil {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 	outfit.UserID = session.UserID
+
+	transforms := ctx.FormValue("transforms")
+
+	if err := easyjson.Unmarshal([]byte(transforms), &outfit.Transforms); err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
 
 	err := h.outfits.Update(&outfit)
 	if err != nil {
