@@ -29,11 +29,11 @@ type TransformMap map[utils.UUID]Transform
 
 //easyjson:json
 type Transform struct {
-	X      int
-	Y      int
-	Width  int
-	Height int
-	Angle  int
+	X      float32
+	Y      float32
+	Width  float32
+	Height float32
+	Angle  float32
 	Scale  float32
 }
 

@@ -876,15 +876,15 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain7(in *jlexer.Lexer, out *Transf
 		}
 		switch key {
 		case "x":
-			out.X = int(in.Int())
+			out.X = float32(in.Float32())
 		case "y":
-			out.Y = int(in.Int())
+			out.Y = float32(in.Float32())
 		case "width":
-			out.Width = int(in.Int())
+			out.Width = float32(in.Float32())
 		case "height":
-			out.Height = int(in.Int())
+			out.Height = float32(in.Float32())
 		case "angle":
-			out.Angle = int(in.Int())
+			out.Angle = float32(in.Float32())
 		case "scale":
 			out.Scale = float32(in.Float32())
 		default:
@@ -905,7 +905,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain7(out *jwriter.Writer, in Trans
 		const prefix string = ",\"x\":"
 		first = false
 		out.RawString(prefix[1:])
-		out.Int(int(in.X))
+		out.Float32(float32(in.X))
 	}
 	if in.Y != 0 {
 		const prefix string = ",\"y\":"
@@ -915,7 +915,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain7(out *jwriter.Writer, in Trans
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int(int(in.Y))
+		out.Float32(float32(in.Y))
 	}
 	if in.Width != 0 {
 		const prefix string = ",\"width\":"
@@ -925,7 +925,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain7(out *jwriter.Writer, in Trans
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int(int(in.Width))
+		out.Float32(float32(in.Width))
 	}
 	if in.Height != 0 {
 		const prefix string = ",\"height\":"
@@ -935,7 +935,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain7(out *jwriter.Writer, in Trans
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int(int(in.Height))
+		out.Float32(float32(in.Height))
 	}
 	if in.Angle != 0 {
 		const prefix string = ",\"angle\":"
@@ -945,7 +945,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain7(out *jwriter.Writer, in Trans
 		} else {
 			out.RawString(prefix)
 		}
-		out.Int(int(in.Angle))
+		out.Float32(float32(in.Angle))
 	}
 	if in.Scale != 0 {
 		const prefix string = ",\"scale\":"
