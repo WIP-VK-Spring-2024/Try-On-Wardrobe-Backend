@@ -129,7 +129,7 @@ func (app *App) Run() error {
 		centrifugoConn,
 	)
 
-	outfitHandler := outfits.New(pg, fileManager)
+	outfitHandler := outfits.New(pg, fileManager, &app.cfg.Static)
 
 	userImageHandler := user_images.New(pg, fileManager, &app.cfg.Static)
 

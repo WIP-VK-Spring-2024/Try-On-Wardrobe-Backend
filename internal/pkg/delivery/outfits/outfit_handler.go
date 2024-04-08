@@ -23,7 +23,7 @@ type OutfitHandler struct {
 	cfg     *config.Static
 }
 
-func New(db *pgxpool.Pool, file domain.FileManager) *OutfitHandler {
+func New(db *pgxpool.Pool, file domain.FileManager, cfg *config.Static) *OutfitHandler {
 	return &OutfitHandler{
 		outfits: outfitUsecase.New(outfitRepo.New(db)),
 		file:    file,
