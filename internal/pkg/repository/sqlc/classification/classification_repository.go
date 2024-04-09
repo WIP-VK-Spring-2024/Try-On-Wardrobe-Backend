@@ -2,6 +2,7 @@ package classification
 
 import (
 	"context"
+	"slices"
 
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
@@ -34,6 +35,12 @@ func (c ClothesClassificationRepository) GetClassifications(userId utils.UUID, t
 
 	tagNames = append(tagNames, userTagNames...)
 
+	strTagNames := utils.Map(tagNames, func(t *pgtype.Text) *string {
+		return &t.String
+	})
+	slices.Sort(strTagNames)
+	strTagNames = slices.Compact(strTagNames)
+
 	styleNames, err := c.queries.GetStyleEngNames(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -54,9 +61,7 @@ func (c ClothesClassificationRepository) GetClassifications(userId utils.UUID, t
 		Categories:    typeNames,
 		Subcategories: subtypeNames,
 		Seasons:       domain.Seasons,
-		Tags: utils.Map(tagNames, func(t *pgtype.Text) *string {
-			return &t.String
-		}),
+		Tags:          strTagNames,
 	}, nil
 }
 
