@@ -11,8 +11,6 @@ import (
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/try_on"
-	"try-on/internal/pkg/repository/sqlc/user_images"
-	"try-on/internal/pkg/usecase/outfits"
 	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -23,31 +21,22 @@ import (
 )
 
 type TryOnHandler struct {
-	model domain.ClothesProcessingModel
-
-	clothes    domain.ClothesUsecase
-	outfits    domain.OutfitUsecase
-	userImages domain.UserImageRepository
+	tryOnModel domain.TryOnUsecase
 	results    domain.TryOnResultRepository
 
 	centrifugo centrifugo.CentrifugoApiClient
-
-	logger *zap.SugaredLogger
+	logger     *zap.SugaredLogger
 }
 
 func New(
 	db *pgxpool.Pool,
-	model domain.ClothesProcessingModel,
-	clothes domain.ClothesUsecase,
+	tryOnModel domain.TryOnUsecase,
 	logger *zap.SugaredLogger,
 	centrifugoConn grpc.ClientConnInterface,
 ) *TryOnHandler {
 	return &TryOnHandler{
-		model:      model,
-		clothes:    clothes,
-		userImages: user_images.New(db),
+		tryOnModel: tryOnModel,
 		results:    try_on.New(db),
-		outfits:    outfits.NewWithSqlcRepo(db),
 		logger:     logger,
 		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
 	}
@@ -61,7 +50,7 @@ func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 			}
 		}()
 
-		err := h.model.GetTryOnResults(h.logger, h.handleQueueResponse(cfg))
+		err := h.tryOnModel.GetTryOnResults(h.logger, h.handleQueueResponse(cfg))
 		if err != nil {
 			h.logger.Errorw(err.Error())
 		}
@@ -140,24 +129,13 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	clothes, err := h.clothes.GetTryOnInfo(req.ClothesID)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	_, err = h.userImages.Get(req.UserImageID)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
 	cfg := middleware.Config(ctx)
 
-	err = h.model.TryOn(ctx.UserContext(), domain.TryOnRequest{
+	err = h.tryOnModel.TryOn(ctx.UserContext(), req.ClothesID, domain.TryOnOpts{
 		UserID:       session.UserID,
 		UserImageID:  req.UserImageID,
 		UserImageDir: cfg.Static.FullBody,
 		ClothesDir:   cfg.Static.Cut,
-		Clothes:      clothes,
 	})
 	if err != nil {
 		return app_errors.New(err)
@@ -185,24 +163,13 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	clothesInfo, err := h.outfits.GetClothesInfo(req.OutfitID)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	_, err = h.userImages.Get(req.UserImageID)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
 	cfg := middleware.Config(ctx)
 
-	err = h.model.TryOn(ctx.UserContext(), domain.TryOnRequest{
+	err = h.tryOnModel.TryOnOutfit(ctx.UserContext(), req.OutfitID, domain.TryOnOpts{
 		UserID:       session.UserID,
 		UserImageID:  req.UserImageID,
 		UserImageDir: cfg.Static.FullBody,
 		ClothesDir:   cfg.Static.Cut,
-		Clothes:      clothesInfo,
 	})
 	if err != nil {
 		return app_errors.New(err)

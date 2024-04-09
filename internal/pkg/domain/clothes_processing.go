@@ -15,11 +15,9 @@ const (
 )
 
 type ClothesProcessingModel interface {
+	Closer
 	Process(ctx context.Context, opts ClothesProcessingRequest) error
-	TryOn(ctx context.Context, opts TryOnRequest) error
-	GetTryOnResults(logger *zap.SugaredLogger, handler func(*TryOnResponse) Result) error
 	GetProcessingResults(logger *zap.SugaredLogger, handler func(*ClothesProcessingResponse) Result) error
-	Close()
 }
 
 type ClothesClassificationRepository interface {
@@ -47,6 +45,14 @@ type ClothesProcessingResponse struct {
 }
 
 //easyjson:json
+type ClothesProcessingModelResponse struct {
+	UserID         utils.UUID
+	ClothesID      utils.UUID
+	ClothesDir     string
+	Classification ClothesClassificationModelResponse
+}
+
+//easyjson:json
 type ClothesClassificationRequest struct { // Request to ML-server
 	Tags          []string
 	Styles        []string
@@ -58,32 +64,17 @@ type ClothesClassificationRequest struct { // Request to ML-server
 //easyjson:json
 type ClothesClassificationResponse struct { // End-user response
 	Type     utils.UUID
-	Subtypes []utils.UUID // maybe only one should be returned?
+	Subtypes []utils.UUID
 	Style    utils.UUID
 	Seasons  []Season
 	Tags     []string
 }
 
 //easyjson:json
-type TryOnRequest struct {
-	UserID       utils.UUID
-	UserImageID  utils.UUID
-	UserImageDir string
-	ClothesDir   string
-	Clothes      []TryOnClothesInfo
-}
-
-//easyjson:json
-type TryOnClothesInfo struct {
-	ClothesID utils.UUID
-	Category  string
-}
-
-//easyjson:json
-type TryOnResponse struct {
-	UserID      utils.UUID
-	Clothes     []TryOnClothesInfo
-	UserImageID utils.UUID
-	TryOnID     string
-	TryOnDir    string
+type ClothesClassificationModelResponse struct {
+	Tags          map[string]float32
+	Categories    map[string]float32
+	Subcategories map[string]float32
+	Seasons       map[string]float32
+	Styles        map[string]float32
 }

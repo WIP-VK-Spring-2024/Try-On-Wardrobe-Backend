@@ -14,15 +14,18 @@ import (
 	"try-on/internal/pkg/delivery/tags"
 	"try-on/internal/pkg/delivery/types"
 	"try-on/internal/pkg/delivery/user_images"
+	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/usecase/file_manager"
 	"try-on/internal/pkg/usecase/ml"
 	"try-on/internal/pkg/usecase/translator/gtranslate"
+	tryon "try-on/internal/pkg/usecase/try_on"
 	"try-on/internal/pkg/utils"
 
 	clothes "try-on/internal/pkg/delivery/clothes"
 	session "try-on/internal/pkg/delivery/session"
-	tryOn "try-on/internal/pkg/delivery/try_on"
+	tryOnHandler "try-on/internal/pkg/delivery/try_on"
 
+	"try-on/internal/pkg/repository/rabbit"
 	clothesRepo "try-on/internal/pkg/repository/sqlc/clothes"
 	clothesUsecase "try-on/internal/pkg/usecase/clothes"
 	tagsUsecase "try-on/internal/pkg/usecase/tags"
@@ -69,16 +72,13 @@ func (app *App) Run() error {
 		return err
 	}
 
-	clothesProcessor, err := ml.New(
-		app.cfg.Rabbit.TryOn,
-		app.cfg.Rabbit.Process,
-		rabbitConn,
+	clothesProcessor := ml.New(
+		rabbit.NewPublisher[domain.ClothesProcessingRequest](rabbitConn, app.cfg.Rabbit.Process.Request),
+		rabbit.NewSubscriber[domain.ClothesProcessingModelResponse](rabbitConn, app.cfg.Rabbit.Process.Response),
 		&app.cfg.Classification,
 		pg,
 	)
-	if err != nil {
-		return err
-	}
+	defer clothesProcessor.Close()
 
 	recover := recover.New(recover.Config{
 		EnableStackTrace: true,
@@ -98,9 +98,9 @@ func (app *App) Run() error {
 	sessionHandler := session.New(pg, &app.cfg.Session)
 
 	checkSession := middleware.CheckSession(middleware.SessionConfig{
-		TokenName:    app.cfg.Session.TokenName,
-		Sessions:     sessionHandler.Sessions,
-		NoAuthRoutes: []string{"/register", "/login"},
+		TokenName: app.cfg.Session.TokenName,
+		Sessions:  sessionHandler.Sessions,
+		// NoAuthRoutes: []string{"/register", "/login"},
 		// SecureRoutes: []string{"/renew", "/clothes"},
 	})
 
@@ -123,9 +123,16 @@ func (app *App) Run() error {
 		centrifugoConn,
 	)
 
-	tryOnHandler := tryOn.New(
-		pg, clothesProcessor,
-		clothesUsecase, app.logger,
+	tryOnUsecase := tryon.New(
+		pg,
+		rabbit.NewPublisher[domain.TryOnRequest](rabbitConn, app.cfg.Rabbit.TryOn.Request),
+		rabbit.NewSubscriber[domain.TryOnResponse](rabbitConn, app.cfg.Rabbit.TryOn.Response),
+	)
+	defer tryOnUsecase.Close()
+
+	tryOnHandler := tryOnHandler.New(
+		pg, tryOnUsecase,
+		app.logger,
 		centrifugoConn,
 	)
 

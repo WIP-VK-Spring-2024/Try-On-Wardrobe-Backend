@@ -1,7 +1,6 @@
 package outfits
 
 import (
-	"slices"
 	"time"
 
 	"try-on/internal/pkg/app_errors"
@@ -71,39 +70,9 @@ func (u OutfitUsecase) GetClothesInfo(outfitId utils.UUID) ([]domain.TryOnClothe
 	if err != nil {
 		return nil, err
 	}
-	return filterClothesForTryOn(clothesInfo), nil
+	return clothesInfo, nil
 }
 
 func (u OutfitUsecase) GetByUser(id utils.UUID) ([]domain.Outfit, error) {
 	return u.repo.GetByUser(id)
-}
-
-func filterClothesForTryOn(clothes []domain.TryOnClothesInfo) []domain.TryOnClothesInfo {
-	dressIdx := slices.IndexFunc(clothes, func(c domain.TryOnClothesInfo) bool {
-		return c.Category == domain.TryOnCategoryDress
-	})
-
-	if dressIdx != -1 {
-		return []domain.TryOnClothesInfo{clothes[dressIdx]}
-	}
-
-	result := make([]domain.TryOnClothesInfo, 0, 2)
-
-	upperBodyIdx := slices.IndexFunc(clothes, func(c domain.TryOnClothesInfo) bool {
-		return c.Category == domain.TryOnCategoryUpper
-	})
-
-	if upperBodyIdx != -1 {
-		result = append(result, clothes[upperBodyIdx])
-	}
-
-	lowerBodyIdx := slices.IndexFunc(clothes, func(c domain.TryOnClothesInfo) bool {
-		return c.Category == domain.TryOnCategoryLower
-	})
-
-	if lowerBodyIdx != -1 {
-		result = append(result, clothes[lowerBodyIdx])
-	}
-
-	return result
 }
