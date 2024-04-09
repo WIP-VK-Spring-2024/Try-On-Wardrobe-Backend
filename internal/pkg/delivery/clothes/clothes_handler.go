@@ -250,7 +250,7 @@ func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
 //easyjson:json
 type processingResponse struct {
 	uploadResponse
-	classification domain.ClothesClassificationResponse
+	Classification domain.ClothesClassificationResponse
 }
 
 func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
@@ -268,7 +268,7 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 				Msg:   domain.ClothesStatusProcessed,
 				Image: cutImageUrl,
 			},
-			classification: resp.Classification,
+			Classification: resp.Classification,
 		}
 
 		bytes, err := easyjson.Marshal(payload)
