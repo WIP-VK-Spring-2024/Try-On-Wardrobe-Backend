@@ -21,9 +21,10 @@ select id from types
 where eng_name = $1
 limit 1;
 
--- name: GetSubtypeIdsByEngName :many
-select id from types
-where eng_name = any(sqlc.arg(eng_names)::text[]);
+-- name: GetSubtypeIdsByEngName :one
+select id from subtypes
+where eng_name = $1
+limit 1;
 
 -- name: GetTypeEngNames :many
 select eng_name

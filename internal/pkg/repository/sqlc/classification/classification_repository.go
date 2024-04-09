@@ -69,8 +69,8 @@ func (c ClothesClassificationRepository) GetTypeId(engName string) (utils.UUID, 
 	return c.queries.GetTypeIdByEngName(context.Background(), engName)
 }
 
-func (c ClothesClassificationRepository) GetSubtypeIds(engNames []string) ([]utils.UUID, error) {
-	return c.queries.GetSubtypeIdsByEngName(context.Background(), engNames)
+func (c ClothesClassificationRepository) GetSubtypeIds(engName string) (utils.UUID, error) {
+	return c.queries.GetSubtypeIdsByEngName(context.Background(), engName)
 }
 
 func (c ClothesClassificationRepository) GetStyleId(engName string) (utils.UUID, error) {

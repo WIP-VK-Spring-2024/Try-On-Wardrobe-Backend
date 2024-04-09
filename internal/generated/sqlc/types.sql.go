@@ -37,29 +37,17 @@ func (q *Queries) GetSubtypeEngNames(ctx context.Context) ([]string, error) {
 	return items, nil
 }
 
-const getSubtypeIdsByEngName = `-- name: GetSubtypeIdsByEngName :many
-select id from types
-where eng_name = any($1::text[])
+const getSubtypeIdsByEngName = `-- name: GetSubtypeIdsByEngName :one
+select id from subtypes
+where eng_name = $1
+limit 1
 `
 
-func (q *Queries) GetSubtypeIdsByEngName(ctx context.Context, engNames []string) ([]utils.UUID, error) {
-	rows, err := q.db.Query(ctx, getSubtypeIdsByEngName, engNames)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []utils.UUID
-	for rows.Next() {
-		var id utils.UUID
-		if err := rows.Scan(&id); err != nil {
-			return nil, err
-		}
-		items = append(items, id)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetSubtypeIdsByEngName(ctx context.Context, engName string) (utils.UUID, error) {
+	row := q.db.QueryRow(ctx, getSubtypeIdsByEngName, engName)
+	var id utils.UUID
+	err := row.Scan(&id)
+	return id, err
 }
 
 const getSubtypes = `-- name: GetSubtypes :many

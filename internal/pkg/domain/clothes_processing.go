@@ -23,7 +23,7 @@ type ClothesProcessingModel interface {
 type ClothesClassificationRepository interface {
 	GetClassifications(userId utils.UUID, tagLimit int32) (*ClothesClassificationRequest, error)
 	GetTypeId(engName string) (utils.UUID, error)
-	GetSubtypeIds(engNames []string) ([]utils.UUID, error)
+	GetSubtypeIds(engName string) (utils.UUID, error)
 	GetStyleId(engName string) (utils.UUID, error)
 	GetTags(engNames []string) ([]string, error)
 }
@@ -64,7 +64,7 @@ type ClothesClassificationRequest struct { // Request to ML-server
 //easyjson:json
 type ClothesClassificationResponse struct { // End-user response
 	Type     utils.UUID
-	Subtypes []utils.UUID
+	Subtypes utils.UUID
 	Style    utils.UUID
 	Seasons  []Season
 	Tags     []string

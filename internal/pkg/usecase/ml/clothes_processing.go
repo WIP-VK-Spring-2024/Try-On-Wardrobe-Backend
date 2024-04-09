@@ -77,9 +77,9 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			return domain.ResultDiscard
 		}
 
-		subcategories := filterSubcategories(result.Classification.Subcategories, p.cfg.Threshold)
+		subcategories := maxKey(result.Classification.Subcategories)
 		log.Println("Filtered subcategories:", subcategories)
-		subtypeIds, err := p.classificationRepo.GetSubtypeIds(subcategories)
+		subtypeId, err := p.classificationRepo.GetSubtypeIds(subcategories)
 		if err != nil {
 			logger.Errorw(err.Error())
 			return domain.ResultDiscard
@@ -100,7 +100,7 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 				Seasons:  removeClothesSuffix(maps.Keys(result.Classification.Seasons)),
 				Style:    styleId,
 				Type:     typeId,
-				Subtypes: subtypeIds,
+				Subtypes: subtypeId,
 			},
 		})
 	})
