@@ -56,6 +56,8 @@ func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProce
 	return p.publisher.Publish(ctx, opts)
 }
 
+// func
+
 func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
 	return p.subscriber.Listen(logger, func(result *domain.ClothesProcessingModelResponse) domain.Result {
 		maps.DeleteFunc(result.Classification.Tags, notPassesThreshold[string](p.cfg.Threshold))
