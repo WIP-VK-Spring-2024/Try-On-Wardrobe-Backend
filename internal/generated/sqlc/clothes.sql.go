@@ -254,8 +254,9 @@ func (q *Queries) GetClothesIdByOutfit(ctx context.Context, id utils.UUID) ([]ut
 const getClothesTryOnInfo = `-- name: GetClothesTryOnInfo :many
 select
     clothes.id,
-    try_on_type(clothes.type) as category
+    try_on_type(type.name) as category
 from clothes
+join types on types.id = clothes.type_id
 where clothes.id = any($1::uuid[]) and category <> ''
 `
 

@@ -115,7 +115,8 @@ where id = $1;
 -- name: GetOutfitClothesInfo :many
 select
     clothes.id,
-    try_on_type(clothes.type) as category
+    try_on_type(type.name) as category
 from outfits
 join clothes on outfit.transforms ? clothes.id
+join types on types.id = clothes.type_id
 where outfits.id = $1 and category <> '';

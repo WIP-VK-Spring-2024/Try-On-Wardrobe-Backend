@@ -3,6 +3,7 @@ package ml
 import (
 	"cmp"
 	"context"
+	"log"
 	"strings"
 
 	"try-on/internal/pkg/config"
@@ -61,6 +62,9 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 
 		maps.DeleteFunc(result.Classification.Seasons, notPassesThreshold[string](p.cfg.Threshold))
 
+		log.Println("Filtered tags:", maps.Keys(result.Classification.Tags))
+		log.Println("Filtered seasons:", maps.Keys(result.Classification.Seasons))
+
 		styleId, err := p.classificationRepo.GetStyleId(maxKey(result.Classification.Styles))
 		if err != nil {
 			logger.Errorw(err.Error())
@@ -74,6 +78,7 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 		}
 
 		subcategories := filterSubcategories(result.Classification.Subcategories, p.cfg.Threshold)
+		log.Println("Filtered subcategories:", subcategories)
 		subtypeIds, err := p.classificationRepo.GetSubtypeIds(subcategories)
 		if err != nil {
 			logger.Errorw(err.Error())

@@ -8,7 +8,7 @@
   },
 
   "classification": {
-    "threshold": 0.75
+    "threshold": 0.9
   },
 
   "static": {
