@@ -3,7 +3,6 @@ package ml
 import (
 	"cmp"
 	"context"
-	"fmt"
 	"log"
 	"strings"
 
@@ -76,13 +75,6 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			return domain.ResultDiscard
 		}
 
-		maxType := maxKey(result.Classification.Categories)
-		typeId, err := p.classificationRepo.GetTypeId(maxType)
-		if err != nil {
-			logger.Errorw(err.Error())
-			return domain.ResultDiscard
-		}
-
 		subcategory := maxKey(result.Classification.Subcategories)
 		log.Println("Filtered subcategories:", subcategory)
 		subtypeId, err := p.classificationRepo.GetSubtypeIds(subcategory)
@@ -97,13 +89,17 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			return domain.ResultDiscard
 		}
 
-		fmt.Println("Category is", maxType, ", tryonable: ", isTryonable(maxType))
+		typeId, tryonable, err := p.classificationRepo.GetTypeBySubtype(subtypeId)
+		if err != nil {
+			logger.Errorw(err.Error())
+			return domain.ResultDiscard
+		}
 
 		return handler(&domain.ClothesProcessingResponse{
 			UserID:     result.UserID,
 			ClothesID:  result.ClothesID,
 			ClothesDir: result.ClothesDir,
-			Tryonable:  isTryonable(maxType),
+			Tryonable:  tryonable,
 			Classification: domain.ClothesClassificationResponse{
 				Tags:    tags,
 				Seasons: removeClothesSuffix(maxKeys(result.Classification.Seasons, p.cfg.Threshold)),

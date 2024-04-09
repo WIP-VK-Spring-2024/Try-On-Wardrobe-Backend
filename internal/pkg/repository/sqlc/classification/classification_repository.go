@@ -69,6 +69,15 @@ func (c ClothesClassificationRepository) GetTypeId(engName string) (utils.UUID, 
 	return c.queries.GetTypeIdByEngName(context.Background(), engName)
 }
 
+func (c ClothesClassificationRepository) GetTypeBySubtype(id utils.UUID) (utils.UUID, bool, error) {
+	res, err := c.queries.GetTypeBySubtype(context.Background(), id)
+	if err != nil {
+		return utils.NilUUID, false, err
+	}
+
+	return res.ID, res.Tryonable, nil
+}
+
 func (c ClothesClassificationRepository) GetSubtypeIds(engName string) (utils.UUID, error) {
 	return c.queries.GetSubtypeIdsByEngName(context.Background(), engName)
 }

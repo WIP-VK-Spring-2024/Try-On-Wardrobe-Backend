@@ -33,3 +33,9 @@ from types;
 -- name: GetSubtypeEngNames :many
 select eng_name
 from subtypes;
+
+-- name: GetTypeBySubtype :one
+select t.id, t.tryonable
+from types t
+join subtypes s on s.type_id = t.id
+where s.id = $1;

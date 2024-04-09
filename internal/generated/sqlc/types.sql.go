@@ -81,6 +81,25 @@ func (q *Queries) GetSubtypes(ctx context.Context) ([]Subtype, error) {
 	return items, nil
 }
 
+const getTypeBySubtype = `-- name: GetTypeBySubtype :one
+select t.id, t.tryonable
+from types t
+join subtypes s on s.type_id = t.id
+where s.id = $1
+`
+
+type GetTypeBySubtypeRow struct {
+	ID        utils.UUID
+	Tryonable bool
+}
+
+func (q *Queries) GetTypeBySubtype(ctx context.Context, id utils.UUID) (GetTypeBySubtypeRow, error) {
+	row := q.db.QueryRow(ctx, getTypeBySubtype, id)
+	var i GetTypeBySubtypeRow
+	err := row.Scan(&i.ID, &i.Tryonable)
+	return i, err
+}
+
 const getTypeEngNames = `-- name: GetTypeEngNames :many
 select eng_name
 from types
