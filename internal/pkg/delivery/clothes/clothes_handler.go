@@ -250,6 +250,7 @@ func (h *ClothesHandler) ListenProcessingResults(cfg *config.Centrifugo) {
 //easyjson:json
 type processingResponse struct {
 	uploadResponse
+	Tryonable      bool
 	Classification domain.ClothesClassificationResponse
 }
 
@@ -268,6 +269,7 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 				Msg:   domain.ClothesStatusProcessed,
 				Image: cutImageUrl,
 			},
+			Tryonable:      resp.Tryonable,
 			Classification: resp.Classification,
 		}
 

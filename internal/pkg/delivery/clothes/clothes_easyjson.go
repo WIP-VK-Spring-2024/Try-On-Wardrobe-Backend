@@ -129,6 +129,8 @@ func easyjson31a459deDecodeTryOnInternalPkgDeliveryClothes1(in *jlexer.Lexer, ou
 			continue
 		}
 		switch key {
+		case "tryonable":
+			out.Tryonable = bool(in.Bool())
 		case "classification":
 			(out.Classification).UnmarshalEasyJSON(in)
 		case "uuid":
@@ -153,10 +155,20 @@ func easyjson31a459deEncodeTryOnInternalPkgDeliveryClothes1(out *jwriter.Writer,
 	out.RawByte('{')
 	first := true
 	_ = first
-	if true {
-		const prefix string = ",\"classification\":"
+	if in.Tryonable {
+		const prefix string = ",\"tryonable\":"
 		first = false
 		out.RawString(prefix[1:])
+		out.Bool(bool(in.Tryonable))
+	}
+	if true {
+		const prefix string = ",\"classification\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		(in.Classification).MarshalEasyJSON(out)
 	}
 	if (in.Uuid).IsDefined() {
