@@ -109,4 +109,5 @@ select
     try_on_type(types.name) as category
 from clothes
 join types on types.id = clothes.type_id
-where clothes.id = any(sqlc.arg(ids)::uuid[]) and category <> '';
+where clothes.id = any(sqlc.arg(ids)::uuid[])
+    and try_on_type(types.name) <> '';

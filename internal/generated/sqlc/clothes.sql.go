@@ -257,7 +257,8 @@ select
     try_on_type(types.name) as category
 from clothes
 join types on types.id = clothes.type_id
-where clothes.id = any($1::uuid[]) and category <> ''
+where clothes.id = any($1::uuid[])
+    and try_on_type(types.name) <> ''
 `
 
 type GetClothesTryOnInfoRow struct {

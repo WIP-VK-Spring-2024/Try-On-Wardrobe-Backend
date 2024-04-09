@@ -102,7 +102,7 @@ select
 from outfits
 join clothes on outfit.transforms ? clothes.id
 join types on types.id = clothes.type_id
-where outfits.id = $1 and category <> ''
+where outfits.id = $1 and try_on_type(types.name) <> ''
 `
 
 type GetOutfitClothesInfoRow struct {
