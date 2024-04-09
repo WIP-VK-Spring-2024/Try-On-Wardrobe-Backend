@@ -1766,6 +1766,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain14(in *jlexer.Lexer, out *Cloth
 			}
 		case "clothes_dir":
 			out.ClothesDir = string(in.String())
+		case "tryonable":
+			out.Tryonable = bool(in.Bool())
 		case "classification":
 			(out.Classification).UnmarshalEasyJSON(in)
 		default:
@@ -1807,6 +1809,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain14(out *jwriter.Writer, in Clot
 			out.RawString(prefix)
 		}
 		out.String(string(in.ClothesDir))
+	}
+	if in.Tryonable {
+		const prefix string = ",\"tryonable\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.Tryonable))
 	}
 	if true {
 		const prefix string = ",\"classification\":"

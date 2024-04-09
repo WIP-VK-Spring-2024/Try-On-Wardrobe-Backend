@@ -75,7 +75,8 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			return domain.ResultDiscard
 		}
 
-		typeId, err := p.classificationRepo.GetTypeId(maxKey(result.Classification.Categories))
+		maxType := maxKey(result.Classification.Categories)
+		typeId, err := p.classificationRepo.GetTypeId(maxType)
 		if err != nil {
 			logger.Errorw(err.Error())
 			return domain.ResultDiscard
@@ -99,6 +100,7 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			UserID:     result.UserID,
 			ClothesID:  result.ClothesID,
 			ClothesDir: result.ClothesDir,
+			Tryonable:  isTryonable(maxType),
 			Classification: domain.ClothesClassificationResponse{
 				Tags:    tags,
 				Seasons: removeClothesSuffix(maxKeys(result.Classification.Seasons, p.cfg.Threshold)),
@@ -108,6 +110,10 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			},
 		})
 	})
+}
+
+func isTryonable(category string) bool {
+	return category == "upper garment" || category == "lower garment" || category == "dress"
 }
 
 func notPassesThreshold[T ~string](threshold float32) func(_ T, value float32) bool {

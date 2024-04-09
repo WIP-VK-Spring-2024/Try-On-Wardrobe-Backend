@@ -41,6 +41,7 @@ type ClothesProcessingResponse struct {
 	UserID         utils.UUID
 	ClothesID      utils.UUID
 	ClothesDir     string
+	Tryonable      bool
 	Classification ClothesClassificationResponse
 }
 
