@@ -2081,9 +2081,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain17(in *jlexer.Lexer, out *Cloth
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.Type).UnmarshalText(data))
 			}
-		case "subtypes":
+		case "subtype":
 			if data := in.UnsafeBytes(); in.Ok() {
-				in.AddError((out.Subtypes).UnmarshalText(data))
+				in.AddError((out.Subtype).UnmarshalText(data))
 			}
 		case "style":
 			if data := in.UnsafeBytes(); in.Ok() {
@@ -2155,15 +2155,15 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain17(out *jwriter.Writer, in Clot
 		out.RawString(prefix[1:])
 		out.RawText((in.Type).MarshalText())
 	}
-	if (in.Subtypes).IsDefined() {
-		const prefix string = ",\"subtypes\":"
+	if (in.Subtype).IsDefined() {
+		const prefix string = ",\"subtype\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
-		out.RawText((in.Subtypes).MarshalText())
+		out.RawText((in.Subtype).MarshalText())
 	}
 	if (in.Style).IsDefined() {
 		const prefix string = ",\"style\":"

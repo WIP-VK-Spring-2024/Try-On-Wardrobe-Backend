@@ -100,11 +100,11 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			ClothesID:  result.ClothesID,
 			ClothesDir: result.ClothesDir,
 			Classification: domain.ClothesClassificationResponse{
-				Tags:     tags,
-				Seasons:  removeClothesSuffix(maxKeys(result.Classification.Seasons, p.cfg.Threshold)),
-				Style:    styleId,
-				Type:     typeId,
-				Subtypes: subtypeId,
+				Tags:    tags,
+				Seasons: removeClothesSuffix(maxKeys(result.Classification.Seasons, p.cfg.Threshold)),
+				Style:   styleId,
+				Type:    typeId,
+				Subtype: subtypeId,
 			},
 		})
 	})
@@ -116,14 +116,7 @@ func notPassesThreshold[T ~string](threshold float32) func(_ T, value float32) b
 	}
 }
 
-func maxKey[M ~map[K]V, K comparable, V cmp.Ordered](input M /* , threshold float32 */) K {
-	// keys := utils.SortedKeysByValue(input)
-	// keys = keys[:3]
-
-	// if input[keys[len(keys)-1]] > threshold {
-	// 	return errors.New("Cant decide")
-	// }
-
+func maxKey[M ~map[K]V, K comparable, V cmp.Ordered](input M) K {
 	var curMax V
 	var result K
 

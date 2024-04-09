@@ -89,7 +89,7 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 		}
 
 		userChannel := cfg.TryOnChannel + resp.UserID.String()
-		h.logger.Infow("centrifugo", "channel", userChannel, "payload", payload)
+		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(payload))
 
 		centrifugoResp, err := h.centrifugo.Publish(
 			context.Background(),

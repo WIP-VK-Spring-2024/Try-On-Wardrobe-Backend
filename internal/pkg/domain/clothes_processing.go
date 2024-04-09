@@ -63,11 +63,11 @@ type ClothesClassificationRequest struct { // Request to ML-server
 
 //easyjson:json
 type ClothesClassificationResponse struct { // End-user response
-	Type     utils.UUID
-	Subtypes utils.UUID
-	Style    utils.UUID
-	Seasons  []Season
-	Tags     []string
+	Type    utils.UUID
+	Subtype utils.UUID
+	Style   utils.UUID
+	Seasons []Season
+	Tags    []string
 }
 
 //easyjson:json
