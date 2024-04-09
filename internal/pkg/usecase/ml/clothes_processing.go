@@ -56,18 +56,20 @@ func (p *ClothesProcessor) Process(ctx context.Context, opts domain.ClothesProce
 	return p.publisher.Publish(ctx, opts)
 }
 
-// func
+func maxKeys(input map[string]float32, threshold float32) []string {
+	maps.DeleteFunc(input, notPassesThreshold[string](threshold))
+	return maps.Keys(input)
+}
 
 func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
 	return p.subscriber.Listen(logger, func(result *domain.ClothesProcessingModelResponse) domain.Result {
 		maps.DeleteFunc(result.Classification.Tags, notPassesThreshold[string](p.cfg.Threshold))
 
-		maps.DeleteFunc(result.Classification.Seasons, notPassesThreshold[string](p.cfg.Threshold))
+		log.Println("Filtered tags:", maxKeys(result.Classification.Tags, p.cfg.Threshold))
+		log.Println("Filtered seasons:", maxKeys(result.Classification.Seasons, p.cfg.Threshold))
 
-		log.Println("Filtered tags:", maps.Keys(result.Classification.Tags))
-		log.Println("Filtered seasons:", maps.Keys(result.Classification.Seasons))
-
-		styleId, err := p.classificationRepo.GetStyleId(maxKey(result.Classification.Styles))
+		maxStyle := maxKey(result.Classification.Styles)
+		styleId, err := p.classificationRepo.GetStyleId(maxStyle)
 		if err != nil {
 			logger.Errorw(err.Error())
 			return domain.ResultDiscard
@@ -79,9 +81,9 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			return domain.ResultDiscard
 		}
 
-		subcategories := maxKey(result.Classification.Subcategories)
-		log.Println("Filtered subcategories:", subcategories)
-		subtypeId, err := p.classificationRepo.GetSubtypeIds(subcategories)
+		subcategory := maxKey(result.Classification.Subcategories)
+		log.Println("Filtered subcategories:", subcategory)
+		subtypeId, err := p.classificationRepo.GetSubtypeIds(subcategory)
 		if err != nil {
 			logger.Errorw(err.Error())
 			return domain.ResultDiscard
@@ -99,7 +101,7 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			ClothesDir: result.ClothesDir,
 			Classification: domain.ClothesClassificationResponse{
 				Tags:     tags,
-				Seasons:  removeClothesSuffix(maps.Keys(result.Classification.Seasons)),
+				Seasons:  removeClothesSuffix(maxKeys(result.Classification.Seasons, p.cfg.Threshold)),
 				Style:    styleId,
 				Type:     typeId,
 				Subtypes: subtypeId,
@@ -114,7 +116,14 @@ func notPassesThreshold[T ~string](threshold float32) func(_ T, value float32) b
 	}
 }
 
-func maxKey[M ~map[K]V, K comparable, V cmp.Ordered](input M) K {
+func maxKey[M ~map[K]V, K comparable, V cmp.Ordered](input M /* , threshold float32 */) K {
+	// keys := utils.SortedKeysByValue(input)
+	// keys = keys[:3]
+
+	// if input[keys[len(keys)-1]] > threshold {
+	// 	return errors.New("Cant decide")
+	// }
+
 	var curMax V
 	var result K
 

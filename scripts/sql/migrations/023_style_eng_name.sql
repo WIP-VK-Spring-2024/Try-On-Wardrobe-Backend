@@ -5,7 +5,7 @@ from (values
     ('Официальный', 'formal wear'),
     ('Спортивный', 'sportswear')
 ) as c(name, eng_name) 
-where c.name = s.name;
+where c.name = styles.name;
 
 -- +migrate Down
 update styles set eng_name = c.eng_name
@@ -14,4 +14,4 @@ from (values
     ('Официальный', 'formal clothes'),
     ('Спортивный', 'sportswear')
 ) as c(name, eng_name) 
-where c.name = s.name;
+where c.name = styles.name;
