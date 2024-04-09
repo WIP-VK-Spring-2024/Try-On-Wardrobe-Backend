@@ -2,6 +2,7 @@ package rabbit
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"try-on/internal/pkg/common"
@@ -36,6 +37,8 @@ func (p Publisher[T]) Publish(ctx context.Context, req T) error {
 	if err != nil {
 		return err
 	}
+
+	log.Printf("Publishing to rabbit: queue is '%s', payload is '%s'\n", p.queue, string(bytes))
 
 	return p.publisher.PublishWithContext(
 		ctx,

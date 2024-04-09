@@ -43,7 +43,7 @@ func (s *Subscriber[T, PT]) Listen(logger *zap.SugaredLogger, handler func(*T) d
 			}
 		}()
 
-		logger.Infow("rabbit", "got", string(delivery.Body))
+		logger.Infow("rabbit", "queue", s.queue, "got", string(delivery.Body))
 
 		resp := PT(new(T))
 

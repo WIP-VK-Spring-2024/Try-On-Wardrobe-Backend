@@ -2,6 +2,7 @@ package tryon
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	"try-on/internal/pkg/app_errors"
@@ -53,6 +54,7 @@ func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts 
 		return err
 	}
 
+	fmt.Printf("Trying out clothes: %+v\n", clothes)
 	if err := validateTryOnCategories(clothes); err != nil {
 		return err
 	}
@@ -74,18 +76,20 @@ func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts 
 		return app_errors.New(err)
 	}
 
-	if err := validateTryOnCategories(clothes); err != nil {
-		return err
-	}
+	fmt.Printf("Trying out clothes from outfit: %+v\n", clothes)
+
+	filteredClothes := filterClothesForTryOn(clothes)
+
+	fmt.Printf("Filtered clothes from outfit for try on: %+v\n", filteredClothes)
 
 	return u.publisher.Publish(ctx, domain.TryOnRequest{
 		TryOnOpts: opts,
-		Clothes:   clothes,
+		Clothes:   filteredClothes,
 	})
 }
 
 func (u *TryOnUsecase) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
-	return nil
+	return u.subscriber.Listen(logger, handler)
 }
 
 func filterClothesForTryOn(clothes []domain.TryOnClothesInfo) []domain.TryOnClothesInfo {
