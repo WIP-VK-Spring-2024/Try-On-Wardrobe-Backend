@@ -3,6 +3,7 @@ package ml
 import (
 	"cmp"
 	"context"
+	"fmt"
 	"log"
 	"strings"
 
@@ -95,6 +96,8 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			logger.Errorw(err.Error())
 			return domain.ResultDiscard
 		}
+
+		fmt.Println("Category is", maxType, ", tryonable: ", isTryonable(maxType))
 
 		return handler(&domain.ClothesProcessingResponse{
 			UserID:     result.UserID,
