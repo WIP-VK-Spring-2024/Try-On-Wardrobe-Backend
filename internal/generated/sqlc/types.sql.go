@@ -39,7 +39,7 @@ func (q *Queries) GetSubtypeEngNames(ctx context.Context) ([]string, error) {
 
 const getSubtypeIdsByEngName = `-- name: GetSubtypeIdsByEngName :many
 select id from types
-where eng_name in ($1::text[])
+where eng_name = any($1::text[])
 `
 
 func (q *Queries) GetSubtypeIdsByEngName(ctx context.Context, engNames []string) ([]utils.UUID, error) {

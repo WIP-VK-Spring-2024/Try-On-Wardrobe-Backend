@@ -23,7 +23,7 @@ limit 1;
 
 -- name: GetSubtypeIdsByEngName :many
 select id from types
-where eng_name in (sqlc.arg(eng_names)::text[]);
+where eng_name = any(sqlc.arg(eng_names)::text[]);
 
 -- name: GetTypeEngNames :many
 select eng_name
