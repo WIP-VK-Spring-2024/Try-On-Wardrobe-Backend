@@ -10,4 +10,4 @@ create or replace trigger trigger_outfit_tag_use_count
 -- +migrate Down
 alter table tags drop column eng_name;
 
-drop trigger trigger_outfit_tag_use_count;
+drop trigger trigger_outfit_tag_use_count on outfits_tags;

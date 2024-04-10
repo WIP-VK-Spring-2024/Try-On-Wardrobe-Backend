@@ -29,6 +29,6 @@ alter table tags drop column use_count;
 
 drop index tags_use_count_idx;
 
-drop trigger trigger_tag_use_count;
+drop trigger trigger_tag_use_count; on clothes_tags;
 
 drop function handle_tag_use_count;
