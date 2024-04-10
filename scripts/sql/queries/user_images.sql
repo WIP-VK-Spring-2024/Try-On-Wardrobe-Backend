@@ -17,5 +17,6 @@ where id = $1;
 
 -- name: SetUserImageUrl :exec
 update user_images
-set image = $2
+set image = $2,
+    updated_at = now()
 where id = $1;

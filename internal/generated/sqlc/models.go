@@ -57,6 +57,49 @@ func (ns NullGender) Value() (driver.Value, error) {
 	return string(ns.Gender), nil
 }
 
+type Privacy string
+
+const (
+	PrivacyPublic  Privacy = "public"
+	PrivacyPrivate Privacy = "private"
+	PrivacyFriends Privacy = "friends"
+)
+
+func (e *Privacy) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Privacy(s)
+	case string:
+		*e = Privacy(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Privacy: %T", src)
+	}
+	return nil
+}
+
+type NullPrivacy struct {
+	Privacy Privacy
+	Valid   bool // Valid is true if Privacy is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPrivacy) Scan(value interface{}) error {
+	if value == nil {
+		ns.Privacy, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Privacy.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPrivacy) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Privacy), nil
+}
+
 type Season string
 
 const (
@@ -159,6 +202,7 @@ type Clothes struct {
 	Seasons   []domain.Season
 	Image     string
 	Status    NullStatus
+	Privacy   Privacy
 }
 
 type ClothesTag struct {
@@ -177,7 +221,9 @@ type Outfit struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     bool
+	Public     Privacy
+	Generated  bool
+	Viewed     pgtype.Bool
 }
 
 type OutfitsTag struct {
@@ -238,6 +284,7 @@ type User struct {
 	Email     pgtype.Text
 	Password  string
 	Gender    NullGender
+	Privacy   Privacy
 }
 
 type UserImage struct {

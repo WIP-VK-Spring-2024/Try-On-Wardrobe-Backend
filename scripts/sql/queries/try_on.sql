@@ -27,6 +27,7 @@ from try_on_results
 where $1::uuid = any(clothes_id);
 
 -- name: RateTryOnResult :exec
-update try_on_results
-set rating = sqlc.arg(rating)::int
+update try_on_results 
+set rating = sqlc.arg(rating)::int,
+    updated_at = now()
 where id = $1;

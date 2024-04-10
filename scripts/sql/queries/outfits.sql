@@ -17,7 +17,8 @@ where id = $1;
 
 -- name: SetOutfitImage :exec
 update outfits
-set image = $2::text
+set image = $2::text,
+    updated_at = now()
 where id = $1;
 
 -- name: GetOutfit :one
@@ -120,3 +121,11 @@ from outfits
 join clothes on outfit.transforms ? clothes.id
 join types on types.id = clothes.type_id
 where outfits.id = $1 and try_on_type(types.name) <> '';
+
+-- name: GetNotViewedOutfits :many
+select
+    outfits.*
+from outfits
+join users on users.id = outfits.user_id
+where users.id = $1
+    and outfits.viewed = false;

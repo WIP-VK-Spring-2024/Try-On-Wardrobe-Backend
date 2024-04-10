@@ -67,7 +67,8 @@ order by t.ord;
 
 -- name: SetTagEngName :exec
 update tags
-set eng_name = sqlc.arg(eng_name)::text
+set eng_name = sqlc.arg(eng_name)::text,
+    updated_at = now()
 where name = $1;
 
 -- name: GetNotCreatedTags :many

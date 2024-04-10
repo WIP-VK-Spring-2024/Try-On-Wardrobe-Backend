@@ -40,7 +40,7 @@ func (q *Queries) DeleteOutfit(ctx context.Context, id utils.UUID) error {
 
 const getOutfit = `-- name: GetOutfit :one
 select
-    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public,
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public, outfits.generated, outfits.viewed,
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
@@ -71,7 +71,9 @@ type GetOutfitRow struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     bool
+	Public     Privacy
+	Generated  bool
+	Viewed     pgtype.Bool
 	Tags       []string
 }
 
@@ -90,6 +92,8 @@ func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (GetOutfitRow, e
 		&i.Transforms,
 		&i.Seasons,
 		&i.Public,
+		&i.Generated,
+		&i.Viewed,
 		&i.Tags,
 	)
 	return i, err
@@ -132,7 +136,7 @@ func (q *Queries) GetOutfitClothesInfo(ctx context.Context, id utils.UUID) ([]Ge
 
 const getOutfits = `-- name: GetOutfits :many
 select 
-    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public,
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public, outfits.generated, outfits.viewed,
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
@@ -165,7 +169,9 @@ type GetOutfitsRow struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     bool
+	Public     Privacy
+	Generated  bool
+	Viewed     pgtype.Bool
 	Tags       []string
 }
 
@@ -190,6 +196,8 @@ func (q *Queries) GetOutfits(ctx context.Context, createdAt pgtype.Timestamptz, 
 			&i.Transforms,
 			&i.Seasons,
 			&i.Public,
+			&i.Generated,
+			&i.Viewed,
 			&i.Tags,
 		); err != nil {
 			return nil, err
@@ -204,7 +212,7 @@ func (q *Queries) GetOutfits(ctx context.Context, createdAt pgtype.Timestamptz, 
 
 const getOutfitsByUser = `-- name: GetOutfitsByUser :many
 select
-    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public,
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public, outfits.generated, outfits.viewed,
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
@@ -236,7 +244,9 @@ type GetOutfitsByUserRow struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     bool
+	Public     Privacy
+	Generated  bool
+	Viewed     pgtype.Bool
 	Tags       []string
 }
 
@@ -261,6 +271,8 @@ func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID) ([]Ge
 			&i.Transforms,
 			&i.Seasons,
 			&i.Public,
+			&i.Generated,
+			&i.Viewed,
 			&i.Tags,
 		); err != nil {
 			return nil, err

@@ -48,7 +48,7 @@ func (q *Queries) DeleteClothes(ctx context.Context, id utils.UUID) error {
 
 const getClothesById = `-- name: GetClothesById :one
 select
-    clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons, clothes.image, clothes.status,
+    clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons, clothes.image, clothes.status, clothes.privacy,
     types.name as type,
     coalesce(types.tryonable, false) as tryonable,
     subtypes.name as subtype,
@@ -95,6 +95,7 @@ type GetClothesByIdRow struct {
 	Seasons   []domain.Season
 	Image     string
 	Status    NullStatus
+	Privacy   Privacy
 	Type      pgtype.Text
 	Tryonable bool
 	Subtype   pgtype.Text
@@ -119,6 +120,7 @@ func (q *Queries) GetClothesById(ctx context.Context, id utils.UUID) (GetClothes
 		&i.Seasons,
 		&i.Image,
 		&i.Status,
+		&i.Privacy,
 		&i.Type,
 		&i.Tryonable,
 		&i.Subtype,
@@ -130,7 +132,7 @@ func (q *Queries) GetClothesById(ctx context.Context, id utils.UUID) (GetClothes
 
 const getClothesByUser = `-- name: GetClothesByUser :many
 select
-    clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons, clothes.image, clothes.status,
+    clothes.id, clothes.created_at, clothes.updated_at, clothes.name, clothes.note, clothes.user_id, clothes.style_id, clothes.type_id, clothes.subtype_id, clothes.color, clothes.seasons, clothes.image, clothes.status, clothes.privacy,
     types.name as type,
     coalesce(types.tryonable, false) as tryonable,
     subtypes.name as subtype,
@@ -178,6 +180,7 @@ type GetClothesByUserRow struct {
 	Seasons   []domain.Season
 	Image     string
 	Status    NullStatus
+	Privacy   Privacy
 	Type      pgtype.Text
 	Tryonable bool
 	Subtype   pgtype.Text
@@ -208,6 +211,7 @@ func (q *Queries) GetClothesByUser(ctx context.Context, userID utils.UUID) ([]Ge
 			&i.Seasons,
 			&i.Image,
 			&i.Status,
+			&i.Privacy,
 			&i.Type,
 			&i.Tryonable,
 			&i.Subtype,
