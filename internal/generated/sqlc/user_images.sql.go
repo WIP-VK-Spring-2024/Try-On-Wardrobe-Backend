@@ -85,7 +85,8 @@ func (q *Queries) GetUserImageByUser(ctx context.Context, userID utils.UUID) ([]
 
 const setUserImageUrl = `-- name: SetUserImageUrl :exec
 update user_images
-set image = $2
+set image = $2,
+    updated_at = now()
 where id = $1
 `
 

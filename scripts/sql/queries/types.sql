@@ -10,7 +10,8 @@ group by
     types.id,
     types.name,
     types.created_at,
-    types.updated_at
+    types.updated_at,
+    types.tryonable
 order by types.created_at, types.name;
 
 -- name: GetSubtypes :many

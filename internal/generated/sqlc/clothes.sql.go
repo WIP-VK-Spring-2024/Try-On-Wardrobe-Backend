@@ -95,7 +95,7 @@ type GetClothesByIdRow struct {
 	Seasons   []domain.Season
 	Image     string
 	Status    NullStatus
-	Privacy   Privacy
+	Privacy   domain.Privacy
 	Type      pgtype.Text
 	Tryonable bool
 	Subtype   pgtype.Text
@@ -180,7 +180,7 @@ type GetClothesByUserRow struct {
 	Seasons   []domain.Season
 	Image     string
 	Status    NullStatus
-	Privacy   Privacy
+	Privacy   domain.Privacy
 	Type      pgtype.Text
 	Tryonable bool
 	Subtype   pgtype.Text
@@ -255,6 +255,43 @@ func (q *Queries) GetClothesIdByOutfit(ctx context.Context, id utils.UUID) ([]ut
 	return items, nil
 }
 
+const getClothesInfoByWeather = `-- name: GetClothesInfoByWeather :many
+select
+    clothes.id,
+    types.eng_name
+from clothes
+join types on types.id = clothes.type_id
+join subtypes on subtypes.id = clothes.subtype_id
+where clothes.user_id = $1
+    and subtypes.temp_range @> $2
+    and is_valid_for_generation(types.eng_name)
+`
+
+type GetClothesInfoByWeatherRow struct {
+	ID      utils.UUID
+	EngName string
+}
+
+func (q *Queries) GetClothesInfoByWeather(ctx context.Context, userID utils.UUID, tempRange pgtype.Range[pgtype.Int4]) ([]GetClothesInfoByWeatherRow, error) {
+	rows, err := q.db.Query(ctx, getClothesInfoByWeather, userID, tempRange)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetClothesInfoByWeatherRow
+	for rows.Next() {
+		var i GetClothesInfoByWeatherRow
+		if err := rows.Scan(&i.ID, &i.EngName); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getClothesTryOnInfo = `-- name: GetClothesTryOnInfo :many
 select
     clothes.id,
@@ -292,7 +329,8 @@ func (q *Queries) GetClothesTryOnInfo(ctx context.Context, ids []utils.UUID) ([]
 
 const setClothesImage = `-- name: SetClothesImage :exec
 update clothes
-set image = $2
+set image = $2,
+    updated_at = now()
 where id = $1
 `
 

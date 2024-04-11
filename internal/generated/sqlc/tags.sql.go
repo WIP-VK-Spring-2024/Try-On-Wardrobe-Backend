@@ -233,7 +233,8 @@ func (q *Queries) GetUserFavouriteTagEngNames(ctx context.Context, userID utils.
 
 const setTagEngName = `-- name: SetTagEngName :exec
 update tags
-set eng_name = $2::text
+set eng_name = $2::text,
+    updated_at = now()
 where name = $1
 `
 

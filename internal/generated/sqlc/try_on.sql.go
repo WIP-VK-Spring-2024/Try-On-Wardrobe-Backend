@@ -134,8 +134,9 @@ func (q *Queries) GetTryOnResultsByUser(ctx context.Context, userID utils.UUID) 
 }
 
 const rateTryOnResult = `-- name: RateTryOnResult :exec
-update try_on_results
-set rating = $2::int
+update try_on_results 
+set rating = $2::int,
+    updated_at = now()
 where id = $1
 `
 

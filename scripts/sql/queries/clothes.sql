@@ -112,3 +112,14 @@ from clothes
 join types on types.id = clothes.type_id
 where clothes.id = any(sqlc.arg(ids)::uuid[])
     and try_on_type(types.name) <> '';
+
+-- name: GetClothesInfoByWeather :many
+select
+    clothes.id,
+    types.eng_name
+from clothes
+join types on types.id = clothes.type_id
+join subtypes on subtypes.id = clothes.subtype_id
+where clothes.user_id = $1
+    and subtypes.temp_range @> $2
+    and is_valid_for_generation(types.eng_name);

@@ -37,7 +37,7 @@ func applyMigrations(cfg config.Sql, pgCfg *config.Postgres) error {
 	return nil
 }
 
-var customTypes = []string{"season", "season[]"}
+var customTypes = []string{"season", "season[]", "privacy", "gender"}
 
 func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 	till := time.Now().Add(time.Second * config.InitTimeout)
@@ -50,6 +50,8 @@ func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 
 	cfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
 		conn.TypeMap().RegisterDefaultPgType(domain.Spring, "season")
+		conn.TypeMap().RegisterDefaultPgType(domain.PrivacyPrivate, "privacy")
+		conn.TypeMap().RegisterDefaultPgType(domain.Male, "gender")
 
 		for _, customType := range customTypes {
 			t, err := conn.LoadType(context.Background(), customType)

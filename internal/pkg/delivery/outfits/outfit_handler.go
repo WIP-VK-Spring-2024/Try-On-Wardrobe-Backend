@@ -19,16 +19,19 @@ import (
 )
 
 type OutfitHandler struct {
-	outfits domain.OutfitUsecase
-	file    domain.FileManager
-	cfg     *config.Static
+	outfits   domain.OutfitUsecase
+	generator domain.OutfitGenerator
+
+	file domain.FileManager
+	cfg  *config.Static
 }
 
-func New(db *pgxpool.Pool, file domain.FileManager, cfg *config.Static) *OutfitHandler {
+func New(db *pgxpool.Pool, generator domain.OutfitGenerator, file domain.FileManager, cfg *config.Static) *OutfitHandler {
 	return &OutfitHandler{
-		outfits: outfitUsecase.New(outfitRepo.New(db)),
-		file:    file,
-		cfg:     cfg,
+		outfits:   outfitUsecase.New(outfitRepo.New(db)),
+		generator: generator,
+		file:      file,
+		cfg:       cfg,
 	}
 }
 
@@ -214,4 +217,27 @@ func (h *OutfitHandler) Delete(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err, "outfit_id", outfitId)
 	}
 	return ctx.SendString(common.EmptyJson)
+}
+
+func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	var req domain.OutfitGenerationRequest
+
+	if err := easyjson.Unmarshal(ctx.Body(), &req); err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+
+	req.UserID = session.UserID
+
+	err := h.generator.Generate(ctx.UserContext(), req)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(common.EmptyJson)
 }

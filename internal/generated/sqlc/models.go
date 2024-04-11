@@ -202,7 +202,7 @@ type Clothes struct {
 	Seasons   []domain.Season
 	Image     string
 	Status    NullStatus
-	Privacy   Privacy
+	Privacy   domain.Privacy
 }
 
 type ClothesTag struct {
@@ -221,9 +221,8 @@ type Outfit struct {
 	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
-	Public     Privacy
+	Public     domain.Privacy
 	Generated  bool
-	Viewed     pgtype.Bool
 }
 
 type OutfitsTag struct {
@@ -246,6 +245,8 @@ type Subtype struct {
 	Name      string
 	TypeID    utils.UUID
 	EngName   string
+	Layer     int16
+	TempRange pgtype.Range[pgtype.Int4]
 }
 
 type Tag struct {
@@ -284,7 +285,7 @@ type User struct {
 	Email     pgtype.Text
 	Password  string
 	Gender    NullGender
-	Privacy   Privacy
+	Privacy   domain.Privacy
 }
 
 type UserImage struct {

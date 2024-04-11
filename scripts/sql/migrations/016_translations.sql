@@ -14,7 +14,6 @@ from (values
     ('Низ', 'lower garment'),
     ('Обувь', 'shoe'),
     ('Нижнее бельё', 'underwear'),
-    ('Верзняя одежда', 'outerwear'),
     ('Обувь', 'shoe'),
     ('Платья', 'dress'),
     ('Головные уборы', 'hat'),

@@ -1,10 +1,21 @@
 package domain
 
 import (
+	"context"
 	"time"
 
 	"try-on/internal/pkg/utils"
 	"try-on/internal/pkg/utils/optional"
+
+	"go.uber.org/zap"
+)
+
+type Privacy string
+
+const (
+	PrivacyPublic  Privacy = "public"
+	PrivacyPrivate Privacy = "private"
+	PrivacyFriends Privacy = "public"
 )
 
 //easyjson:json
@@ -14,7 +25,7 @@ type Outfit struct {
 	UserID  utils.UUID
 	StyleID utils.UUID
 
-	Public bool
+	Privacy Privacy
 
 	Name       string
 	Note       optional.String
@@ -35,6 +46,44 @@ type Transform struct {
 	Height float32
 	Angle  float32
 	Scale  float32
+}
+
+//easyjson:json
+type GeoPosition struct {
+	Lat float32
+	Lon float32
+}
+
+//easyjson:json
+type OutfitGenerationRequest struct {
+	UserID utils.UUID
+	Pos    GeoPosition
+	Tags   []string
+	Prompt string
+}
+
+//easyjson:json
+type OutfitGenerationModelRequest struct {
+	UserID  utils.UUID
+	Clothes []GenClothesInfo
+	Prompt  string
+}
+
+//easyjson:json
+type GenClothesInfo struct {
+	ClothesID utils.UUID
+	Category  string
+}
+
+//easyjson:json
+type OutfitGenerationResponse struct {
+	UserID  utils.UUID
+	Clothes []utils.UUID
+}
+
+type OutfitGenerator interface {
+	Generate(ctx context.Context, request OutfitGenerationRequest) error
+	ListenGenerationResults(logger *zap.SugaredLogger, handler func(*OutfitGenerationResponse) Result) error
 }
 
 type OutfitUsecase interface {

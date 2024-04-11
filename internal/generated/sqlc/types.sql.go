@@ -51,7 +51,7 @@ func (q *Queries) GetSubtypeIdsByEngName(ctx context.Context, engName string) (u
 }
 
 const getSubtypes = `-- name: GetSubtypes :many
-select id, created_at, updated_at, name, type_id, eng_name from subtypes
+select id, created_at, updated_at, name, type_id, eng_name, layer, temp_range from subtypes
 `
 
 func (q *Queries) GetSubtypes(ctx context.Context) ([]Subtype, error) {
@@ -70,6 +70,8 @@ func (q *Queries) GetSubtypes(ctx context.Context) ([]Subtype, error) {
 			&i.Name,
 			&i.TypeID,
 			&i.EngName,
+			&i.Layer,
+			&i.TempRange,
 		); err != nil {
 			return nil, err
 		}
@@ -150,7 +152,8 @@ group by
     types.id,
     types.name,
     types.created_at,
-    types.updated_at
+    types.updated_at,
+    types.tryonable
 order by types.created_at, types.name
 `
 
