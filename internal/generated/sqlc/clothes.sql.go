@@ -258,22 +258,22 @@ func (q *Queries) GetClothesIdByOutfit(ctx context.Context, id utils.UUID) ([]ut
 const getClothesInfoByWeather = `-- name: GetClothesInfoByWeather :many
 select
     clothes.id,
-    types.eng_name
+    types.eng_name as category
 from clothes
 join types on types.id = clothes.type_id
 join subtypes on subtypes.id = clothes.subtype_id
 where clothes.user_id = $1
-    and subtypes.temp_range @> $2
+    and subtypes.temp_range @> $2::int
     and is_valid_for_generation(types.eng_name)
 `
 
 type GetClothesInfoByWeatherRow struct {
-	ID      utils.UUID
-	EngName string
+	ID       utils.UUID
+	Category string
 }
 
-func (q *Queries) GetClothesInfoByWeather(ctx context.Context, userID utils.UUID, tempRange pgtype.Range[pgtype.Int4]) ([]GetClothesInfoByWeatherRow, error) {
-	rows, err := q.db.Query(ctx, getClothesInfoByWeather, userID, tempRange)
+func (q *Queries) GetClothesInfoByWeather(ctx context.Context, userID utils.UUID, column2 int32) ([]GetClothesInfoByWeatherRow, error) {
+	rows, err := q.db.Query(ctx, getClothesInfoByWeather, userID, column2)
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +281,7 @@ func (q *Queries) GetClothesInfoByWeather(ctx context.Context, userID utils.UUID
 	var items []GetClothesInfoByWeatherRow
 	for rows.Next() {
 		var i GetClothesInfoByWeatherRow
-		if err := rows.Scan(&i.ID, &i.EngName); err != nil {
+		if err := rows.Scan(&i.ID, &i.Category); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

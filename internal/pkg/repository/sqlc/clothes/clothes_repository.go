@@ -73,6 +73,19 @@ func (c ClothesRepository) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothes
 	}), nil
 }
 
+func (c ClothesRepository) GetByWeather(userId utils.UUID, temp int) ([]domain.GenClothesInfo, error) {
+	clothesInfo, err := c.queries.GetClothesInfoByWeather(context.Background(), userId, int32(temp))
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return utils.Map(clothesInfo, func(t *sqlc.GetClothesInfoByWeatherRow) *domain.GenClothesInfo {
+		return &domain.GenClothesInfo{
+			ClothesID: t.ID,
+			Category:  t.Category,
+		}
+	}), nil
+}
+
 func (c ClothesRepository) Update(clothes *domain.Clothes) error {
 	ctx := context.Background()
 

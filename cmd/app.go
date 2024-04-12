@@ -15,7 +15,7 @@ import (
 	"try-on/internal/pkg/delivery/types"
 	"try-on/internal/pkg/delivery/user_images"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/usecase/file_manager"
+	"try-on/internal/pkg/repository/file_manager"
 	"try-on/internal/pkg/usecase/ml"
 	"try-on/internal/pkg/usecase/translator/gtranslate"
 	tryon "try-on/internal/pkg/usecase/try_on"

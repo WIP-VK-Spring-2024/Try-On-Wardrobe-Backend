@@ -57,7 +57,7 @@ type GeoPosition struct {
 //easyjson:json
 type OutfitGenerationRequest struct {
 	UserID utils.UUID
-	Pos    GeoPosition
+	Pos    WeatherRequest
 	Tags   []string
 	Prompt string
 }
