@@ -51,6 +51,7 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 	if err != nil {
 		return err
 	}
+	fmt.Println("Got weather: ", weather.Temp)
 
 	clothes, err := gen.clothes.GetByWeather(request.UserID, int(weather.Temp))
 	if err != nil {

@@ -93,7 +93,7 @@ type OutfitGenClothes struct {
 
 //easyjson:json
 type OutfitGenOutfit struct {
-	Clothes OutfitGenClothes
+	Clothes []OutfitGenClothes
 }
 
 //easyjson:json
