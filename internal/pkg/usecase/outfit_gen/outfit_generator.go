@@ -30,6 +30,7 @@ func New(
 	subscriber domain.Subscriber[domain.OutfitGenerationResponse],
 	db *pgxpool.Pool,
 	weather domain.WeatherService,
+	translator domain.Translator,
 ) domain.OutfitGenerator {
 	return &OutfitGenerator{
 		publisher:  publisher,
@@ -37,6 +38,7 @@ func New(
 		clothes:    clothes.New(db),
 		outfits:    outfits.New(db),
 		weather:    weather,
+		translator: translator,
 	}
 }
 
@@ -60,9 +62,13 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 		return err
 	}
 
-	translatedPrompt, err := gen.translator.Translate(request.Prompt, domain.LanguageRU, domain.LanguageEN)
-	if err != nil {
-		return err
+	translatedPrompt := ""
+
+	if request.Prompt != "" {
+		translatedPrompt, err = gen.translator.Translate(request.Prompt, domain.LanguageRU, domain.LanguageEN)
+		if err != nil {
+			return err
+		}
 	}
 
 	purposes = append([]string{translatedPrompt}, purposes...)

@@ -143,6 +143,7 @@ func (app *App) Run() error {
 		rabbit.NewSubscriber[domain.OutfitGenerationResponse](rabbitConn, app.cfg.Rabbit.OutfitGen.Response),
 		pg,
 		weather.New(app.cfg.WeatherApiKey),
+		&gtranslate.GoogleTranslator{},
 	)
 
 	outfitHandler := outfits.New(
