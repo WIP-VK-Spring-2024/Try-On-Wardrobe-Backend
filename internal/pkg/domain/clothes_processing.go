@@ -56,7 +56,7 @@ type ClothesProcessingModelResponse struct {
 
 //easyjson:json
 type ClothesClassificationRequest struct { // Request to ML-server
-	Tags          []string
+	Tags          []string `json:"tags,!omitempty"`
 	Styles        []string
 	Categories    []string
 	Subcategories []string

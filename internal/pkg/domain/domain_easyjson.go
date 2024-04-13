@@ -3499,11 +3499,12 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain28(out *jwriter.Writer, in Clot
 	out.RawByte('{')
 	first := true
 	_ = first
-	if len(in.Tags) != 0 {
+	{
 		const prefix string = ",\"tags\":"
-		first = false
 		out.RawString(prefix[1:])
-		{
+		if in.Tags == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
 			out.RawByte('[')
 			for v44, v45 := range in.Tags {
 				if v44 > 0 {
@@ -3516,12 +3517,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain28(out *jwriter.Writer, in Clot
 	}
 	if len(in.Styles) != 0 {
 		const prefix string = ",\"styles\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v46, v47 := range in.Styles {
@@ -3535,12 +3531,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain28(out *jwriter.Writer, in Clot
 	}
 	if len(in.Categories) != 0 {
 		const prefix string = ",\"categories\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v48, v49 := range in.Categories {
@@ -3554,12 +3545,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain28(out *jwriter.Writer, in Clot
 	}
 	if len(in.Subcategories) != 0 {
 		const prefix string = ",\"subcategories\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v50, v51 := range in.Subcategories {
@@ -3573,12 +3559,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain28(out *jwriter.Writer, in Clot
 	}
 	if len(in.Seasons) != 0 {
 		const prefix string = ",\"seasons\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v52, v53 := range in.Seasons {
