@@ -200,15 +200,15 @@ func (app *App) Run() error {
 	app.api.Get("/try-on/:id", tryOnHandler.GetTryOnResult)
 	app.api.Patch("/try-on/:id/rate", tryOnHandler.Rate)
 
+	app.api.Get("/outfits/purposes", outfitHandler.GetPurposes)
+	app.api.Get("/outfits/gen", outfitHandler.Generate)
+
 	app.api.Post("/outfits", outfitHandler.Create)
 	app.api.Get("/outfits", outfitHandler.GetByUser)
 	app.api.Get("/posts", outfitHandler.Get)
 	app.api.Get("/outfits/:id", outfitHandler.GetById)
 	app.api.Delete("/outfits/:id", outfitHandler.Delete)
 	app.api.Put("/outfits/:id", outfitHandler.Update)
-
-	app.api.Get("/outfits/purposes", outfitHandler.GetPurposes)
-	app.api.Get("/outfits/gen", outfitHandler.Generate)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 
