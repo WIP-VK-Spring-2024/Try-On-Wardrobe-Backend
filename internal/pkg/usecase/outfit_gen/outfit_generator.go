@@ -77,7 +77,8 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 	bytes, _ := easyjson.Marshal(modelRequest)
 	fmt.Println(string(bytes))
 
-	return gen.publisher.Publish(ctx, modelRequest)
+	// return gen.publisher.Publish(ctx, modelRequest)
+	return nil
 }
 
 func (gen *OutfitGenerator) ListenGenerationResults(logger *zap.SugaredLogger, handler func(*domain.OutfitGenerationResponse) domain.Result) error {

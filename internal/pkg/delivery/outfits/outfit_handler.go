@@ -244,10 +244,10 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 
 	var req domain.OutfitGenerationRequest
 
-	if err := easyjson.Unmarshal(ctx.Body(), &req); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
-	}
+	// if err := easyjson.Unmarshal(ctx.Body(), &req); err != nil {
+	// 	middleware.LogWarning(ctx, err)
+	// 	return app_errors.ErrBadRequest
+	// }
 
 	req.UserID = session.UserID
 	req.Pos.IP = ctx.IP()
