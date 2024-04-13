@@ -27,7 +27,7 @@ func New(apiKey string) domain.WeatherService {
 }
 
 func (w WeatherService) CurrentWeather(request domain.WeatherRequest) (*domain.Weather, error) {
-	var queryParams url.Values
+	queryParams := make(url.Values, 2)
 	queryParams.Add("key", w.apiKey)
 
 	if math.Abs(float64(request.Lat)) < eps && math.Abs(float64(request.Lon)) < eps {
