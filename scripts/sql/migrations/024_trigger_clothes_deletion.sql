@@ -25,7 +25,7 @@ create trigger trigger_del_try_on_with_clothes
 create function delete_outfits() returns trigger as $$
 begin
     delete from outfits o
-    where o.transforms ? old.id;
+    where o.transforms ? cast(old.id as text);
 end
 $$ language plpgsql;
 -- +migrate StatementEnd
