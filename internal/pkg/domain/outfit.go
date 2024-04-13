@@ -87,12 +87,23 @@ type GenClothesInfo struct {
 }
 
 //easyjson:json
+type OutfitGenClothes struct {
+	ClothesID utils.UUID
+}
+
+//easyjson:json
+type OutfitGenOutfit struct {
+	Clothes OutfitGenClothes
+}
+
+//easyjson:json
 type OutfitGenerationResponse struct {
 	UserID  utils.UUID
-	Outfits [][]utils.UUID
+	Outfits []OutfitGenOutfit
 }
 
 type OutfitGenerator interface {
+	Closer
 	Generate(ctx context.Context, request OutfitGenerationRequest) error
 	ListenGenerationResults(logger *zap.SugaredLogger, handler func(*OutfitGenerationResponse) Result) error
 }

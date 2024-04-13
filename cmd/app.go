@@ -145,6 +145,7 @@ func (app *App) Run() error {
 		weather.New(app.cfg.WeatherApiKey),
 		&gtranslate.GoogleTranslator{},
 	)
+	defer outfitGenerator.Close()
 
 	outfitHandler := outfits.New(
 		pg, outfitGenerator,
