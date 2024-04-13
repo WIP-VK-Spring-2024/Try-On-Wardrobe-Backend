@@ -36,7 +36,10 @@ func (w WeatherService) CurrentWeather(request domain.WeatherRequest) (*domain.W
 		queryParams.Add("q", fmt.Sprintf("%f,%f", request.Lat, request.Lon))
 	}
 
-	resp, err := http.DefaultClient.Get(apiEndpoint + "/current.json?" + queryParams.Encode())
+	path := apiEndpoint + "/current.json?" + queryParams.Encode()
+	fmt.Println("Sending request to:", path)
+
+	resp, err := http.DefaultClient.Get(path)
 	if err != nil {
 		return nil, err
 	}

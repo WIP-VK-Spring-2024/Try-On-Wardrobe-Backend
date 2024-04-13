@@ -2,6 +2,7 @@ package outfitgen
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"try-on/internal/pkg/domain"
@@ -9,6 +10,7 @@ import (
 	"try-on/internal/pkg/repository/sqlc/outfits"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
 )
 
@@ -63,13 +65,19 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 		return err
 	}
 
-	purposes = append(purposes, translatedPrompt)
+	purposes = append([]string{translatedPrompt}, purposes...)
 
-	return gen.publisher.Publish(ctx, domain.OutfitGenerationModelRequest{
+	modelRequest := domain.OutfitGenerationModelRequest{
 		UserID:  request.UserID,
 		Clothes: clothes,
-		Prompt:  strings.Join(purposes, "."), // TODO: Ask how elements should be joined
-	})
+		Amount:  request.Amount,
+		Prompt:  strings.Join(purposes, ". "),
+	}
+
+	bytes, _ := easyjson.Marshal(modelRequest)
+	fmt.Println(string(bytes))
+
+	return gen.publisher.Publish(ctx, modelRequest)
 }
 
 func (gen *OutfitGenerator) ListenGenerationResults(logger *zap.SugaredLogger, handler func(*domain.OutfitGenerationResponse) domain.Result) error {

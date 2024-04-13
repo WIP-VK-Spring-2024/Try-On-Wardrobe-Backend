@@ -66,7 +66,7 @@ type GeoPosition struct {
 //easyjson:json
 type OutfitGenerationRequest struct {
 	UserID   utils.UUID
-	IP       string
+	Amount   int
 	Pos      WeatherRequest
 	Purposes []string
 	Prompt   string
@@ -74,10 +74,10 @@ type OutfitGenerationRequest struct {
 
 //easyjson:json
 type OutfitGenerationModelRequest struct {
-	UserID       utils.UUID
-	Clothes      []GenClothesInfo
-	Prompt       string
-	SampleAmount int
+	UserID  utils.UUID
+	Clothes []GenClothesInfo
+	Prompt  string
+	Amount  int
 }
 
 //easyjson:json

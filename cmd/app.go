@@ -148,7 +148,7 @@ func (app *App) Run() error {
 	outfitHandler := outfits.New(
 		pg, outfitGenerator,
 		fileManager, &app.cfg.Static,
-		app.logger, centrifugoConn) // TODO: Pass actual generator
+		app.logger, centrifugoConn)
 
 	userImageHandler := user_images.New(pg, fileManager, &app.cfg.Static)
 
@@ -187,6 +187,7 @@ func (app *App) Run() error {
 	app.api.Get("/subtypes", typeHandler.GetSubtypes)
 	app.api.Get("/styles", styleHandler.GetAll)
 	app.api.Get("/tags", tagsHandler.Get)
+	app.api.Get("/tags/favourite", tagsHandler.GetFavourite)
 
 	app.api.Get("/photos", userImageHandler.GetByUser)
 	app.api.Get("/photos/:id", userImageHandler.GetByID)
@@ -206,10 +207,14 @@ func (app *App) Run() error {
 	app.api.Delete("/outfits/:id", outfitHandler.Delete)
 	app.api.Put("/outfits/:id", outfitHandler.Update)
 
+	app.api.Get("/outfits/purposes", outfitHandler.GetPurposes)
+	app.api.Get("/outfits/gen", outfitHandler.Generate)
+
 	app.api.Static("/static", app.cfg.Static.Dir)
 
 	clothesHandler.ListenProcessingResults(&app.cfg.Centrifugo)
 	tryOnHandler.ListenTryOnResults(&app.cfg.Centrifugo)
+	outfitHandler.GetGenerationResults(&app.cfg.Centrifugo)
 
 	return app.api.Listen(app.cfg.Addr)
 }
@@ -221,6 +226,8 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 				ErrorHandler: errorHandler,
 				JSONEncoder:  utils.EasyJsonMarshal,
 				JSONDecoder:  utils.EasyJsonUnmarshal,
+				// EnableTrustedProxyCheck: true,
+				// TrustedProxies:          []string{},
 			},
 		),
 		cfg:    cfg,

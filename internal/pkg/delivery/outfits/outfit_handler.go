@@ -2,6 +2,7 @@ package outfits
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"try-on/internal/generated/proto/centrifugo"
@@ -249,6 +250,8 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 	}
 
 	req.UserID = session.UserID
+	req.Pos.IP = ctx.IP()
+	fmt.Println("Generating outfit for: ", req.Pos.IP)
 
 	err := h.generator.Generate(ctx.UserContext(), req)
 	if err != nil {
