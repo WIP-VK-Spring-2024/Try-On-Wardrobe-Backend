@@ -16,6 +16,14 @@
       "allow_subscribe_for_client": true
     },
     {
+      "name": "outfit_gen",
+      "history_size": 10,
+      "history_ttl": "300s",
+      "force_recovery": true,
+      "allow_user_limited_channels": true,
+      "allow_subscribe_for_client": true
+    },
+    {
       "name": "processing",
       "history_size": 10,
       "history_ttl": "300s",
