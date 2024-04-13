@@ -29,6 +29,11 @@ sql:
             go_type:
               import: "try-on/internal/pkg/domain"
               type: "Privacy"
+
+          - db_type: timestamp
+            go_type:
+              import: "try-on/internal/pkg/utils"
+              type: "Time"
         query_parameter_limit: 2
         rename:
           clothe: Clothes

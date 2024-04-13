@@ -30,7 +30,7 @@ func (repo StyleRepository) GetAll() ([]domain.Style, error) {
 		return &domain.Style{
 			Model: domain.Model{
 				ID: t.ID,
-				AutoTimestamp: domain.AutoTimestamp{
+				Timestamp: domain.Timestamp{
 					CreatedAt: utils.Time{Time: t.CreatedAt.Time},
 					UpdatedAt: utils.Time{Time: t.UpdatedAt.Time},
 				},

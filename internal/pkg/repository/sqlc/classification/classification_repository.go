@@ -28,10 +28,14 @@ func (c ClothesClassificationRepository) GetClassifications(userId utils.UUID, t
 		return nil, utils.PgxError(err)
 	}
 
-	userTagNames, err := c.queries.GetUserFavouriteTagEngNames(context.Background(), userId, tagLimit)
+	userTags, err := c.queries.GetUserFavouriteTags(context.Background(), userId, tagLimit)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
+
+	userTagNames := utils.Map(userTags, func(t *sqlc.Tag) *pgtype.Text {
+		return &t.EngName
+	})
 
 	tagNames = append(tagNames, userTagNames...)
 

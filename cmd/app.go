@@ -16,7 +16,9 @@ import (
 	"try-on/internal/pkg/delivery/user_images"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/file_manager"
+	"try-on/internal/pkg/repository/weather"
 	"try-on/internal/pkg/usecase/ml"
+	outfitgen "try-on/internal/pkg/usecase/outfit_gen"
 	"try-on/internal/pkg/usecase/translator/gtranslate"
 	tryon "try-on/internal/pkg/usecase/try_on"
 	"try-on/internal/pkg/utils"
@@ -136,7 +138,17 @@ func (app *App) Run() error {
 		centrifugoConn,
 	)
 
-	outfitHandler := outfits.New(pg, fileManager, &app.cfg.Static)
+	outfitGenerator := outfitgen.New(
+		rabbit.NewPublisher[domain.OutfitGenerationModelRequest](rabbitConn, app.cfg.Rabbit.OutfitGen.Request),
+		rabbit.NewSubscriber[domain.OutfitGenerationResponse](rabbitConn, app.cfg.Rabbit.OutfitGen.Response),
+		pg,
+		weather.New(app.cfg.WeatherApiKey),
+	)
+
+	outfitHandler := outfits.New(
+		pg, outfitGenerator,
+		fileManager, &app.cfg.Static,
+		app.logger, centrifugoConn) // TODO: Pass actual generator
 
 	userImageHandler := user_images.New(pg, fileManager, &app.cfg.Static)
 

@@ -1,10 +1,11 @@
 {
+  "weatherApiKey": "478bb49242fd426e98691949241104",
   "addr": ":8001",
-
   "centrifugo": {
     "url": "centrifugo:10000",
     "tryOnChannel": "try-on:user#",
-    "processingChannel": "processing:user#"
+    "processingChannel": "processing:user#",
+    "outfitGenChannel": "outfit_gen:user#"
   },
 
   "classification": {
@@ -40,6 +41,10 @@
     "process": {
       "request": "cut",
       "response": "cut_response"
+    },
+    "outfitGen": {
+      "request": "outfit_gen",
+      "response": "outfit_gen_response"
     }
   },
 

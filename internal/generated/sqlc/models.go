@@ -223,6 +223,15 @@ type Outfit struct {
 	Seasons    []domain.Season
 	Public     domain.Privacy
 	Generated  bool
+	PurposeIds []utils.UUID
+}
+
+type OutfitPurpose struct {
+	ID        utils.UUID
+	Name      string
+	EngName   string
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type OutfitsTag struct {

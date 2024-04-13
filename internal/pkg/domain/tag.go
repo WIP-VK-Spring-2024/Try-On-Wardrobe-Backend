@@ -1,5 +1,7 @@
 package domain
 
+import "try-on/internal/pkg/utils"
+
 //easyjson:json
 type Tag struct {
 	Model
@@ -16,6 +18,7 @@ type TagUsecase interface {
 
 type TagRepository interface {
 	Get(limit, offset int) ([]Tag, error)
+	GetUserFavourite(userId utils.UUID, limit int) ([]Tag, error)
 	GetNotCreated(tags []string) ([]string, error)
 	Create(tags []Tag) error
 	SetEngNames(tags, engNames []string) error

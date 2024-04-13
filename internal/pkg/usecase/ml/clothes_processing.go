@@ -111,10 +111,6 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 	})
 }
 
-func isTryonable(category string) bool {
-	return category == "upper garment" || category == "lower garment" || category == "dress"
-}
-
 func notPassesThreshold[T ~string](threshold float32) func(_ T, value float32) bool {
 	return func(_ T, value float32) bool {
 		return value < threshold
@@ -133,18 +129,6 @@ func maxKey[M ~map[K]V, K comparable, V cmp.Ordered](input M) K {
 	}
 
 	return result
-}
-
-func filterSubcategories(subcategories map[string]float32, threshold float32) []string {
-	tmp := maps.Clone(subcategories)
-	maps.DeleteFunc(tmp, notPassesThreshold[string](threshold))
-
-	if len(tmp) != 0 {
-		return maps.Keys(tmp)
-	}
-
-	sorted := utils.SortedKeysByValue(subcategories)
-	return sorted[:len(sorted)/2]
 }
 
 const clothesSuffix = " clothes"

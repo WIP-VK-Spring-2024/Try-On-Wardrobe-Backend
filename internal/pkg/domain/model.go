@@ -6,10 +6,10 @@ import (
 
 type Model struct {
 	ID utils.UUID `json:"uuid"`
-	AutoTimestamp
+	Timestamp
 }
 
-type AutoTimestamp struct {
+type Timestamp struct {
 	CreatedAt utils.Time
 	UpdatedAt utils.Time
 }

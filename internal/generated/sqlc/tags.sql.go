@@ -202,28 +202,35 @@ func (q *Queries) GetTagsByEngName(ctx context.Context, engNames []string) ([]st
 	return items, nil
 }
 
-const getUserFavouriteTagEngNames = `-- name: GetUserFavouriteTagEngNames :many
-select t.eng_name
-    from tags t
-    join user_tag_usage u on u.tag_id = t.id
+const getUserFavouriteTags = `-- name: GetUserFavouriteTags :many
+select tags.id, tags.created_at, tags.updated_at, tags.name, tags.use_count, tags.eng_name
+    from tags
+    join user_tag_usage u on u.tag_id = tags.id
     where u.user_id = $1 and eng_name is not null
     order by usage desc
     limit $2
 `
 
-func (q *Queries) GetUserFavouriteTagEngNames(ctx context.Context, userID utils.UUID, limit int32) ([]pgtype.Text, error) {
-	rows, err := q.db.Query(ctx, getUserFavouriteTagEngNames, userID, limit)
+func (q *Queries) GetUserFavouriteTags(ctx context.Context, userID utils.UUID, limit int32) ([]Tag, error) {
+	rows, err := q.db.Query(ctx, getUserFavouriteTags, userID, limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []pgtype.Text
+	var items []Tag
 	for rows.Next() {
-		var eng_name pgtype.Text
-		if err := rows.Scan(&eng_name); err != nil {
+		var i Tag
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.UseCount,
+			&i.EngName,
+		); err != nil {
 			return nil, err
 		}
-		items = append(items, eng_name)
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

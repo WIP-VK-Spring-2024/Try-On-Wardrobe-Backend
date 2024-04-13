@@ -31,4 +31,4 @@ set layer = 3
 where type_id = '8b31dc49-5f9b-451f-85c6-ecf17a3a024c';
 
 -- +migrate Down
-alter atable subtypes drop column layer; 
+alter table subtypes drop column layer; 

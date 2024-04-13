@@ -1,8 +1,10 @@
 package outfits
 
 import (
+	"context"
 	"time"
 
+	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -16,6 +18,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	easyjson "github.com/mailru/easyjson"
 	"github.com/valyala/fasthttp"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
 )
 
 type OutfitHandler struct {
@@ -24,14 +28,26 @@ type OutfitHandler struct {
 
 	file domain.FileManager
 	cfg  *config.Static
+
+	logger     *zap.SugaredLogger
+	centrifugo centrifugo.CentrifugoApiClient
 }
 
-func New(db *pgxpool.Pool, generator domain.OutfitGenerator, file domain.FileManager, cfg *config.Static) *OutfitHandler {
+func New(
+	db *pgxpool.Pool,
+	generator domain.OutfitGenerator,
+	file domain.FileManager,
+	cfg *config.Static,
+	logger *zap.SugaredLogger,
+	centrifugoConn grpc.ClientConnInterface,
+) *OutfitHandler {
 	return &OutfitHandler{
-		outfits:   outfitUsecase.New(outfitRepo.New(db)),
-		generator: generator,
-		file:      file,
-		cfg:       cfg,
+		outfits:    outfitUsecase.New(outfitRepo.New(db)),
+		generator:  generator,
+		file:       file,
+		cfg:        cfg,
+		logger:     logger,
+		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
 	}
 }
 
@@ -240,4 +256,45 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(common.EmptyJson)
+}
+
+func (h *OutfitHandler) GetPurposes(ctx *fiber.Ctx) error {
+	purposes, err := h.outfits.GetOutfitPurposes()
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(purposes)
+}
+
+func (h *OutfitHandler) GetGenerationResults(cfg *config.Centrifugo) error {
+	return h.generator.ListenGenerationResults(h.logger, func(resp *domain.OutfitGenerationResponse) domain.Result {
+		userChannel := cfg.OutfitGenChannel + resp.UserID.String()
+
+		bytes, err := easyjson.Marshal(resp)
+		if err != nil {
+			h.logger.Errorw(err.Error())
+			return domain.ResultDiscard
+		}
+
+		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(bytes))
+
+		centrifugoResp, err := h.centrifugo.Publish(
+			context.Background(),
+			&centrifugo.PublishRequest{
+				Channel: userChannel,
+				Data:    bytes,
+			},
+		)
+
+		switch {
+		case err != nil:
+			h.logger.Errorw(err.Error())
+			return domain.ResultRetry
+		case centrifugoResp.Error != nil:
+			h.logger.Errorw(centrifugoResp.Error.Message)
+		}
+
+		return domain.ResultOk
+	})
 }

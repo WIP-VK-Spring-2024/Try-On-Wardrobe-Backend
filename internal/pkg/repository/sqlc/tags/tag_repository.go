@@ -22,6 +22,15 @@ func New(db *pgxpool.Pool) domain.TagRepository {
 	}
 }
 
+func (repo TagRepository) GetUserFavourite(userId utils.UUID, limit int) ([]domain.Tag, error) {
+	tags, err := repo.queries.GetUserFavouriteTags(context.Background(), userId, int32(limit))
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	return utils.Map(tags, fromSqlc), nil
+}
+
 func (repo TagRepository) GetNotCreated(tags []string) ([]string, error) {
 	return repo.queries.GetNotCreatedTags(context.Background(), tags)
 }
@@ -72,11 +81,13 @@ func (repo TagRepository) Get(limit, offset int) ([]domain.Tag, error) {
 		return nil, utils.PgxError(err)
 	}
 
-	return utils.Map(tags, func(t *sqlc.Tag) *domain.Tag {
-		return &domain.Tag{
-			Model:    domain.Model{ID: t.ID},
-			Name:     t.Name,
-			UseCount: t.UseCount,
-		}
-	}), nil
+	return utils.Map(tags, fromSqlc), nil
+}
+
+func fromSqlc(t *sqlc.Tag) *domain.Tag {
+	return &domain.Tag{
+		Model:    domain.Model{ID: t.ID},
+		Name:     t.Name,
+		UseCount: t.UseCount,
+	}
 }

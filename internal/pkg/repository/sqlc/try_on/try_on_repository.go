@@ -75,7 +75,7 @@ func fromSqlc(model *sqlc.TryOnResult) *domain.TryOnResult {
 	return &domain.TryOnResult{
 		Model: domain.Model{
 			ID: model.ID,
-			AutoTimestamp: domain.AutoTimestamp{
+			Timestamp: domain.Timestamp{
 				CreatedAt: utils.Time{Time: model.CreatedAt.Time},
 				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},

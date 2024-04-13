@@ -12,6 +12,7 @@ import (
 
 type Config struct {
 	Addr           string
+	WeatherApiKey  string
 	Static         Static
 	Centrifugo     Centrifugo
 	Postgres       Postgres
@@ -51,6 +52,7 @@ type Centrifugo struct {
 	Url               string
 	TryOnChannel      string
 	ProcessingChannel string
+	OutfitGenChannel  string
 }
 
 type Cors struct {
@@ -61,12 +63,13 @@ type Cors struct {
 }
 
 type Rabbit struct {
-	Host     string
-	Port     int
-	User     string
-	Password string
-	TryOn    RabbitQueue
-	Process  RabbitQueue
+	Host      string
+	Port      int
+	User      string
+	Password  string
+	TryOn     RabbitQueue
+	Process   RabbitQueue
+	OutfitGen RabbitQueue
 }
 
 type RabbitQueue struct {
@@ -125,6 +128,7 @@ var envBoundConfigValues = []string{
 	"static.httpapi.token",
 	"rabbit.host",
 	"static.httpapi.endpoint",
+	"weatherapikey",
 }
 
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {

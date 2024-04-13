@@ -31,6 +31,10 @@ func (u OutfitUsecase) Create(outfit *domain.Outfit) error {
 	return u.repo.Create(outfit)
 }
 
+func (u OutfitUsecase) GetOutfitPurposes() ([]domain.OutfitPurpose, error) {
+	return u.repo.GetOutfitPurposes()
+}
+
 func (u OutfitUsecase) Update(outfit *domain.Outfit) error {
 	old, err := u.repo.GetById(outfit.ID)
 	if err != nil {

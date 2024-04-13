@@ -22,8 +22,9 @@ const (
 type Outfit struct {
 	Model
 
-	UserID  utils.UUID
-	StyleID utils.UUID
+	UserID    utils.UUID
+	StyleID   utils.UUID
+	PurposeID utils.UUID
 
 	Privacy Privacy
 
@@ -33,6 +34,14 @@ type Outfit struct {
 	Transforms TransformMap
 	Seasons    []Season
 	Tags       []string
+}
+
+//easyjson:json
+type OutfitPurpose struct {
+	Model
+
+	Name    string
+	EngName string
 }
 
 //easyjson:json
@@ -56,17 +65,19 @@ type GeoPosition struct {
 
 //easyjson:json
 type OutfitGenerationRequest struct {
-	UserID utils.UUID
-	Pos    WeatherRequest
-	Tags   []string
-	Prompt string
+	UserID   utils.UUID
+	IP       string
+	Pos      WeatherRequest
+	Purposes []string
+	Prompt   string
 }
 
 //easyjson:json
 type OutfitGenerationModelRequest struct {
-	UserID  utils.UUID
-	Clothes []GenClothesInfo
-	Prompt  string
+	UserID       utils.UUID
+	Clothes      []GenClothesInfo
+	Prompt       string
+	SampleAmount int
 }
 
 //easyjson:json
@@ -78,7 +89,7 @@ type GenClothesInfo struct {
 //easyjson:json
 type OutfitGenerationResponse struct {
 	UserID  utils.UUID
-	Clothes []utils.UUID
+	Outfits [][]utils.UUID
 }
 
 type OutfitGenerator interface {
@@ -94,6 +105,7 @@ type OutfitUsecase interface {
 	Get(since time.Time, limit int) ([]Outfit, error)
 	GetClothesInfo(utils.UUID) ([]TryOnClothesInfo, error)
 	GetByUser(utils.UUID) ([]Outfit, error)
+	GetOutfitPurposes() ([]OutfitPurpose, error)
 }
 
 type OutfitRepository interface {
@@ -104,4 +116,7 @@ type OutfitRepository interface {
 	Get(since time.Time, limit int) ([]Outfit, error)
 	GetClothesInfo(utils.UUID) ([]TryOnClothesInfo, error)
 	GetByUser(utils.UUID) ([]Outfit, error)
+	GetOutfitPurposesByEngName(engNames []string) ([]OutfitPurpose, error)
+	GetOutfitPurposes() ([]OutfitPurpose, error)
+	GetPurposeEngNames(names []string) ([]string, error)
 }

@@ -79,6 +79,7 @@ func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts 
 	fmt.Printf("Trying out clothes from outfit: %+v\n", clothes)
 
 	filteredClothes := filterClothesForTryOn(clothes)
+	// TODO: Sort upper clothes by layer
 
 	fmt.Printf("Filtered clothes from outfit for try on: %+v\n", filteredClothes)
 

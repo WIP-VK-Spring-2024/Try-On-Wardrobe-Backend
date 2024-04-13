@@ -29,6 +29,46 @@ func New(db *pgxpool.Pool) domain.OutfitRepository {
 	}
 }
 
+func (repo OutfitRepository) GetPurposeEngNames(names []string) ([]string, error) {
+	engNames, err := repo.queries.GetOutfitPurposeEngNames(context.Background(), names)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return engNames, nil
+}
+
+func (repo OutfitRepository) GetOutfitPurposes() ([]domain.OutfitPurpose, error) {
+	purposes, err := repo.queries.GetOutfitPurposes(context.Background())
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	return utils.Map(purposes, purposeFromSqlc), nil
+}
+
+func (repo OutfitRepository) GetOutfitPurposesByEngName(engNames []string) ([]domain.OutfitPurpose, error) {
+	purposes, err := repo.queries.GetOutfitPurposeByEngName(context.Background(), engNames)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	return utils.Map(purposes, purposeFromSqlc), nil
+}
+
+func purposeFromSqlc(t *sqlc.OutfitPurpose) *domain.OutfitPurpose {
+	return &domain.OutfitPurpose{
+		Model: domain.Model{
+			ID: t.ID,
+			Timestamp: domain.Timestamp{
+				CreatedAt: utils.Time{Time: t.CreatedAt.Time},
+				UpdatedAt: utils.Time{Time: t.UpdatedAt.Time},
+			},
+		},
+		Name:    t.Name,
+		EngName: t.EngName,
+	}
+}
+
 func (repo OutfitRepository) Create(outfit *domain.Outfit) error {
 	ctx := context.Background()
 	tx, err := repo.db.Begin(ctx)
@@ -173,7 +213,7 @@ func fromSqlc(model *sqlc.GetOutfitRow) *domain.Outfit {
 	result := &domain.Outfit{
 		Model: domain.Model{
 			ID: model.ID,
-			AutoTimestamp: domain.AutoTimestamp{
+			Timestamp: domain.Timestamp{
 				CreatedAt: utils.Time{Time: model.CreatedAt.Time},
 				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
