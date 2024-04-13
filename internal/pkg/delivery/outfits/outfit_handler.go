@@ -270,8 +270,23 @@ func (h *OutfitHandler) GetPurposes(ctx *fiber.Ctx) error {
 	return ctx.JSON(purposes)
 }
 
-func (h *OutfitHandler) GetGenerationResults(cfg *config.Centrifugo) error {
-	return h.generator.ListenGenerationResults(h.logger, func(resp *domain.OutfitGenerationResponse) domain.Result {
+func (h *OutfitHandler) GetGenerationResults(cfg *config.Centrifugo) {
+	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				h.logger.Error(err)
+			}
+		}()
+
+		err := h.generator.ListenGenerationResults(h.logger, h.handleGenResults(cfg))
+		if err != nil {
+			h.logger.Errorw(err.Error())
+		}
+	}()
+}
+
+func (h *OutfitHandler) handleGenResults(cfg *config.Centrifugo) func(resp *domain.OutfitGenerationResponse) domain.Result {
+	return func(resp *domain.OutfitGenerationResponse) domain.Result {
 		userChannel := cfg.OutfitGenChannel + resp.UserID.String()
 
 		bytes, err := easyjson.Marshal(resp)
@@ -299,5 +314,5 @@ func (h *OutfitHandler) GetGenerationResults(cfg *config.Centrifugo) error {
 		}
 
 		return domain.ResultOk
-	})
+	}
 }
