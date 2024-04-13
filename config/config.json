@@ -5,7 +5,7 @@
     "url": "centrifugo:10000",
     "tryOnChannel": "try-on:user#",
     "processingChannel": "processing:user#",
-    "outfitGenChannel": "outfit_gen:user#"
+    "outfitGenChannel": "outfit-gen:user#"
   },
 
   "classification": {

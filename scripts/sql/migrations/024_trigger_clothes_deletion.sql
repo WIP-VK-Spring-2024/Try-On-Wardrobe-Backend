@@ -7,10 +7,11 @@ add constraint try_on_results_user_image_id_fkey
    on delete cascade;
 
 -- +migrate StatementBegin
-create function delete_try_on_results() returns trigger as $$
+create or replace function delete_try_on_results() returns trigger as $$
 begin
     delete from try_on_results tr
     where old.id = any(tr.clothes_id);
+    return old;
 end
 $$ language plpgsql;
 -- +migrate StatementEnd
@@ -22,10 +23,11 @@ create trigger trigger_del_try_on_with_clothes
     execute procedure delete_try_on_results();
 
 -- +migrate StatementBegin
-create function delete_outfits() returns trigger as $$
+create or replace function delete_outfits() returns trigger as $$
 begin
     delete from outfits o
     where o.transforms ? cast(old.id as text);
+    return old;
 end
 $$ language plpgsql;
 -- +migrate StatementEnd

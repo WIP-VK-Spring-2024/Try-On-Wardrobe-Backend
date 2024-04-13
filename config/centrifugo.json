@@ -16,7 +16,7 @@
       "allow_subscribe_for_client": true
     },
     {
-      "name": "outfit_gen",
+      "name": "outfit-gen",
       "history_size": 10,
       "history_ttl": "300s",
       "force_recovery": true,
