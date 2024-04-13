@@ -243,6 +243,11 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 	}
 
 	var req domain.OutfitGenerationRequest
+	req = domain.OutfitGenerationRequest{
+		Amount:   12,
+		Prompt:   "something something",
+		Purposes: []string{"clothes for outdoor"},
+	}
 
 	// if err := easyjson.Unmarshal(ctx.Body(), &req); err != nil {
 	// 	middleware.LogWarning(ctx, err)
