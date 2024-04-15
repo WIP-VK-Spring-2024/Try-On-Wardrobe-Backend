@@ -3,7 +3,6 @@ package outfits
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
@@ -66,28 +65,6 @@ func (h *OutfitHandler) GetById(ctx *fiber.Ctx) error {
 	return ctx.JSON(outfit)
 }
 
-//easyjson:json
-type getOutfitsParams struct {
-	Limit int
-	Since time.Time
-}
-
-func (h *OutfitHandler) Get(ctx *fiber.Ctx) error {
-	var params getOutfitsParams
-
-	if err := ctx.QueryParser(&params); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
-	}
-
-	outfits, err := h.outfits.Get(params.Since, params.Limit)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	return ctx.JSON(outfits)
-}
-
 func (h *OutfitHandler) GetByUser(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
@@ -104,8 +81,9 @@ func (h *OutfitHandler) GetByUser(ctx *fiber.Ctx) error {
 
 //easyjson:json
 type createdResponse struct {
-	Uuid  utils.UUID
-	Image string
+	Uuid      utils.UUID
+	Image     string
+	UpdatedAt utils.Time
 }
 
 func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
@@ -151,8 +129,9 @@ func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(&createdResponse{
-		Uuid:  outfit.ID,
-		Image: outfit.Image,
+		Uuid:      outfit.ID,
+		Image:     outfit.Image,
+		UpdatedAt: outfit.UpdatedAt,
 	})
 }
 

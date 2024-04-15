@@ -10,6 +10,7 @@ import (
 	"try-on/internal/middleware/heartbeat"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
+	"try-on/internal/pkg/delivery/feed"
 	"try-on/internal/pkg/delivery/outfits"
 	"try-on/internal/pkg/delivery/styles"
 	"try-on/internal/pkg/delivery/tags"
@@ -163,6 +164,8 @@ func (app *App) Run() error {
 
 	tagsHandler := tags.New(pg)
 
+	feedHandler := feed.New(pg)
+
 	app.api.Use(
 		recover,
 		logger,
@@ -210,10 +213,15 @@ func (app *App) Run() error {
 
 	app.api.Post("/outfits", outfitHandler.Create)
 	app.api.Get("/outfits", outfitHandler.GetByUser)
-	app.api.Get("/posts", outfitHandler.Get)
 	app.api.Get("/outfits/:id", outfitHandler.GetById)
 	app.api.Delete("/outfits/:id", outfitHandler.Delete)
 	app.api.Put("/outfits/:id", outfitHandler.Update)
+
+	app.api.Get("/posts", feedHandler.GetPosts)
+	app.api.Get("/posts/:id/comments", feedHandler.GetComments)
+	app.api.Post("/posts/:id/comments", feedHandler.CreateComment)
+	app.api.Post("/posts/:id/rate", feedHandler.RatePost)
+	app.api.Post("/comments/:id/rate", feedHandler.RateComment)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 

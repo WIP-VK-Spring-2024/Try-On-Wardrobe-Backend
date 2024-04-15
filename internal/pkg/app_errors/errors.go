@@ -61,6 +61,11 @@ var (
 		Code: http.StatusBadRequest,
 		Msg:  "outfit ID is missing or isn't a valid uuid",
 	}
+
+	ErrPostIdInvalid = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "post ID is missing or isn't a valid uuid",
+	}
 )
 
 type InternalError struct {
