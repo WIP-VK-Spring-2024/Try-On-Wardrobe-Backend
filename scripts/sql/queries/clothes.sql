@@ -107,9 +107,11 @@ where o.id = $1;
 -- name: GetClothesTryOnInfo :many
 select
     clothes.id,
-    try_on_type(types.name) as category
+    try_on_type(types.name) as category,
+    subtypes.layer as layer
 from clothes
 join types on types.id = clothes.type_id
+join subtypes on subtypes.id = clothes.subtype_id
 where clothes.id = any(sqlc.arg(ids)::uuid[])
     and try_on_type(types.name) <> '';
 

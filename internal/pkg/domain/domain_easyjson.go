@@ -639,7 +639,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain5(in *jlexer.Lexer, out *TryOnR
 				in.Delim('[')
 				if out.Clothes == nil {
 					if !in.IsDelim(']') {
-						out.Clothes = make([]TryOnClothesInfo, 0, 2)
+						out.Clothes = make([]TryOnClothesInfo, 0, 1)
 					} else {
 						out.Clothes = []TryOnClothesInfo{}
 					}
@@ -784,7 +784,7 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain6(in *jlexer.Lexer, out *TryOnR
 				in.Delim('[')
 				if out.Clothes == nil {
 					if !in.IsDelim(']') {
-						out.Clothes = make([]TryOnClothesInfo, 0, 2)
+						out.Clothes = make([]TryOnClothesInfo, 0, 1)
 					} else {
 						out.Clothes = []TryOnClothesInfo{}
 					}

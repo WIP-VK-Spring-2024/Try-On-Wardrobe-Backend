@@ -69,6 +69,7 @@ func (c ClothesRepository) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothes
 		return &domain.TryOnClothesInfo{
 			ClothesID: t.ID,
 			Category:  t.Category,
+			Layer:     int(t.Layer),
 		}
 	}), nil
 }

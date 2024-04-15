@@ -1,6 +1,8 @@
 package utils
 
-import "atomicgo.dev/constraints"
+import (
+	"atomicgo.dev/constraints"
+)
 
 func Accumulate[T constraints.Addable](slice []T) T {
 	return Reduce(slice, func(first, second T) T {
@@ -48,4 +50,14 @@ func Count[T any, S ~[]T](slice S, predicate func(T) bool) int {
 		}
 	}
 	return count
+}
+
+func Filter[T any, S ~[]T](slice S, predicate func(T) bool) S {
+	result := make(S, 0, len(slice))
+	for _, elem := range slice {
+		if predicate(elem) {
+			result = append(result, elem)
+		}
+	}
+	return result
 }

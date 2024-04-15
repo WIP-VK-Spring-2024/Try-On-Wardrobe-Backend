@@ -1,6 +1,7 @@
 package tryon
 
 import (
+	"cmp"
 	"context"
 	"fmt"
 	"slices"
@@ -104,12 +105,15 @@ func filterClothesForTryOn(clothes []domain.TryOnClothesInfo) []domain.TryOnClot
 
 	result := make([]domain.TryOnClothesInfo, 0, 2)
 
-	upperBodyIdx := slices.IndexFunc(clothes, func(c domain.TryOnClothesInfo) bool {
+	upperBodyClothes := utils.Filter(clothes, func(c domain.TryOnClothesInfo) bool {
 		return c.Category == domain.TryOnCategoryUpper
 	})
 
-	if upperBodyIdx != -1 {
-		result = append(result, clothes[upperBodyIdx])
+	if len(upperBodyClothes) > 0 {
+		slices.SortFunc(upperBodyClothes, func(first, second domain.TryOnClothesInfo) int {
+			return cmp.Compare(second.Layer, first.Layer)
+		})
+		result = append(result, upperBodyClothes[0])
 	}
 
 	lowerBodyIdx := slices.IndexFunc(clothes, func(c domain.TryOnClothesInfo) bool {
