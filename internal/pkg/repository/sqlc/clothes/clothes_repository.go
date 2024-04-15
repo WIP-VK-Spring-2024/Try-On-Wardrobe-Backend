@@ -74,7 +74,13 @@ func (c ClothesRepository) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothes
 }
 
 func (c ClothesRepository) GetByWeather(userId utils.UUID, temp *int) ([]domain.GenClothesInfo, error) {
-	clothesInfo, err := c.queries.GetClothesInfoByWeather(context.Background(), userId, temp)
+	tempParam := pgtype.Int4{}
+	if temp != nil {
+		tempParam.Int32 = int32(*temp)
+		tempParam.Valid = true
+	}
+
+	clothesInfo, err := c.queries.GetClothesInfoByWeather(context.Background(), userId, tempParam)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}

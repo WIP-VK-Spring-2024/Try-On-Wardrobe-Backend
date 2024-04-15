@@ -263,7 +263,7 @@ from clothes
 join types on types.id = clothes.type_id
 join subtypes on subtypes.id = clothes.subtype_id
 where clothes.user_id = $1
-    and $2 is null or subtypes.temp_range @> $2::int
+    and $2::int is null or subtypes.temp_range @> $2::int 
     and is_valid_for_generation(types.eng_name)
 `
 
@@ -272,8 +272,8 @@ type GetClothesInfoByWeatherRow struct {
 	Category string
 }
 
-func (q *Queries) GetClothesInfoByWeather(ctx context.Context, userID utils.UUID, column2 interface{}) ([]GetClothesInfoByWeatherRow, error) {
-	rows, err := q.db.Query(ctx, getClothesInfoByWeather, userID, column2)
+func (q *Queries) GetClothesInfoByWeather(ctx context.Context, userID utils.UUID, temp pgtype.Int4) ([]GetClothesInfoByWeatherRow, error) {
+	rows, err := q.db.Query(ctx, getClothesInfoByWeather, userID, temp)
 	if err != nil {
 		return nil, err
 	}
