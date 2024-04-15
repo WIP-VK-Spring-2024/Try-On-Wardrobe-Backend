@@ -203,7 +203,7 @@ func (app *App) Run() error {
 	app.api.Patch("/try-on/:id/rate", tryOnHandler.Rate)
 
 	app.api.Get("/outfits/purposes", outfitHandler.GetPurposes)
-	app.api.Post("/outfits/gen", outfitHandler.Generate)
+	app.api.Get("/outfits/gen", outfitHandler.Generate)
 
 	app.api.Post("/outfits", outfitHandler.Create)
 	app.api.Get("/outfits", outfitHandler.GetByUser)

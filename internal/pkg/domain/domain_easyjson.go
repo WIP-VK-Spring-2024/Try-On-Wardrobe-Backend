@@ -1890,6 +1890,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain16(in *jlexer.Lexer, out *Outfi
 			}
 		case "amount":
 			out.Amount = int(in.Int())
+		case "use_weather":
+			out.UseWeather = bool(in.Bool())
 		case "pos":
 			(out.Pos).UnmarshalEasyJSON(in)
 		case "purposes":
@@ -1946,6 +1948,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain16(out *jwriter.Writer, in Outf
 			out.RawString(prefix)
 		}
 		out.Int(int(in.Amount))
+	}
+	if in.UseWeather {
+		const prefix string = ",\"use_weather\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Bool(bool(in.UseWeather))
 	}
 	if true {
 		const prefix string = ",\"pos\":"

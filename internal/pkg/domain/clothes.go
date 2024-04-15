@@ -53,5 +53,5 @@ type ClothesRepository interface {
 	GetTryOnInfo(ids []utils.UUID) ([]TryOnClothesInfo, error)
 	Delete(id utils.UUID) error
 	GetByUser(userId utils.UUID, limit int) ([]Clothes, error)
-	GetByWeather(userId utils.UUID, temp int) ([]GenClothesInfo, error)
+	GetByWeather(userId utils.UUID, temp *int) ([]GenClothesInfo, error)
 }

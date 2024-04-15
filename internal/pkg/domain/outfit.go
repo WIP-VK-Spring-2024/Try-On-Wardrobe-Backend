@@ -59,17 +59,18 @@ type Transform struct {
 
 //easyjson:json
 type GeoPosition struct {
-	Lat float32
-	Lon float32
+	Lat float32 `query:"lat"`
+	Lon float32 `query:"lon"`
 }
 
 //easyjson:json
 type OutfitGenerationRequest struct {
-	UserID   utils.UUID
-	Amount   int
-	Pos      WeatherRequest
-	Purposes []string
-	Prompt   string
+	UserID     utils.UUID
+	Amount     int            `query:"amount"`
+	UseWeather bool           `query:"use_weather"`
+	Pos        WeatherRequest `query:"pos"`
+	Purposes   []string       `query:"purposes"`
+	Prompt     string         `query:"prompt"`
 }
 
 //easyjson:json

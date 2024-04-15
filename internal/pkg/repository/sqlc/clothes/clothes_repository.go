@@ -73,8 +73,8 @@ func (c ClothesRepository) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothes
 	}), nil
 }
 
-func (c ClothesRepository) GetByWeather(userId utils.UUID, temp int) ([]domain.GenClothesInfo, error) {
-	clothesInfo, err := c.queries.GetClothesInfoByWeather(context.Background(), userId, int32(temp))
+func (c ClothesRepository) GetByWeather(userId utils.UUID, temp *int) ([]domain.GenClothesInfo, error) {
+	clothesInfo, err := c.queries.GetClothesInfoByWeather(context.Background(), userId, temp)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}

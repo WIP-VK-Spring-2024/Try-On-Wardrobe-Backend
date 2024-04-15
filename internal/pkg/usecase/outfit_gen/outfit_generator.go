@@ -47,13 +47,20 @@ func (gen *OutfitGenerator) Close() {
 }
 
 func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitGenerationRequest) error {
-	weather, err := gen.weather.CurrentWeather(request.Pos)
-	if err != nil {
-		return err
-	}
-	fmt.Println("Got weather: ", weather.Temp)
+	var tempCelcius *int = nil
 
-	clothes, err := gen.clothes.GetByWeather(request.UserID, int(weather.Temp))
+	if request.UseWeather {
+		weather, err := gen.weather.CurrentWeather(request.Pos)
+		if err != nil {
+			return err
+		}
+		fmt.Println("Got weather: ", weather.Temp)
+
+		tmp := int(weather.Temp)
+		tempCelcius = &tmp
+	}
+
+	clothes, err := gen.clothes.GetByWeather(request.UserID, tempCelcius)
 	if err != nil {
 		return err
 	}
@@ -84,10 +91,10 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 	bytes, _ := easyjson.Marshal(modelRequest)
 	fmt.Println(string(bytes))
 
-	return gen.publisher.Publish(ctx, modelRequest)
+	// return gen.publisher.Publish(ctx, modelRequest) // TODO: Uncomment
+	return nil
 }
 
 func (gen *OutfitGenerator) ListenGenerationResults(logger *zap.SugaredLogger, handler func(*domain.OutfitGenerationResponse) domain.Result) error {
-	// TODO:Post-processing?
 	return gen.subscriber.Listen(logger, handler)
 }

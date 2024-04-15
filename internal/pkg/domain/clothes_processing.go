@@ -56,7 +56,7 @@ type ClothesProcessingModelResponse struct {
 
 //easyjson:json
 type ClothesClassificationRequest struct { // Request to ML-server
-	Tags          []string `json:"tags,!omitempty"`
+	Tags          []string `json:"tags,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	Styles        []string
 	Categories    []string
 	Subcategories []string

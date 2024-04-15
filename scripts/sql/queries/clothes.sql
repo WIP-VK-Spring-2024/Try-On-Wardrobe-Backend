@@ -121,5 +121,5 @@ from clothes
 join types on types.id = clothes.type_id
 join subtypes on subtypes.id = clothes.subtype_id
 where clothes.user_id = $1
-    and subtypes.temp_range @> $2::int
+    and $2 is null or subtypes.temp_range @> $2::int
     and is_valid_for_generation(types.eng_name);
