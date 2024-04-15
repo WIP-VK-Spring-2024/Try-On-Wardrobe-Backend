@@ -112,6 +112,7 @@ func (c ClothesRepository) Update(clothes *domain.Clothes) error {
 		StyleID:   clothes.StyleID,
 		Color:     pgtype.Text(clothes.Color.NullString),
 		Seasons:   clothes.Seasons,
+		Privacy:   clothes.Privacy,
 	}
 
 	err = c.queries.UpdateClothes(ctx, updateParams)

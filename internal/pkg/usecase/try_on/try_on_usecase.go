@@ -86,6 +86,7 @@ func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts 
 
 	return u.publisher.Publish(ctx, domain.TryOnRequest{
 		TryOnOpts: opts,
+		OutfitID:  outfit,
 		Clothes:   filteredClothes,
 	})
 }

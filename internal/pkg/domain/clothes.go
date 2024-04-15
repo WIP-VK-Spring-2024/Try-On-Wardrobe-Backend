@@ -33,6 +33,8 @@ type Clothes struct {
 
 	Color   optional.String
 	Seasons []Season
+
+	Privacy Privacy
 }
 
 type ClothesUsecase interface {

@@ -114,6 +114,7 @@ func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 		StyleID:    outfit.StyleID,
 		Seasons:    outfit.Seasons,
 		Transforms: transforms,
+		Privacy:    outfit.Privacy,
 	}
 
 	if outfit.Name != "" {

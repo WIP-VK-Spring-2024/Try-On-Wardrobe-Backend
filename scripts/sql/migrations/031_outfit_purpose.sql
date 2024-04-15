@@ -1,6 +1,6 @@
 -- +migrate Up
 create table outfit_purpose(
-    id uuid  primary key default gen_random_uuid(),
+    id uuid primary key default gen_random_uuid(),
     name text not null,
     eng_name text not null,
     created_at timestamp not null default now(),

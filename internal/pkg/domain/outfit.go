@@ -15,7 +15,7 @@ type Privacy string
 const (
 	PrivacyPublic  Privacy = "public"
 	PrivacyPrivate Privacy = "private"
-	PrivacyFriends Privacy = "public"
+	PrivacyFriends Privacy = "friends"
 )
 
 //easyjson:json

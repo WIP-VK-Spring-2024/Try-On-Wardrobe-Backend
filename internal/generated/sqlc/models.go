@@ -211,19 +211,20 @@ type ClothesTag struct {
 }
 
 type Outfit struct {
-	ID         utils.UUID
-	UserID     utils.UUID
-	StyleID    utils.UUID
-	CreatedAt  pgtype.Timestamptz
-	UpdatedAt  pgtype.Timestamptz
-	Name       pgtype.Text
-	Note       pgtype.Text
-	Image      pgtype.Text
-	Transforms []byte
-	Seasons    []domain.Season
-	Public     domain.Privacy
-	Generated  bool
-	PurposeIds []utils.UUID
+	ID            utils.UUID
+	UserID        utils.UUID
+	StyleID       utils.UUID
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	Name          pgtype.Text
+	Note          pgtype.Text
+	Image         pgtype.Text
+	Transforms    []byte
+	Seasons       []domain.Season
+	Public        domain.Privacy
+	Generated     bool
+	PurposeIds    []utils.UUID
+	TryOnResultID utils.UUID
 }
 
 type OutfitPurpose struct {

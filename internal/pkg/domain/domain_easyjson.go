@@ -506,6 +506,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain4(in *jlexer.Lexer, out *TryOnR
 				}
 				in.Delim(']')
 			}
+		case "outfit_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.OutfitID).UnmarshalText(data))
+			}
 		case "uuid":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
@@ -566,6 +570,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain4(out *jwriter.Writer, in TryOn
 			}
 			out.RawByte(']')
 		}
+	}
+	if (in.OutfitID).IsDefined() {
+		const prefix string = ",\"outfit_id\":"
+		out.RawString(prefix)
+		out.RawText((in.OutfitID).MarshalText())
 	}
 	if (in.ID).IsDefined() {
 		const prefix string = ",\"uuid\":"
@@ -631,6 +640,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain5(in *jlexer.Lexer, out *TryOnR
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
 			}
+		case "outfit_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.OutfitID).UnmarshalText(data))
+			}
 		case "clothes":
 			if in.IsNull() {
 				in.Skip()
@@ -681,6 +694,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain5(out *jwriter.Writer, in TryOn
 		first = false
 		out.RawString(prefix[1:])
 		out.RawText((in.UserID).MarshalText())
+	}
+	if (in.OutfitID).IsDefined() {
+		const prefix string = ",\"outfit_id\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.RawText((in.OutfitID).MarshalText())
 	}
 	if len(in.Clothes) != 0 {
 		const prefix string = ",\"clothes\":"
@@ -776,6 +799,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain6(in *jlexer.Lexer, out *TryOnR
 			continue
 		}
 		switch key {
+		case "outfit_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.OutfitID).UnmarshalText(data))
+			}
 		case "clothes":
 			if in.IsNull() {
 				in.Skip()
@@ -825,10 +852,20 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain6(out *jwriter.Writer, in TryOn
 	out.RawByte('{')
 	first := true
 	_ = first
-	if len(in.Clothes) != 0 {
-		const prefix string = ",\"clothes\":"
+	if (in.OutfitID).IsDefined() {
+		const prefix string = ",\"outfit_id\":"
 		first = false
 		out.RawString(prefix[1:])
+		out.RawText((in.OutfitID).MarshalText())
+	}
+	if len(in.Clothes) != 0 {
+		const prefix string = ",\"clothes\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		{
 			out.RawByte('[')
 			for v11, v12 := range in.Clothes {

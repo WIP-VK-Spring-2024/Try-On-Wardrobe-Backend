@@ -16,6 +16,7 @@ type TryOnResult struct {
 	Rating      int `json:"rating,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	UserImageID utils.UUID
 	ClothesID   []utils.UUID
+	OutfitID    utils.UUID
 }
 
 type TryOnUsecase interface {
@@ -36,7 +37,8 @@ type TryOnOpts struct {
 //easyjson:json
 type TryOnRequest struct {
 	TryOnOpts
-	Clothes []TryOnClothesInfo
+	OutfitID utils.UUID
+	Clothes  []TryOnClothesInfo
 }
 
 //easyjson:json
@@ -49,6 +51,7 @@ type TryOnClothesInfo struct {
 //easyjson:json
 type TryOnResponse struct {
 	UserID      utils.UUID
+	OutfitID    utils.UUID
 	Clothes     []TryOnClothesInfo
 	UserImageID utils.UUID
 	TryOnID     string

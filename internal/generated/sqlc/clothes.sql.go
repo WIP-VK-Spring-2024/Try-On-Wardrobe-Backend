@@ -351,6 +351,7 @@ set name = coalesce($2, name),
     style_id = coalesce($6, style_id),
     color = coalesce($7, color),
     seasons = coalesce($8, seasons)::season[],
+    privacy = coalesce($9::privacy, privacy),
     updated_at = now()
 where id = $1
 `
@@ -364,6 +365,7 @@ type UpdateClothesParams struct {
 	StyleID   utils.UUID
 	Color     pgtype.Text
 	Seasons   []domain.Season
+	Privacy   domain.Privacy
 }
 
 func (q *Queries) UpdateClothes(ctx context.Context, arg UpdateClothesParams) error {
@@ -376,6 +378,7 @@ func (q *Queries) UpdateClothes(ctx context.Context, arg UpdateClothesParams) er
 		arg.StyleID,
 		arg.Color,
 		arg.Seasons,
+		arg.Privacy,
 	)
 	return err
 }
