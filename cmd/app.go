@@ -225,11 +225,12 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 	return &App{
 		api: fiber.New(
 			fiber.Config{
-				ErrorHandler:            errorHandler,
-				JSONEncoder:             utils.EasyJsonMarshal,
-				JSONDecoder:             utils.EasyJsonUnmarshal,
-				EnableTrustedProxyCheck: true,
-				TrustedProxies:          []string{cfg.ProxyIP},
+				ErrorHandler: errorHandler,
+				JSONEncoder:  utils.EasyJsonMarshal,
+				JSONDecoder:  utils.EasyJsonUnmarshal,
+				ProxyHeader:  fiber.HeaderXForwardedFor,
+				// EnableTrustedProxyCheck: true,
+				// TrustedProxies:          []string{cfg.ProxyIP},
 			},
 		),
 		cfg:    cfg,
