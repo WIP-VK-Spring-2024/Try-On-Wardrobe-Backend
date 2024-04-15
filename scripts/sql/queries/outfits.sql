@@ -41,7 +41,7 @@ group by
     outfits.image,
     outfits.transforms,
     outfits.seasons,
-    outfits.public;
+    outfits.privacy;
 
 -- name: GetOutfitsByUser :many
 select
@@ -62,7 +62,7 @@ group by
     outfits.image,
     outfits.transforms,
     outfits.seasons,
-    outfits.public
+    outfits.privacy
 order by outfits.created_at desc;
 
 -- name: GetOutfits :many
@@ -84,7 +84,7 @@ group by
     outfits.image,
     outfits.transforms,
     outfits.seasons,
-    outfits.public
+    outfits.privacy
 order by outfits.created_at desc
 limit $2;
 

@@ -219,7 +219,7 @@ func fromSqlc(model *sqlc.GetOutfitRow) *domain.Outfit {
 				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
-		Privacy: model.Public,
+		Privacy: model.Privacy,
 		UserID:  model.UserID,
 		StyleID: model.StyleID,
 		Name:    model.Name.String,

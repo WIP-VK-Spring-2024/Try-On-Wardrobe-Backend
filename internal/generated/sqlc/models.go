@@ -221,7 +221,7 @@ type Outfit struct {
 	Image         pgtype.Text
 	Transforms    []byte
 	Seasons       []domain.Season
-	Public        domain.Privacy
+	Privacy       domain.Privacy
 	Generated     bool
 	PurposeIds    []utils.UUID
 	TryOnResultID utils.UUID
@@ -238,6 +238,40 @@ type OutfitPurpose struct {
 type OutfitsTag struct {
 	OutfitID utils.UUID
 	TagID    utils.UUID
+}
+
+type Post struct {
+	ID        utils.UUID
+	OutfitID  utils.UUID
+	Rating    int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type PostComment struct {
+	ID        utils.UUID
+	UserID    utils.UUID
+	PostID    utils.UUID
+	Body      string
+	Rating    int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type PostCommentRating struct {
+	UserID    utils.UUID
+	CommentID utils.UUID
+	Value     int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type PostRating struct {
+	UserID    utils.UUID
+	PostID    utils.UUID
+	Value     int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type Style struct {
