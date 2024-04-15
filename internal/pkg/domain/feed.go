@@ -38,15 +38,27 @@ type CommentModel struct {
 }
 
 //easyjson:json
-type GetPostsOpts struct{}
+type GetPostsOpts struct {
+	RequestingUserID utils.UUID `json:"-"`
+	Limit            int32      `query:"limit"`
+	Since            utils.Time `query:"since"`
+}
+
+//easyjson:json
+type GetCommentsOpts struct {
+	PostID           utils.UUID
+	RequestingUserID utils.UUID `json:"-"`
+	Limit            int32      `query:"limit"`
+	Since            utils.Time `query:"since"`
+}
 
 type FeedRepository interface {
 	GetPosts(opts GetPostsOpts) ([]Post, error)
 	GetPost(postId utils.UUID) (*Post, error)
-	GetComments(postId utils.UUID) ([]Comment, error)
+	GetComments(opts GetCommentsOpts) ([]Comment, error)
 
-	RatePost(postId utils.UUID, rating int) error
-	RateComment(commentId utils.UUID, rating int) error
+	RatePost(userId, postId utils.UUID, rating int) error
+	RateComment(userId, commentId utils.UUID, rating int) error
 
 	Comment(postId utils.UUID, comment CommentModel) error
 }

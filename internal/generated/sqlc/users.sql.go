@@ -35,7 +35,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (utils.U
 }
 
 const getUserByID = `-- name: GetUserByID :one
-select id, created_at, updated_at, name, email, password, gender, privacy from users
+select id, created_at, updated_at, name, email, password, gender, privacy, avatar from users
 where id = $1
 `
 
@@ -51,12 +51,13 @@ func (q *Queries) GetUserByID(ctx context.Context, id utils.UUID) (User, error) 
 		&i.Password,
 		&i.Gender,
 		&i.Privacy,
+		&i.Avatar,
 	)
 	return i, err
 }
 
 const getUserByName = `-- name: GetUserByName :one
-select id, created_at, updated_at, name, email, password, gender, privacy from users
+select id, created_at, updated_at, name, email, password, gender, privacy, avatar from users
 where name = $1
 `
 
@@ -72,12 +73,13 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 		&i.Password,
 		&i.Gender,
 		&i.Privacy,
+		&i.Avatar,
 	)
 	return i, err
 }
 
 const getUsersForOutfitGeneration = `-- name: GetUsersForOutfitGeneration :many
-select users.id, users.created_at, users.updated_at, users.name, users.email, users.password, users.gender, users.privacy
+select users.id, users.created_at, users.updated_at, users.name, users.email, users.password, users.gender, users.privacy, users.avatar
 from users
 where not exists (
     select 1 from outfits
@@ -104,6 +106,7 @@ func (q *Queries) GetUsersForOutfitGeneration(ctx context.Context) ([]User, erro
 			&i.Password,
 			&i.Gender,
 			&i.Privacy,
+			&i.Avatar,
 		); err != nil {
 			return nil, err
 		}
