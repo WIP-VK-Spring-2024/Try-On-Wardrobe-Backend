@@ -52,6 +52,8 @@ func (w WeatherService) CurrentWeather(request domain.WeatherRequest) (*domain.W
 		return nil, err
 	}
 
+	fmt.Println("Got from weather service: ", string(bytes))
+
 	if err := easyjson.Unmarshal(bytes, weather); err != nil {
 		return nil, err
 	}

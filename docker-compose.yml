@@ -7,6 +7,8 @@ services:
       - centrifugo
     volumes:
       - ./static:/project/static
+    ports:
+      - "8001:8001"
     environment:
       - POSTGRES.PASSWORD
       - POSTGRES.HOST
