@@ -26,17 +26,49 @@ func New(apiKey string) domain.WeatherService {
 	}
 }
 
+//easyjson:json
+type weatherApiResponse struct {
+	Location domain.GeoPosition
+	Current  domain.Weather
+}
+
 func (w WeatherService) CurrentWeather(request domain.WeatherRequest) (*domain.Weather, error) {
 	queryParams := make(url.Values, 2)
-	queryParams.Add("key", w.apiKey)
 
 	if math.Abs(float64(request.Lat)) < eps && math.Abs(float64(request.Lon)) < eps {
-		queryParams.Add("q", request.IP)
-	} else {
-		queryParams.Add("q", fmt.Sprintf("%f,%f", request.Lat, request.Lon))
+		pos, err := w.getGeoPosition(request.IP)
+		if err != nil {
+			return nil, err
+		}
+		request.GeoPosition = *pos
 	}
 
-	path := apiEndpoint + "/current.json?" + queryParams.Encode()
+	queryParams.Add("q", fmt.Sprintf("%f,%f", request.Lat, request.Lon))
+
+	resp, err := w.makeRequest(queryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Current, nil
+}
+
+func (w WeatherService) getGeoPosition(ip string) (*domain.GeoPosition, error) {
+	queryParams := make(url.Values, 2)
+	queryParams.Add("q", ip)
+
+	resp, err := w.makeRequest(queryParams)
+	if err != nil {
+		return nil, err
+	}
+
+	return &resp.Location, nil
+}
+
+func (w WeatherService) makeRequest(params url.Values) (*weatherApiResponse, error) {
+	params.Add("key", w.apiKey)
+
+	path := apiEndpoint + "/current.json?" + params.Encode()
 	fmt.Println("Sending request to:", path)
 
 	resp, err := http.DefaultClient.Get(path)
@@ -45,7 +77,7 @@ func (w WeatherService) CurrentWeather(request domain.WeatherRequest) (*domain.W
 	}
 	defer resp.Body.Close()
 
-	weather := &domain.Weather{}
+	weather := &weatherApiResponse{}
 
 	bytes, err := io.ReadAll(resp.Body)
 	if err != nil {

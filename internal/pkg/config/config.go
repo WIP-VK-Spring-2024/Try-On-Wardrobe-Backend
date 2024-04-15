@@ -12,6 +12,7 @@ import (
 
 type Config struct {
 	Addr           string
+	ProxyIP        string
 	WeatherApiKey  string
 	Static         Static
 	Centrifugo     Centrifugo

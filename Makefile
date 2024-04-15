@@ -8,7 +8,7 @@ DELIVERY_PKG=$$(${GO} list -f '{{.Dir}}' ./... | grep delivery | tr '\n' ' ')
 ERRORS_PKG=${INTERNAL}/app_errors
 PROTO_FILES=$$(find . -name *.proto)
 GENERATED_DIR=internal/generated
-OTHER_PKG=internal/middleware/heartbeat
+OTHER_PKG=internal/middleware/heartbeat internal/pkg/repository/weather
 
 .PHONY: easyjson sqlc gen build build_alpine run docker
 
