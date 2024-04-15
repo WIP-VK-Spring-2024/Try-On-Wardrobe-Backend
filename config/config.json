@@ -1,6 +1,4 @@
 {
-  "weatherApiKey": "478bb49242fd426e98691949241104",
-  "proxyIP": "nginx",
   "addr": ":8001",
   "centrifugo": {
     "url": "centrifugo:10000",

@@ -18,6 +18,7 @@ services:
       - RABBIT.HOST
       - STATIC.HTTPAPI.TOKEN
       - STATIC.HTTPAPI.ENDPOINT
+      - WEATHER_API_KEY
 
   centrifugo:
     image: centrifugo/centrifugo:v5

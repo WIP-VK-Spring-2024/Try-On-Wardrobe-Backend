@@ -12,7 +12,6 @@ import (
 
 type Config struct {
 	Addr           string
-	ProxyIP        string
 	WeatherApiKey  string
 	Static         Static
 	Centrifugo     Centrifugo
@@ -129,7 +128,7 @@ var envBoundConfigValues = []string{
 	"static.httpapi.token",
 	"rabbit.host",
 	"static.httpapi.endpoint",
-	"weatherapikey",
+	// "weatherapikey",
 }
 
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {
@@ -138,6 +137,7 @@ func NewDynamicConfig(configPath string, onChange func(*Config), onError func(er
 	for _, value := range envBoundConfigValues {
 		viper.BindEnv(value)
 	}
+	viper.BindEnv("weatherapikey", "WEATHER_API_KEY")
 
 	cfg := Config{}
 

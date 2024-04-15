@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -49,6 +50,8 @@ type App struct {
 }
 
 func (app *App) Run() error {
+	fmt.Println("Weather api key is ", app.cfg.WeatherApiKey)
+
 	err := applyMigrations(app.cfg.Sql, &app.cfg.Postgres)
 	if err != nil {
 		return err
@@ -229,8 +232,6 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 				JSONEncoder:  utils.EasyJsonMarshal,
 				JSONDecoder:  utils.EasyJsonUnmarshal,
 				ProxyHeader:  fiber.HeaderXForwardedFor,
-				// EnableTrustedProxyCheck: true,
-				// TrustedProxies:          []string{cfg.ProxyIP},
 			},
 		),
 		cfg:    cfg,
