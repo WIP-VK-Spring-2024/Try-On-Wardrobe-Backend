@@ -130,6 +130,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain1(in *jlexer.Lexer, out *Weathe
 		switch key {
 		case "temp_c":
 			out.Temp = float32(in.Float32())
+		case "temp_f":
+			out.TempFahrenheit = float32(in.Float32())
 		default:
 			in.SkipRecursive()
 		}
@@ -149,6 +151,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain1(out *jwriter.Writer, in Weath
 		first = false
 		out.RawString(prefix[1:])
 		out.Float32(float32(in.Temp))
+	}
+	if in.TempFahrenheit != 0 {
+		const prefix string = ",\"temp_f\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Float32(float32(in.TempFahrenheit))
 	}
 	out.RawByte('}')
 }

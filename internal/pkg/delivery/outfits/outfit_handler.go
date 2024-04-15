@@ -242,6 +242,8 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
+	fmt.Println(ctx.GetReqHeaders())
+
 	var req domain.OutfitGenerationRequest
 	if err := ctx.QueryParser(&req); err != nil {
 		middleware.LogWarning(ctx, err)

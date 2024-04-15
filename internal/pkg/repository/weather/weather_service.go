@@ -36,11 +36,16 @@ func (w WeatherService) CurrentWeather(request domain.WeatherRequest) (*domain.W
 	queryParams := make(url.Values, 2)
 
 	if math.Abs(float64(request.Lat)) < eps && math.Abs(float64(request.Lon)) < eps {
-		pos, err := w.getGeoPosition(request.IP)
+		resp, err := w.getGeoPosition(request.IP)
 		if err != nil {
 			return nil, err
 		}
-		request.GeoPosition = *pos
+
+		if math.Abs(float64(resp.Current.Temp-resp.Current.TempFahrenheit)) > eps {
+			return &resp.Current, nil
+		}
+
+		request.GeoPosition = resp.Location
 	}
 
 	queryParams.Add("q", fmt.Sprintf("%f,%f", request.Lat, request.Lon))
@@ -53,7 +58,7 @@ func (w WeatherService) CurrentWeather(request domain.WeatherRequest) (*domain.W
 	return &resp.Current, nil
 }
 
-func (w WeatherService) getGeoPosition(ip string) (*domain.GeoPosition, error) {
+func (w WeatherService) getGeoPosition(ip string) (*weatherApiResponse, error) {
 	queryParams := make(url.Values, 2)
 	queryParams.Add("q", ip)
 
@@ -62,7 +67,7 @@ func (w WeatherService) getGeoPosition(ip string) (*domain.GeoPosition, error) {
 		return nil, err
 	}
 
-	return &resp.Location, nil
+	return resp, nil
 }
 
 func (w WeatherService) makeRequest(params url.Values) (*weatherApiResponse, error) {
