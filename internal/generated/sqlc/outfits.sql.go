@@ -20,7 +20,7 @@ insert into outfits(
     privacy
 )
 select $1, $2, users.privacy
-from users where users.id = $2
+from users where users.id = $1
 returning id
 `
 
