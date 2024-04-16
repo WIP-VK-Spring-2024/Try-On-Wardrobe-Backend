@@ -231,8 +231,8 @@ type OutfitPurpose struct {
 	ID        utils.UUID
 	Name      string
 	EngName   string
-	CreatedAt utils.Time
-	UpdatedAt utils.Time
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type OutfitsTag struct {
@@ -244,8 +244,8 @@ type Post struct {
 	ID        utils.UUID
 	OutfitID  utils.UUID
 	Rating    int32
-	CreatedAt utils.Time
-	UpdatedAt utils.Time
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type PostComment struct {
@@ -254,24 +254,24 @@ type PostComment struct {
 	PostID    utils.UUID
 	Body      string
 	Rating    int32
-	CreatedAt utils.Time
-	UpdatedAt utils.Time
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type PostCommentRating struct {
 	UserID    utils.UUID
 	CommentID utils.UUID
 	Value     int32
-	CreatedAt utils.Time
-	UpdatedAt utils.Time
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type PostRating struct {
 	UserID    utils.UUID
 	PostID    utils.UUID
 	Value     int32
-	CreatedAt utils.Time
-	UpdatedAt utils.Time
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
 }
 
 type Style struct {
@@ -285,7 +285,7 @@ type Style struct {
 type Sub struct {
 	SubscriberID utils.UUID
 	UserID       utils.UUID
-	CreatedAt    utils.Time
+	CreatedAt    pgtype.Timestamp
 }
 
 type Subtype struct {

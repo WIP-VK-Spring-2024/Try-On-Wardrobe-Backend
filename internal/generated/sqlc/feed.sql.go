@@ -54,13 +54,13 @@ type GetCommentsParams struct {
 	UserID utils.UUID
 	PostID utils.UUID
 	Limit  int32
-	Since  utils.Time
+	Since  pgtype.Timestamp
 }
 
 type GetCommentsRow struct {
 	ID         utils.UUID
-	CreatedAt  utils.Time
-	UpdatedAt  utils.Time
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
 	UserID     utils.UUID
 	Body       string
 	Rating     int32
@@ -129,13 +129,13 @@ limit $2
 type GetLikedPostsParams struct {
 	UserID utils.UUID
 	Limit  int32
-	Since  utils.Time
+	Since  pgtype.Timestamp
 }
 
 type GetLikedPostsRow struct {
 	ID          utils.UUID
-	CreatedAt   utils.Time
-	UpdatedAt   utils.Time
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 	OutfitID    utils.UUID
 	UserID      utils.UUID
 	OutfitImage pgtype.Text
@@ -204,13 +204,13 @@ limit $2
 type GetPostsParams struct {
 	UserID utils.UUID
 	Limit  int32
-	Since  utils.Time
+	Since  pgtype.Timestamp
 }
 
 type GetPostsRow struct {
 	ID          utils.UUID
-	CreatedAt   utils.Time
-	UpdatedAt   utils.Time
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 	OutfitID    utils.UUID
 	UserID      utils.UUID
 	OutfitImage pgtype.Text
@@ -280,13 +280,13 @@ limit $2
 type GetSubscriptionPostsParams struct {
 	SubscriberID utils.UUID
 	Limit        int32
-	Since        utils.Time
+	Since        pgtype.Timestamp
 }
 
 type GetSubscriptionPostsRow struct {
 	ID          utils.UUID
-	CreatedAt   utils.Time
-	UpdatedAt   utils.Time
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
 	OutfitID    utils.UUID
 	UserID      utils.UUID
 	OutfitImage pgtype.Text

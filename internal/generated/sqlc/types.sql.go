@@ -166,7 +166,7 @@ type GetTypesRow struct {
 	EngName           string
 	SubtypeIds        []utils.UUID
 	SubtypeNames      []string
-	SubtypesCreatedAt []utils.Time
+	SubtypesCreatedAt []pgtype.Timestamp
 }
 
 func (q *Queries) GetTypes(ctx context.Context) ([]GetTypesRow, error) {

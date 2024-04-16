@@ -8,6 +8,7 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -25,7 +26,7 @@ func (f FeedRepository) GetPosts(opts domain.GetPostsOpts) ([]domain.Post, error
 	posts, err := f.queries.GetPosts(context.Background(), sqlc.GetPostsParams{
 		UserID: opts.RequestingUserID,
 		Limit:  opts.Limit,
-		Since:  opts.Since,
+		Since:  pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
 	})
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -38,7 +39,7 @@ func (f FeedRepository) GetLikedPosts(opts domain.GetPostsOpts) ([]domain.Post, 
 	posts, err := f.queries.GetLikedPosts(context.Background(), sqlc.GetLikedPostsParams{
 		UserID: opts.RequestingUserID,
 		Limit:  opts.Limit,
-		Since:  opts.Since,
+		Since:  pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
 	})
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -51,7 +52,7 @@ func (f FeedRepository) GetSubscriptionPosts(opts domain.GetPostsOpts) ([]domain
 	posts, err := f.queries.GetSubscriptionPosts(context.Background(), sqlc.GetSubscriptionPostsParams{
 		SubscriberID: opts.RequestingUserID,
 		Limit:        opts.Limit,
-		Since:        opts.Since,
+		Since:        pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
 	})
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -79,7 +80,7 @@ func (f FeedRepository) GetComments(opts domain.GetCommentsOpts) ([]domain.Comme
 		UserID: opts.RequestingUserID,
 		PostID: opts.PostID,
 		Limit:  opts.Limit,
-		Since:  opts.Since,
+		Since:  pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
 	})
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -130,8 +131,8 @@ func postsFromSqlc(model *sqlc.GetPostsRow) *domain.Post {
 		Model: domain.Model{
 			ID: model.ID,
 			Timestamp: domain.Timestamp{
-				CreatedAt: model.CreatedAt,
-				UpdatedAt: model.UpdatedAt,
+				CreatedAt: utils.Time{Time: model.CreatedAt.Time},
+				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
 		OutfitID:    model.OutfitID,
@@ -150,8 +151,8 @@ func commentsFromSqlc(model *sqlc.GetCommentsRow) *domain.Comment {
 		Model: domain.Model{
 			ID: model.ID,
 			Timestamp: domain.Timestamp{
-				CreatedAt: model.CreatedAt,
-				UpdatedAt: model.UpdatedAt,
+				CreatedAt: utils.Time{Time: model.CreatedAt.Time},
+				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
 		CommentModel: domain.CommentModel{
