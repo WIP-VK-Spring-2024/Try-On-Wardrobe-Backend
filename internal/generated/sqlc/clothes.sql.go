@@ -17,9 +17,11 @@ const createClothes = `-- name: CreateClothes :one
 insert into clothes(
     name,
     user_id,
-    image
+    image,
+    privacy
 )
-values ($1, $2, $3)
+select $1, $2, $3, users.privacy
+from users where users.id = $2
 returning id
 `
 

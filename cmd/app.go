@@ -167,7 +167,7 @@ func (app *App) Run() error {
 
 	feedHandler := feed.New(pg)
 
-	usersHandler := users.New(pg)
+	usersHandler := users.New(pg, &app.cfg.Session)
 
 	app.api.Use(
 		recover,
@@ -183,7 +183,11 @@ func (app *App) Run() error {
 		Centrifugo: centrifugoConn,
 	}))
 
-	app.api.Post("/register", sessionHandler.Register)
+	app.api.Post("/users", usersHandler.Create)
+	app.api.Get("/users/subbed", usersHandler.GetSubscriptions)
+	app.api.Get("/users", usersHandler.SearchUsers)
+	app.api.Put("/users/:id", usersHandler.Update)
+
 	app.api.Post("/login", sessionHandler.Login)
 	app.api.Post("/renew", sessionHandler.Renew)
 
@@ -231,9 +235,6 @@ func (app *App) Run() error {
 
 	app.api.Post("/users/:id/sub", feedHandler.Subscribe)
 	app.api.Delete("/users/:id/sub", feedHandler.Unsubscribe)
-
-	app.api.Get("/users/subbed", usersHandler.GetSubscriptions)
-	app.api.Get("/users", usersHandler.SearchUsers)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 

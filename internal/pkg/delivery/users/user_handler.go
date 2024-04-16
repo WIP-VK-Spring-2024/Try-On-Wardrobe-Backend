@@ -6,21 +6,90 @@ import (
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
+	"try-on/internal/pkg/common"
+	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/repository/sqlc/users"
+	userRepo "try-on/internal/pkg/repository/sqlc/users"
+	"try-on/internal/pkg/usecase/session"
+	"try-on/internal/pkg/usecase/users"
+	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
+	easyjson "github.com/mailru/easyjson"
 )
 
 type UserHandler struct {
-	users domain.UserRepository
+	users    domain.UserUsecase
+	sessions domain.SessionUsecase
 }
 
-func New(db *pgxpool.Pool) *UserHandler {
+func New(db *pgxpool.Pool, cfg *config.Session) *UserHandler {
+	userRepo := userRepo.New(db)
+
 	return &UserHandler{
-		users: users.New(db),
+		users:    users.New(userRepo),
+		sessions: session.New(userRepo, cfg),
 	}
+}
+
+//easyjson:json
+type tokenResponse struct {
+	Token  string
+	UserID utils.UUID
+}
+
+func (h *UserHandler) Create(ctx *fiber.Ctx) error {
+	var user domain.User
+	if err := easyjson.Unmarshal(ctx.Body(), &user); err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+
+	err := h.users.Create(&user)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	token, err := h.sessions.IssueToken(user.ID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(tokenResponse{
+		Token:  token,
+		UserID: user.ID,
+	})
+}
+
+func (h *UserHandler) Update(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	userId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrUserIdInvalid
+	}
+
+	if userId != session.UserID {
+		return app_errors.ErrNotOwner
+	}
+
+	var user domain.User
+	if err := easyjson.Unmarshal(ctx.Body(), &user); err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+	user.ID = userId
+
+	err = h.users.Update(user)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
 }
 
 func (h UserHandler) SearchUsers(ctx *fiber.Ctx) error {

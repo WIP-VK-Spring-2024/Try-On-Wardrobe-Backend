@@ -17,25 +17,34 @@ func New(repo domain.UserRepository) domain.UserUsecase {
 	}
 }
 
-func (u *UserUsecase) Create(creds domain.Credentials) (*domain.User, error) {
+func (u UserUsecase) Create(user *domain.User) error {
 	salt, err := utils.NewSalt()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	user := &domain.User{
-		Name:     creds.Name,
-		Password: slices.Concat(utils.Hash([]byte(creds.Password), salt), []byte{':'}, salt),
-	}
+	user.Password = slices.Concat(utils.Hash([]byte(user.Password), salt), []byte{':'}, salt)
 
 	err = u.repo.Create(user)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return user, nil
+	return nil
 }
 
-func (u *UserUsecase) GetByName(name string) (*domain.User, error) {
+func (u UserUsecase) Update(user domain.User) error {
+	return u.repo.Update(user)
+}
+
+func (u UserUsecase) GetByName(name string) (*domain.User, error) {
 	return u.repo.GetByName(name)
+}
+
+func (u UserUsecase) SearchUsers(name string) ([]domain.User, error) {
+	return u.repo.SearchUsers(name)
+}
+
+func (u UserUsecase) GetSubscriptions(id utils.UUID) ([]domain.User, error) {
+	return u.repo.GetSubscriptions(id)
 }

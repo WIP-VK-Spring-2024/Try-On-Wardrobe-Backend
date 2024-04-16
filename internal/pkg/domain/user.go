@@ -2,24 +2,32 @@ package domain
 
 import (
 	"try-on/internal/pkg/utils"
-	"try-on/internal/pkg/utils/optional"
 )
 
+//easyjson:json
 type User struct {
 	Model
-	Name     string          `gorm:"type:varchar(256)"`
-	Email    optional.String `gorm:"type:varchar(512)"`
-	Password []byte          `gorm:"type:varchar(256)"`
-	Gender   Gender          `gorm:"type:gender;default:gender('unknown')"`
+
+	Name     string
+	Email    string
+	Password []byte
+
+	Avatar  string
+	Gender  Gender
+	Privacy Privacy
 }
 
 type UserUsecase interface {
-	Create(Credentials) (*User, error)
+	Create(user *User) error
+	Update(user User) error
 	GetByName(name string) (*User, error)
+	SearchUsers(name string) ([]User, error)
+	GetSubscriptions(utils.UUID) ([]User, error)
 }
 
 type UserRepository interface {
 	Create(*User) error
+	Update(user User) error
 	GetByName(name string) (*User, error)
 	SearchUsers(name string) ([]User, error)
 	GetSubscriptions(utils.UUID) ([]User, error)

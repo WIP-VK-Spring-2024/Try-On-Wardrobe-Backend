@@ -75,9 +75,11 @@ where id = $1;
 insert into clothes(
     name,
     user_id,
-    image
+    image,
+    privacy
 )
-values ($1, $2, $3)
+select $1, $2, $3, users.privacy
+from users where users.id = $2
 returning id;
 
 -- name: SetClothesImage :exec

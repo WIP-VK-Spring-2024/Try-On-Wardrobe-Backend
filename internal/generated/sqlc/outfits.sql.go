@@ -16,8 +16,11 @@ import (
 const createOutfit = `-- name: CreateOutfit :one
 insert into outfits(
     user_id,
-    transforms
-) values ($1, $2)
+    transforms,
+    privacy
+)
+select $1, $2, users.privacy
+from users where users.id = $2
 returning id
 `
 

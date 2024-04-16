@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
 
@@ -16,8 +17,9 @@ const createUser = `-- name: CreateUser :one
 insert into users(
     name,
     email,
-    password
-) values ($1, $2, $3)
+    password,
+    gender
+) values ($1, $2, $3, $4)
 returning id
 `
 
@@ -25,10 +27,16 @@ type CreateUserParams struct {
 	Name     string
 	Email    pgtype.Text
 	Password string
+	Gender   NullGender
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (utils.UUID, error) {
-	row := q.db.QueryRow(ctx, createUser, arg.Name, arg.Email, arg.Password)
+	row := q.db.QueryRow(ctx, createUser,
+		arg.Name,
+		arg.Email,
+		arg.Password,
+		arg.Gender,
+	)
 	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -149,4 +157,33 @@ func (q *Queries) SearchUsers(ctx context.Context, lower string) ([]User, error)
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUser = `-- name: UpdateUser :exec
+update users
+set name = coalesce($2, name),
+    gender = coalesce($3, gender),
+    privacy = coalesce($4, privacy),
+    avatar = coalesce($5, avatar),
+    updated_at = now()
+where id = $1
+`
+
+type UpdateUserParams struct {
+	ID      utils.UUID
+	Name    string
+	Gender  NullGender
+	Privacy domain.Privacy
+	Avatar  string
+}
+
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.Exec(ctx, updateUser,
+		arg.ID,
+		arg.Name,
+		arg.Gender,
+		arg.Privacy,
+		arg.Avatar,
+	)
+	return err
 }

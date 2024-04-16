@@ -7,7 +7,6 @@ import (
 	"try-on/internal/pkg/domain"
 	userRepo "try-on/internal/pkg/repository/sqlc/users"
 	sessionUsecase "try-on/internal/pkg/usecase/session"
-	userUsecase "try-on/internal/pkg/usecase/users"
 	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,7 +16,6 @@ import (
 
 type SessionHandler struct {
 	Sessions domain.SessionUsecase
-	users    domain.UserUsecase
 	cfg      *config.Session
 }
 
@@ -35,32 +33,8 @@ func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
 			userRepo,
 			cfg,
 		),
-		users: userUsecase.New(userRepo),
-		cfg:   cfg,
+		cfg: cfg,
 	}
-}
-
-func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
-	var credentials domain.Credentials
-	if err := easyjson.Unmarshal(ctx.Body(), &credentials); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
-	}
-
-	user, err := h.users.Create(credentials)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	token, err := h.Sessions.IssueToken(user.ID)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	return ctx.JSON(tokenResponse{
-		Token:  token,
-		UserID: user.ID,
-	})
 }
 
 func (h *SessionHandler) Login(ctx *fiber.Ctx) error {

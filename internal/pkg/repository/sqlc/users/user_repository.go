@@ -2,12 +2,10 @@ package users
 
 import (
 	"context"
-	"database/sql"
 
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
-	"try-on/internal/pkg/utils/optional"
 
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -26,7 +24,7 @@ func New(db *pgxpool.Pool) domain.UserRepository {
 func (repo UserRepository) Create(user *domain.User) error {
 	id, err := repo.queries.CreateUser(context.Background(), sqlc.CreateUserParams{
 		Name:     user.Name,
-		Email:    pgtype.Text(user.Email.NullString),
+		Email:    pgtype.Text{String: user.Email, Valid: true},
 		Password: string(user.Password),
 	})
 	if err != nil {
@@ -35,6 +33,25 @@ func (repo UserRepository) Create(user *domain.User) error {
 
 	user.ID = id
 	return nil
+}
+
+func (repo UserRepository) Update(user domain.User) error {
+	params := sqlc.UpdateUserParams{
+		ID:      user.ID,
+		Name:    user.Name,
+		Privacy: user.Privacy,
+		Avatar:  user.Avatar,
+	}
+
+	if user.Gender != "" {
+		params.Gender = sqlc.NullGender{
+			Gender: sqlc.Gender(user.Gender),
+			Valid:  true,
+		}
+	}
+
+	err := repo.queries.UpdateUser(context.Background(), params)
+	return utils.PgxError(err)
 }
 
 func (repo UserRepository) GetByName(name string) (*domain.User, error) {
@@ -80,6 +97,6 @@ func fromSqlc(model *sqlc.User) *domain.User {
 		},
 		Name:     model.Name,
 		Password: []byte(model.Password),
-		Email:    optional.String{NullString: sql.NullString(model.Email)},
+		Email:    model.Email.String,
 	}
 }

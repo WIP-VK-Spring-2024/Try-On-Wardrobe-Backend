@@ -2,8 +2,9 @@
 insert into users(
     name,
     email,
-    password
-) values (sqlc.arg(name), sqlc.arg(email), sqlc.arg(password))
+    password,
+    gender
+) values ($1, $2, $3, $4)
 returning id;
 
 -- name: GetUserByID :one
@@ -24,3 +25,12 @@ join subs on subs.subscriber_id = $1
 select users.*
 from users
 where lower(name) like lower($1);
+
+-- name: UpdateUser :exec
+update users
+set name = coalesce($2, name),
+    gender = coalesce($3, gender),
+    privacy = coalesce($4, privacy),
+    avatar = coalesce($5, avatar),
+    updated_at = now()
+where id = $1;

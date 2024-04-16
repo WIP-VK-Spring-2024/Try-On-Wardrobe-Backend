@@ -16,3 +16,85 @@ var (
 	_ *jwriter.Writer
 	_ easyjson.Marshaler
 )
+
+func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(in *jlexer.Lexer, out *tokenResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "token":
+			out.Token = string(in.String())
+		case "user_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.UserID).UnmarshalText(data))
+			}
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(out *jwriter.Writer, in tokenResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if in.Token != "" {
+		const prefix string = ",\"token\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.String(string(in.Token))
+	}
+	if (in.UserID).IsDefined() {
+		const prefix string = ",\"user_id\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.RawText((in.UserID).MarshalText())
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v tokenResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v tokenResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *tokenResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *tokenResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(l, v)
+}
