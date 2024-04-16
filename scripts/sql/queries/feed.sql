@@ -8,13 +8,38 @@ select
     outfits.image as outfit_image,
     users.avatar as user_image,
     posts.rating,
-    case when post_ratings.user_id is not null then true
-        else false end as liked
+    coalesce(post_ratings.value, 0) as user_rating,
+    coalesce(try_on_results.image, '') as try_on_image,
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
 left join post_ratings on post_ratings.user_id = $1
+left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < sqlc.arg(since)::timestamp
+order by posts.created_at
+limit $2;
+
+-- name: GetLikedPosts :many
+select
+    posts.id,
+    posts.created_at,
+    posts.updated_at,
+    posts.outfit_id,
+    outfits.user_id,
+    outfits.image as outfit_image,
+    users.avatar as user_image,
+    posts.rating,
+    post_ratings.value as user_rating,
+    coalesce(try_on_results.image, '') as try_on_image,
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+from posts
+join outfits on outfits.id = posts.outfit_id
+join users on users.id = outfits.user_id
+join post_ratings on post_ratings.user_id = $1
+left join try_on_results on try_on_results.id = outfits.try_on_result_id
+where posts.created_at < sqlc.arg(since)::timestamp
+    and post_ratings.value = 1
 order by posts.created_at
 limit $2;
 
@@ -27,8 +52,7 @@ select
     post_comments.body,
     post_comments.rating,
     users.avatar as user_image,
-    case when post_comment_ratings.user_id is not null then true
-        else false end as liked
+    coalesce(post_comment_ratings.value, 0) as user_rating
 from post_comments
 join users on users.id = post_comments.user_id
 left join post_comment_ratings on post_comment_ratings.user_id = $1
@@ -36,6 +60,29 @@ where post_comments.post_id = $2
   and post_comments.created_at < sqlc.arg(since)::timestamp
 order by post_comments.created_at
 limit $3;
+
+-- name: GetSubscriptionPosts :many
+select
+    posts.id,
+    posts.created_at,
+    posts.updated_at,
+    posts.outfit_id,
+    outfits.user_id,
+    outfits.image as outfit_image,
+    users.avatar as user_image,
+    posts.rating,
+    coalesce(post_ratings.value, 0) as user_rating,
+    coalesce(try_on_results.image, '') as try_on_image,
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+from posts
+join outfits on outfits.id = posts.outfit_id
+join users on users.id = outfits.user_id
+join subs on subs.user_id = users.id and subs.subscriber_id = $1
+left join post_ratings on post_ratings.user_id = $1
+left join try_on_results on try_on_results.id = outfits.try_on_result_id
+where posts.created_at < sqlc.arg(since)::timestamp
+order by posts.created_at
+limit $2;
 
 -- name: RatePost :exec
 insert into post_ratings(post_id, user_id, value)
@@ -53,3 +100,11 @@ insert into post_comment_ratings(comment_id, user_id, value)
 insert into post_comments(post_id, user_id, body)
     values($1, $2, $3)
     returning id;
+
+-- name: Subscribe :exec
+insert into subs(subscriber_id, user_id)
+    values($1, $2);
+
+-- name: Unsubscribe :exec
+delete from subs
+where subscriber_id = $1 and user_id = $2;

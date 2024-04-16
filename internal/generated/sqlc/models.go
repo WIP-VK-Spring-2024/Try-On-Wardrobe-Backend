@@ -282,6 +282,12 @@ type Style struct {
 	EngName   string
 }
 
+type Sub struct {
+	SubscriberID utils.UUID
+	UserID       utils.UUID
+	CreatedAt    utils.Time
+}
+
 type Subtype struct {
 	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz

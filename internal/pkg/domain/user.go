@@ -1,6 +1,9 @@
 package domain
 
-import "try-on/internal/pkg/utils/optional"
+import (
+	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/optional"
+)
 
 type User struct {
 	Model
@@ -18,4 +21,6 @@ type UserUsecase interface {
 type UserRepository interface {
 	Create(*User) error
 	GetByName(name string) (*User, error)
+	SearchUsers(name string) ([]User, error)
+	GetSubscriptions(utils.UUID) ([]User, error)
 }

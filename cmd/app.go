@@ -16,6 +16,7 @@ import (
 	"try-on/internal/pkg/delivery/tags"
 	"try-on/internal/pkg/delivery/types"
 	"try-on/internal/pkg/delivery/user_images"
+	"try-on/internal/pkg/delivery/users"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/file_manager"
 	"try-on/internal/pkg/repository/weather"
@@ -166,6 +167,8 @@ func (app *App) Run() error {
 
 	feedHandler := feed.New(pg)
 
+	usersHandler := users.New(pg)
+
 	app.api.Use(
 		recover,
 		logger,
@@ -222,6 +225,15 @@ func (app *App) Run() error {
 	app.api.Post("/posts/:id/comments", feedHandler.CreateComment)
 	app.api.Post("/posts/:id/rate", feedHandler.RatePost)
 	app.api.Post("/comments/:id/rate", feedHandler.RateComment)
+
+	app.api.Get("/posts/liked", feedHandler.GetLikedPosts)
+	app.api.Get("/posts/subs", feedHandler.GetSubscriptionPosts)
+
+	app.api.Post("/users/:id/sub", feedHandler.Subscribe)
+	app.api.Delete("/users/:id/sub", feedHandler.Unsubscribe)
+
+	app.api.Get("/users/subbed", usersHandler.GetSubscriptions)
+	app.api.Get("/users", usersHandler.SearchUsers)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
 

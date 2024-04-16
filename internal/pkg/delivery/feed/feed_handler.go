@@ -15,34 +15,95 @@ import (
 
 type FeedHandler struct {
 	feed domain.FeedRepository
+
+	getPosts      fiber.Handler
+	getLikedPosts fiber.Handler
+	geSubPosts    fiber.Handler
 }
 
 func New(db *pgxpool.Pool) *FeedHandler {
+	feed := feed.New(db)
+
 	return &FeedHandler{
-		feed: feed.New(db),
+		feed:          feed,
+		getPosts:      getPostsTemplate(feed.GetPosts),
+		getLikedPosts: getPostsTemplate(feed.GetLikedPosts),
+		geSubPosts:    getPostsTemplate(feed.GetSubscriptionPosts),
 	}
 }
 
 func (h *FeedHandler) GetPosts(ctx *fiber.Ctx) error {
+	return h.getPosts(ctx)
+}
+
+func (h *FeedHandler) GetLikedPosts(ctx *fiber.Ctx) error {
+	return h.getLikedPosts(ctx)
+}
+
+func (h *FeedHandler) GetSubscriptionPosts(ctx *fiber.Ctx) error {
+	return h.geSubPosts(ctx)
+}
+
+func getPostsTemplate(getter func(domain.GetPostsOpts) ([]domain.Post, error)) fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		session := middleware.Session(ctx)
+		if session == nil {
+			return app_errors.ErrUnauthorized
+		}
+
+		var opts domain.GetPostsOpts
+		if err := ctx.QueryParser(&opts); err != nil {
+			middleware.LogWarning(ctx, err)
+			return app_errors.ErrBadRequest
+		}
+
+		opts.RequestingUserID = session.UserID
+
+		posts, err := getter(opts)
+		if err != nil {
+			return app_errors.New(err)
+		}
+
+		return ctx.JSON(posts)
+	}
+}
+
+func (h *FeedHandler) Subscribe(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
 		return app_errors.ErrUnauthorized
 	}
 
-	var opts domain.GetPostsOpts
-	if err := ctx.QueryParser(&opts); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
+	userId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrUserIdInvalid
 	}
 
-	opts.RequestingUserID = session.UserID
-
-	posts, err := h.feed.GetPosts(opts)
+	err = h.feed.Subscribe(session.UserID, userId)
 	if err != nil {
 		return app_errors.New(err)
 	}
 
-	return ctx.JSON(posts)
+	return ctx.SendString(common.EmptyJson)
+}
+
+func (h *FeedHandler) Unsubscribe(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	userId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrUserIdInvalid
+	}
+
+	err = h.feed.Unsubscribe(session.UserID, userId)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
 }
 
 func (h *FeedHandler) GetComments(ctx *fiber.Ctx) error {

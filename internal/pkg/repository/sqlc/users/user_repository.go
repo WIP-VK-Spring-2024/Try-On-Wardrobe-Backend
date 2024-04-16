@@ -53,6 +53,22 @@ func (repo UserRepository) GetByID(id utils.UUID) (*domain.User, error) {
 	return fromSqlc(&user), nil
 }
 
+func (repo UserRepository) GetSubscriptions(userId utils.UUID) ([]domain.User, error) {
+	users, err := repo.queries.GetSubscribedToUsers(context.Background(), userId)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return utils.Map(users, fromSqlc), nil
+}
+
+func (repo UserRepository) SearchUsers(name string) ([]domain.User, error) {
+	users, err := repo.queries.SearchUsers(context.Background(), "%"+name+"%")
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return utils.Map(users, fromSqlc), nil
+}
+
 func fromSqlc(model *sqlc.User) *domain.User {
 	return &domain.User{
 		Model: domain.Model{

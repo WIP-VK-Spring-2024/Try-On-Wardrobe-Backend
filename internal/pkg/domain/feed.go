@@ -8,16 +8,17 @@ import (
 type Post struct {
 	Model
 
-	OutfitID utils.UUID
-	Rating   int
-
+	OutfitID    utils.UUID
 	OutfitImage string
-	TryOnImage  string
+
+	TryOnID    utils.UUID
+	TryOnImage string
 
 	UserID    utils.UUID
 	UserImage string
 
-	Liked bool
+	Rating     int
+	UserRating int
 }
 
 //easyjson:json
@@ -27,8 +28,8 @@ type Comment struct {
 
 	UserImage string
 
-	Rating int
-	Liked  bool
+	Rating     int
+	UserRating int
 }
 
 //easyjson:json
@@ -37,23 +38,27 @@ type CommentModel struct {
 	Body   string
 }
 
-//easyjson:json
 type GetPostsOpts struct {
-	RequestingUserID utils.UUID `json:"-"`
+	RequestingUserID utils.UUID
 	Limit            int32      `query:"limit"`
 	Since            utils.Time `query:"since"`
 }
 
-//easyjson:json
 type GetCommentsOpts struct {
 	PostID           utils.UUID
-	RequestingUserID utils.UUID `json:"-"`
+	RequestingUserID utils.UUID
 	Limit            int32      `query:"limit"`
 	Since            utils.Time `query:"since"`
 }
 
 type FeedRepository interface {
 	GetPosts(opts GetPostsOpts) ([]Post, error)
+	GetLikedPosts(opts GetPostsOpts) ([]Post, error)
+	GetSubscriptionPosts(opts GetPostsOpts) ([]Post, error)
+
+	Subscribe(subscriberId, userId utils.UUID) error
+	Unsubscribe(subscriberId, userId utils.UUID) error
+
 	GetPost(postId utils.UUID) (*Post, error)
 	GetComments(opts GetCommentsOpts) ([]Comment, error)
 

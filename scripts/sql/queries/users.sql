@@ -14,11 +14,13 @@ where id = $1;
 select * from users
 where name = $1;
 
--- name: GetUsersForOutfitGeneration :many
+-- name: GetSubscribedToUsers :many
 select users.*
 from users
-where not exists (
-    select 1 from outfits
-    where user_id = users.id
-    and viewed = false
-);
+join subs on subs.subscriber_id = $1
+     and subs.user_id = users.id;
+
+-- name: SearchUsers :many
+select users.*
+from users
+where lower(name) like lower($1);

@@ -34,6 +34,43 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (utils.U
 	return id, err
 }
 
+const getSubscribedToUsers = `-- name: GetSubscribedToUsers :many
+select users.id, users.created_at, users.updated_at, users.name, users.email, users.password, users.gender, users.privacy, users.avatar
+from users
+join subs on subs.subscriber_id = $1
+     and subs.user_id = users.id
+`
+
+func (q *Queries) GetSubscribedToUsers(ctx context.Context, subscriberID utils.UUID) ([]User, error) {
+	rows, err := q.db.Query(ctx, getSubscribedToUsers, subscriberID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Name,
+			&i.Email,
+			&i.Password,
+			&i.Gender,
+			&i.Privacy,
+			&i.Avatar,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByID = `-- name: GetUserByID :one
 select id, created_at, updated_at, name, email, password, gender, privacy, avatar from users
 where id = $1
@@ -78,18 +115,14 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 	return i, err
 }
 
-const getUsersForOutfitGeneration = `-- name: GetUsersForOutfitGeneration :many
+const searchUsers = `-- name: SearchUsers :many
 select users.id, users.created_at, users.updated_at, users.name, users.email, users.password, users.gender, users.privacy, users.avatar
 from users
-where not exists (
-    select 1 from outfits
-    where user_id = users.id
-    and viewed = false
-)
+where lower(name) like lower($1)
 `
 
-func (q *Queries) GetUsersForOutfitGeneration(ctx context.Context) ([]User, error) {
-	rows, err := q.db.Query(ctx, getUsersForOutfitGeneration)
+func (q *Queries) SearchUsers(ctx context.Context, lower string) ([]User, error) {
+	rows, err := q.db.Query(ctx, searchUsers, lower)
 	if err != nil {
 		return nil, err
 	}

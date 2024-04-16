@@ -40,8 +40,7 @@ select
     post_comments.body,
     post_comments.rating,
     users.avatar as user_image,
-    case when post_comment_ratings.user_id is not null then true
-        else false end as liked
+    coalesce(post_comment_ratings.value, 0) as user_rating
 from post_comments
 join users on users.id = post_comments.user_id
 left join post_comment_ratings on post_comment_ratings.user_id = $1
@@ -59,14 +58,14 @@ type GetCommentsParams struct {
 }
 
 type GetCommentsRow struct {
-	ID        utils.UUID
-	CreatedAt utils.Time
-	UpdatedAt utils.Time
-	UserID    utils.UUID
-	Body      string
-	Rating    int32
-	UserImage string
-	Liked     bool
+	ID         utils.UUID
+	CreatedAt  utils.Time
+	UpdatedAt  utils.Time
+	UserID     utils.UUID
+	Body       string
+	Rating     int32
+	UserImage  string
+	UserRating int32
 }
 
 func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]GetCommentsRow, error) {
@@ -91,7 +90,83 @@ func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]Get
 			&i.Body,
 			&i.Rating,
 			&i.UserImage,
-			&i.Liked,
+			&i.UserRating,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLikedPosts = `-- name: GetLikedPosts :many
+select
+    posts.id,
+    posts.created_at,
+    posts.updated_at,
+    posts.outfit_id,
+    outfits.user_id,
+    outfits.image as outfit_image,
+    users.avatar as user_image,
+    posts.rating,
+    post_ratings.value as user_rating,
+    coalesce(try_on_results.image, '') as try_on_image,
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+from posts
+join outfits on outfits.id = posts.outfit_id
+join users on users.id = outfits.user_id
+join post_ratings on post_ratings.user_id = $1
+left join try_on_results on try_on_results.id = outfits.try_on_result_id
+where posts.created_at < $3::timestamp
+    and post_ratings.value = 1
+order by posts.created_at
+limit $2
+`
+
+type GetLikedPostsParams struct {
+	UserID utils.UUID
+	Limit  int32
+	Since  utils.Time
+}
+
+type GetLikedPostsRow struct {
+	ID          utils.UUID
+	CreatedAt   utils.Time
+	UpdatedAt   utils.Time
+	OutfitID    utils.UUID
+	UserID      utils.UUID
+	OutfitImage pgtype.Text
+	UserImage   string
+	Rating      int32
+	UserRating  int32
+	TryOnImage  string
+	TryOnID     utils.UUID
+}
+
+func (q *Queries) GetLikedPosts(ctx context.Context, arg GetLikedPostsParams) ([]GetLikedPostsRow, error) {
+	rows, err := q.db.Query(ctx, getLikedPosts, arg.UserID, arg.Limit, arg.Since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetLikedPostsRow
+	for rows.Next() {
+		var i GetLikedPostsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.OutfitID,
+			&i.UserID,
+			&i.OutfitImage,
+			&i.UserImage,
+			&i.Rating,
+			&i.UserRating,
+			&i.TryOnImage,
+			&i.TryOnID,
 		); err != nil {
 			return nil, err
 		}
@@ -113,12 +188,14 @@ select
     outfits.image as outfit_image,
     users.avatar as user_image,
     posts.rating,
-    case when post_ratings.user_id is not null then true
-        else false end as liked
+    coalesce(post_ratings.value, 0) as user_rating,
+    coalesce(try_on_results.image, '') as try_on_image,
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
 left join post_ratings on post_ratings.user_id = $1
+left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < $3::timestamp
 order by posts.created_at
 limit $2
@@ -139,7 +216,9 @@ type GetPostsRow struct {
 	OutfitImage pgtype.Text
 	UserImage   string
 	Rating      int32
-	Liked       bool
+	UserRating  int32
+	TryOnImage  string
+	TryOnID     utils.UUID
 }
 
 func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsRow, error) {
@@ -160,7 +239,85 @@ func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsR
 			&i.OutfitImage,
 			&i.UserImage,
 			&i.Rating,
-			&i.Liked,
+			&i.UserRating,
+			&i.TryOnImage,
+			&i.TryOnID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSubscriptionPosts = `-- name: GetSubscriptionPosts :many
+select
+    posts.id,
+    posts.created_at,
+    posts.updated_at,
+    posts.outfit_id,
+    outfits.user_id,
+    outfits.image as outfit_image,
+    users.avatar as user_image,
+    posts.rating,
+    coalesce(post_ratings.value, 0) as user_rating,
+    coalesce(try_on_results.image, '') as try_on_image,
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+from posts
+join outfits on outfits.id = posts.outfit_id
+join users on users.id = outfits.user_id
+join subs on subs.user_id = users.id and subs.subscriber_id = $1
+left join post_ratings on post_ratings.user_id = $1
+left join try_on_results on try_on_results.id = outfits.try_on_result_id
+where posts.created_at < $3::timestamp
+order by posts.created_at
+limit $2
+`
+
+type GetSubscriptionPostsParams struct {
+	SubscriberID utils.UUID
+	Limit        int32
+	Since        utils.Time
+}
+
+type GetSubscriptionPostsRow struct {
+	ID          utils.UUID
+	CreatedAt   utils.Time
+	UpdatedAt   utils.Time
+	OutfitID    utils.UUID
+	UserID      utils.UUID
+	OutfitImage pgtype.Text
+	UserImage   string
+	Rating      int32
+	UserRating  int32
+	TryOnImage  string
+	TryOnID     utils.UUID
+}
+
+func (q *Queries) GetSubscriptionPosts(ctx context.Context, arg GetSubscriptionPostsParams) ([]GetSubscriptionPostsRow, error) {
+	rows, err := q.db.Query(ctx, getSubscriptionPosts, arg.SubscriberID, arg.Limit, arg.Since)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetSubscriptionPostsRow
+	for rows.Next() {
+		var i GetSubscriptionPostsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.OutfitID,
+			&i.UserID,
+			&i.OutfitImage,
+			&i.UserImage,
+			&i.Rating,
+			&i.UserRating,
+			&i.TryOnImage,
+			&i.TryOnID,
 		); err != nil {
 			return nil, err
 		}
@@ -205,5 +362,25 @@ type RatePostParams struct {
 
 func (q *Queries) RatePost(ctx context.Context, arg RatePostParams) error {
 	_, err := q.db.Exec(ctx, ratePost, arg.PostID, arg.UserID, arg.Value)
+	return err
+}
+
+const subscribe = `-- name: Subscribe :exec
+insert into subs(subscriber_id, user_id)
+    values($1, $2)
+`
+
+func (q *Queries) Subscribe(ctx context.Context, subscriberID utils.UUID, userID utils.UUID) error {
+	_, err := q.db.Exec(ctx, subscribe, subscriberID, userID)
+	return err
+}
+
+const unsubscribe = `-- name: Unsubscribe :exec
+delete from subs
+where subscriber_id = $1 and user_id = $2
+`
+
+func (q *Queries) Unsubscribe(ctx context.Context, subscriberID utils.UUID, userID utils.UUID) error {
+	_, err := q.db.Exec(ctx, unsubscribe, subscriberID, userID)
 	return err
 }

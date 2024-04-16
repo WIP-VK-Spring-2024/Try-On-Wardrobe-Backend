@@ -37,5 +37,5 @@ func (u *UserUsecase) Create(creds domain.Credentials) (*domain.User, error) {
 }
 
 func (u *UserUsecase) GetByName(name string) (*domain.User, error) {
-	return nil, nil
+	return u.repo.GetByName(name)
 }
