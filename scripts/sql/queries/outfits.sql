@@ -8,7 +8,7 @@ select $1, $2, users.privacy
 from users where users.id = $1
 returning id, created_at, updated_at;
 
--- name: UpdateOutfit :exec
+-- name: UpdateOutfit :one
 update outfits
 set name = coalesce($2, name),
     note = coalesce($3, note),
@@ -17,7 +17,8 @@ set name = coalesce($2, name),
     seasons = coalesce(sqlc.arg(seasons), seasons)::season[],
     privacy = coalesce(sqlc.narg(privacy)::privacy, privacy),
     updated_at = now()
-where id = $1;
+where id = $1
+returning created_at, updated_at;
 
 -- name: SetOutfitImage :exec
 update outfits

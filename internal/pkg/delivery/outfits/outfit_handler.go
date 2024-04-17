@@ -192,7 +192,12 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	return ctx.SendString(common.EmptyJson)
+	return ctx.JSON(createdResponse{
+		Timestamp: domain.Timestamp{
+			CreatedAt: outfit.CreatedAt,
+			UpdatedAt: outfit.UpdatedAt,
+		},
+	})
 }
 
 func (h *OutfitHandler) Delete(ctx *fiber.Ctx) error {

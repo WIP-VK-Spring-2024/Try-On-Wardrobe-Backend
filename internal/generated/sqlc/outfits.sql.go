@@ -356,7 +356,7 @@ func (q *Queries) SetOutfitImage(ctx context.Context, iD utils.UUID, column2 str
 	return err
 }
 
-const updateOutfit = `-- name: UpdateOutfit :exec
+const updateOutfit = `-- name: UpdateOutfit :one
 update outfits
 set name = coalesce($2, name),
     note = coalesce($3, note),
@@ -366,6 +366,7 @@ set name = coalesce($2, name),
     privacy = coalesce($7::privacy, privacy),
     updated_at = now()
 where id = $1
+returning created_at, updated_at
 `
 
 type UpdateOutfitParams struct {
@@ -378,8 +379,13 @@ type UpdateOutfitParams struct {
 	Privacy    NullPrivacy
 }
 
-func (q *Queries) UpdateOutfit(ctx context.Context, arg UpdateOutfitParams) error {
-	_, err := q.db.Exec(ctx, updateOutfit,
+type UpdateOutfitRow struct {
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateOutfit(ctx context.Context, arg UpdateOutfitParams) (UpdateOutfitRow, error) {
+	row := q.db.QueryRow(ctx, updateOutfit,
 		arg.ID,
 		arg.Name,
 		arg.Note,
@@ -388,5 +394,7 @@ func (q *Queries) UpdateOutfit(ctx context.Context, arg UpdateOutfitParams) erro
 		arg.Seasons,
 		arg.Privacy,
 	)
-	return err
+	var i UpdateOutfitRow
+	err := row.Scan(&i.CreatedAt, &i.UpdatedAt)
+	return i, err
 }

@@ -141,10 +141,12 @@ func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 
 	queries := repo.queries.WithTx(tx)
 
-	err = queries.UpdateOutfit(context.Background(), updateParams)
+	result, err := queries.UpdateOutfit(context.Background(), updateParams)
 	if err != nil {
 		return utils.PgxError(err)
 	}
+	outfit.CreatedAt = utils.TimeFromPgTz(result.CreatedAt)
+	outfit.UpdatedAt = utils.TimeFromPgTz(result.UpdatedAt)
 
 	err = queries.CreateTags(ctx, outfit.Tags)
 	if err != nil {
