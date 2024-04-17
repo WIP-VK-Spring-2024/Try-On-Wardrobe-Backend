@@ -18,6 +18,10 @@ const (
 	PrivacyFriends Privacy = "friends"
 )
 
+var Privacies = map[Privacy]struct{}{
+	PrivacyPublic: {}, PrivacyPrivate: {}, PrivacyFriends: {},
+}
+
 //easyjson:json
 type Outfit struct {
 	Model

@@ -117,7 +117,14 @@ func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 		StyleID:    outfit.StyleID,
 		Seasons:    outfit.Seasons,
 		Transforms: transforms,
-		Privacy:    outfit.Privacy,
+	}
+
+	_, constains := domain.Privacies[outfit.Privacy]
+	if constains {
+		updateParams.Privacy = sqlc.NullPrivacy{
+			Privacy: sqlc.Privacy(outfit.Privacy),
+			Valid:   true,
+		}
 	}
 
 	if outfit.Name != "" {

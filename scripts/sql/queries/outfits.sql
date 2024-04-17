@@ -15,8 +15,7 @@ set name = coalesce($2, name),
     style_id = coalesce($4, style_id),
     transforms = coalesce($5, transforms),
     seasons = coalesce(sqlc.arg(seasons), seasons)::season[],
-    privacy = case when sqlc.arg(privacy) = '' then privacy
-                   else sqlc.arg(privacy) end,
+    privacy = coalesce(sqlc.narg(privacy)::privacy, privacy),
     updated_at = now()
 where id = $1;
 
