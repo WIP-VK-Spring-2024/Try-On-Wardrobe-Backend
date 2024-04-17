@@ -363,7 +363,8 @@ set name = coalesce($2, name),
     style_id = coalesce($4, style_id),
     transforms = coalesce($5, transforms),
     seasons = coalesce($6, seasons)::season[],
-    privacy = coalesce($7::privacy, privacy),
+    privacy = case when $7 = '' then privacy
+                   else $7 end,
     updated_at = now()
 where id = $1
 `
@@ -375,7 +376,7 @@ type UpdateOutfitParams struct {
 	StyleID    utils.UUID
 	Transforms []byte
 	Seasons    []domain.Season
-	Privacy    domain.Privacy
+	Privacy    interface{}
 }
 
 func (q *Queries) UpdateOutfit(ctx context.Context, arg UpdateOutfitParams) error {
