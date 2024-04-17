@@ -84,18 +84,21 @@ func (repo OutfitRepository) Create(outfit *domain.Outfit) error {
 		return err
 	}
 
-	id, err := queries.CreateOutfit(context.Background(), outfit.UserID, transforms)
+	result, err := queries.CreateOutfit(context.Background(), outfit.UserID, transforms)
 	if err != nil {
 		return utils.PgxError(err)
 	}
-	outfit.Image = outfit.Image + "/" + id.String()
+	outfit.Image = outfit.Image + "/" + result.ID.String()
 
-	err = queries.SetOutfitImage(ctx, id, outfit.Image)
+	err = queries.SetOutfitImage(ctx, result.ID, outfit.Image)
 	if err != nil {
 		return utils.PgxError(err)
 	}
 
-	outfit.ID = id
+	outfit.ID = result.ID
+	outfit.CreatedAt = utils.Time{Time: result.CreatedAt.Time}
+	outfit.UpdatedAt = utils.Time{Time: result.UpdatedAt.Time}
+
 	return tx.Commit(ctx)
 }
 

@@ -81,9 +81,9 @@ func (h *OutfitHandler) GetByUser(ctx *fiber.Ctx) error {
 
 //easyjson:json
 type createdResponse struct {
-	Uuid      utils.UUID
-	Image     string
-	UpdatedAt utils.Time
+	Uuid  utils.UUID
+	Image string
+	domain.Timestamp
 }
 
 func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
@@ -129,9 +129,12 @@ func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(&createdResponse{
-		Uuid:      outfit.ID,
-		Image:     outfit.Image,
-		UpdatedAt: outfit.UpdatedAt,
+		Uuid:  outfit.ID,
+		Image: outfit.Image,
+		Timestamp: domain.Timestamp{
+			CreatedAt: outfit.CreatedAt,
+			UpdatedAt: outfit.UpdatedAt,
+		},
 	})
 }
 

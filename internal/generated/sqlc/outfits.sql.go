@@ -21,14 +21,20 @@ insert into outfits(
 )
 select $1, $2, users.privacy
 from users where users.id = $1
-returning id
+returning id, created_at, updated_at
 `
 
-func (q *Queries) CreateOutfit(ctx context.Context, userID utils.UUID, transforms []byte) (utils.UUID, error) {
+type CreateOutfitRow struct {
+	ID        utils.UUID
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateOutfit(ctx context.Context, userID utils.UUID, transforms []byte) (CreateOutfitRow, error) {
 	row := q.db.QueryRow(ctx, createOutfit, userID, transforms)
-	var id utils.UUID
-	err := row.Scan(&id)
-	return id, err
+	var i CreateOutfitRow
+	err := row.Scan(&i.ID, &i.CreatedAt, &i.UpdatedAt)
+	return i, err
 }
 
 const deleteOutfit = `-- name: DeleteOutfit :exec

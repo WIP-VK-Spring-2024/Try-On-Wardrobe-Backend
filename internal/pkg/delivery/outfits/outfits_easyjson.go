@@ -42,6 +42,10 @@ func easyjsonE39f981aDecodeTryOnInternalPkgDeliveryOutfits(in *jlexer.Lexer, out
 			}
 		case "image":
 			out.Image = string(in.String())
+		case "created_at":
+			if data := in.Raw(); in.Ok() {
+				in.AddError((out.CreatedAt).UnmarshalJSON(data))
+			}
 		case "updated_at":
 			if data := in.Raw(); in.Ok() {
 				in.AddError((out.UpdatedAt).UnmarshalJSON(data))
@@ -75,6 +79,16 @@ func easyjsonE39f981aEncodeTryOnInternalPkgDeliveryOutfits(out *jwriter.Writer, 
 			out.RawString(prefix)
 		}
 		out.String(string(in.Image))
+	}
+	if (in.CreatedAt).IsDefined() {
+		const prefix string = ",\"created_at\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if (in.UpdatedAt).IsDefined() {
 		const prefix string = ",\"updated_at\":"

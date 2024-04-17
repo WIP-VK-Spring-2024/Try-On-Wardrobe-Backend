@@ -50,18 +50,24 @@ create table post_comment_ratings(
 -- +migrate StatementBegin
 create or replace function handle_outfit_post_link() returns trigger as $$
 begin
-    if tg_op = 'CREATE' and new.privacy <> 'private' then
-        insert into posts(outfit_id) values (new.id);
-        return new;
-    elsif tg_op = 'UPDATE' and old.privacy <> new.privacy then
-        if new.privacy = 'private' then 
-            delete from posts where outfit_id = new.id;
-        elsif old.privacy = 'private' then
+    if tg_op = 'INSERT' then
+        if new.privacy <> 'private' then
             insert into posts(outfit_id) values (new.id);
         end if;
         return new;
-    elsif tg_op = 'DELETE' and old.privacy <> 'private' then
-        delete from posts where outfit_id = old.id;
+    elsif tg_op = 'UPDATE' then
+        if old.privacy <> new.privacy then
+            if new.privacy = 'private' then 
+                delete from posts where outfit_id = new.id;
+            elsif old.privacy = 'private' then
+                insert into posts(outfit_id) values (new.id);
+            end if;
+        end if;
+        return new;
+    elsif tg_op = 'DELETE' then
+        if old.privacy <> 'private' then
+            delete from posts where outfit_id = old.id;
+        end if;
         return old;
     end if;
 end
@@ -77,7 +83,7 @@ create trigger trigger_outfit_post_link
 -- +migrate StatementBegin
 create or replace function post_rating_count() returns trigger as $$
 begin
-    if tg_op = 'CREATE' then
+    if tg_op = 'INSERT' then
         update posts
             set rating = rating + new.value
             where id = new.post_id;
@@ -106,7 +112,7 @@ create trigger trigger_post_rating_count
 -- +migrate StatementBegin
 create or replace function post_comment_rating_count() returns trigger as $$
 begin
-    if tg_op = 'CREATE' then
+    if tg_op = 'INSERT' then
         update post_comments
             set rating = rating + new.value
             where id = new.comment_id;

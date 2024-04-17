@@ -6,7 +6,7 @@ insert into outfits(
 )
 select $1, $2, users.privacy
 from users where users.id = $1
-returning id;
+returning id, created_at, updated_at;
 
 -- name: UpdateOutfit :exec
 update outfits
