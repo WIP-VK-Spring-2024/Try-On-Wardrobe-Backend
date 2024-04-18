@@ -8,13 +8,13 @@ import (
 type User struct {
 	Model
 
-	Name     string
-	Email    string
+	Name     string `validate:"alphanumunicode | oneof=- _ , . ^ : ; $ # ! + = < > ?"`
+	Email    string `validate:"omitempty,email"`
 	Password []byte
 
 	Avatar  string
-	Gender  Gender
-	Privacy Privacy
+	Gender  Gender  `validate:"omitempty,oneof=male female"`
+	Privacy Privacy `validate:"omitempty,oneof=private public friends"`
 }
 
 type UserUsecase interface {

@@ -14,6 +14,7 @@ import (
 	"try-on/internal/pkg/usecase/users"
 	"try-on/internal/pkg/utils"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	easyjson "github.com/mailru/easyjson"
@@ -43,6 +44,8 @@ func New(
 	}
 }
 
+var validate = validator.New(validator.WithRequiredStructEnabled())
+
 //easyjson:json
 type tokenResponse struct {
 	Token  string
@@ -56,7 +59,12 @@ func (h *UserHandler) Create(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	err := h.users.Create(&user)
+	err := validate.Struct(&user)
+	if err != nil {
+		return app_errors.ValidationError(err)
+	}
+
+	err = h.users.Create(&user)
 	if err != nil {
 		return app_errors.New(err)
 	}
@@ -97,7 +105,7 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	default:
-		fileName = userId.String() + "_" + fileHeader.Filename
+		fileName = userId.String()
 	}
 
 	var user domain.User

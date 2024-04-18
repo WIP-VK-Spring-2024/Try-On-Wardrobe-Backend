@@ -80,8 +80,9 @@ func (err *InternalError) Error() string {
 
 //easyjson:json
 type ResponseError struct {
-	Code int `json:"-"`
-	Msg  string
+	Code   int `json:"-"`
+	Msg    string
+	Errors map[string][]string
 }
 
 func (err ResponseError) Error() string {

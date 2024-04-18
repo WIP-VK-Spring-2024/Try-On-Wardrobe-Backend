@@ -28,7 +28,12 @@ func New(users domain.UserRepository, cfg *config.Session) domain.SessionUsecase
 }
 
 func (s JwtSessionUsecase) Login(creds domain.Credentials) (*domain.Session, error) {
-	user, err := s.users.GetByName(creds.Name)
+	user, err := func() (*domain.User, error) {
+		if creds.Email != "" {
+			return s.users.GetByEmail(creds.Email)
+		}
+		return s.users.GetByName(creds.Name)
+	}()
 	if err != nil {
 		return nil, err
 	}
