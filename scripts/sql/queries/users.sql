@@ -15,6 +15,10 @@ where id = $1;
 select * from users
 where name = $1;
 
+-- name: GetUserByEmail :one
+select * from users
+where lower(email) = lower($1);
+
 -- name: GetSubscribedToUsers :many
 select users.*
 from users

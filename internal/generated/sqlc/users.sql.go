@@ -79,6 +79,28 @@ func (q *Queries) GetSubscribedToUsers(ctx context.Context, subscriberID utils.U
 	return items, nil
 }
 
+const getUserByEmail = `-- name: GetUserByEmail :one
+select id, created_at, updated_at, name, email, password, gender, privacy, avatar from users
+where lower(email) = lower($1)
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, lower string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, lower)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+		&i.Email,
+		&i.Password,
+		&i.Gender,
+		&i.Privacy,
+		&i.Avatar,
+	)
+	return i, err
+}
+
 const getUserByID = `-- name: GetUserByID :one
 select id, created_at, updated_at, name, email, password, gender, privacy, avatar from users
 where id = $1

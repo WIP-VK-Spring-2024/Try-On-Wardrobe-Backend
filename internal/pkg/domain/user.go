@@ -29,6 +29,7 @@ type UserRepository interface {
 	Create(*User) error
 	Update(user User) error
 	GetByName(name string) (*User, error)
+	GetByEmail(email string) (*User, error)
 	SearchUsers(name string) ([]User, error)
 	GetSubscriptions(utils.UUID) ([]User, error)
 }

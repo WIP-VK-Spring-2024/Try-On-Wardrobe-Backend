@@ -17,19 +17,29 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	easyjson "github.com/mailru/easyjson"
+	"github.com/valyala/fasthttp"
 )
 
 type UserHandler struct {
 	users    domain.UserUsecase
 	sessions domain.SessionUsecase
+	file     domain.FileManager
+	cfg      *config.Static
 }
 
-func New(db *pgxpool.Pool, cfg *config.Session) *UserHandler {
+func New(
+	db *pgxpool.Pool,
+	fileManager domain.FileManager,
+	sessionCfg *config.Session,
+	cfg *config.Static,
+) *UserHandler {
 	userRepo := userRepo.New(db)
 
 	return &UserHandler{
 		users:    users.New(userRepo),
-		sessions: session.New(userRepo, cfg),
+		sessions: session.New(userRepo, sessionCfg),
+		file:     fileManager,
+		cfg:      cfg,
 	}
 }
 
@@ -77,14 +87,43 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrNotOwner
 	}
 
+	var fileName string
+
+	fileHeader, err := ctx.FormFile("img")
+	switch {
+	case err == nil && fileHeader != nil:
+		break
+	case err != fasthttp.ErrMissingFile:
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	default:
+		fileName = userId.String() + "_" + fileHeader.Filename
+	}
+
 	var user domain.User
-	if err := easyjson.Unmarshal(ctx.Body(), &user); err != nil {
+	if err := ctx.BodyParser(&user); err != nil {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
 	user.ID = userId
+	user.Avatar = fileName
 
 	err = h.users.Update(user)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	if fileName == "" {
+		return ctx.SendString(common.EmptyJson)
+	}
+
+	file, err := fileHeader.Open()
+	if err != nil {
+		return app_errors.New(err)
+	}
+	defer file.Close()
+
+	err = h.file.Save(ctx.UserContext(), h.cfg.Avatars, fileName, file)
 	if err != nil {
 		return app_errors.New(err)
 	}

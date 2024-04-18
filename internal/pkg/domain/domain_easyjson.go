@@ -3213,6 +3213,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain25(in *jlexer.Lexer, out *Crede
 		switch key {
 		case "name":
 			out.Name = string(in.String())
+		case "email":
+			out.Email = string(in.String())
 		case "password":
 			out.Password = string(in.String())
 		default:
@@ -3234,6 +3236,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain25(out *jwriter.Writer, in Cred
 		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Name))
+	}
+	if in.Email != "" {
+		const prefix string = ",\"email\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Email))
 	}
 	if in.Password != "" {
 		const prefix string = ",\"password\":"

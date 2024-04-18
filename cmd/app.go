@@ -167,7 +167,7 @@ func (app *App) Run() error {
 
 	feedHandler := feed.New(pg)
 
-	usersHandler := users.New(pg, &app.cfg.Session)
+	usersHandler := users.New(pg, fileManager, &app.cfg.Session, &app.cfg.Static)
 
 	app.api.Use(
 		recover,

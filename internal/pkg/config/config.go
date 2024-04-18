@@ -33,6 +33,7 @@ type Static struct {
 	FullBody string
 	TryOn    string
 	Outfits  string
+	Avatars  string
 	S3       S3
 }
 

@@ -62,6 +62,14 @@ func (repo UserRepository) GetByName(name string) (*domain.User, error) {
 	return fromSqlc(&user), nil
 }
 
+func (repo UserRepository) GetByEmail(email string) (*domain.User, error) {
+	user, err := repo.queries.GetUserByEmail(context.Background(), email)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return fromSqlc(&user), nil
+}
+
 func (repo UserRepository) GetByID(id utils.UUID) (*domain.User, error) {
 	user, err := repo.queries.GetUserByID(context.Background(), id)
 	if err != nil {
