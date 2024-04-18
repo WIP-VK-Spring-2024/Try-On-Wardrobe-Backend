@@ -16,6 +16,11 @@ const (
 	PrivacyPublic  Privacy = "public"
 	PrivacyPrivate Privacy = "private"
 	PrivacyFriends Privacy = "friends"
+
+	GenCategoryUpper = "upper garment"
+	GenCategoryLower = "lower garment"
+	GenCategoryOuter = "outerwear"
+	GenCategoryDress = "dress"
 )
 
 var Privacies = map[Privacy]struct{}{

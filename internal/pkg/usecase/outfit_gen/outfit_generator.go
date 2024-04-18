@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"strings"
 
+	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/clothes"
 	"try-on/internal/pkg/repository/sqlc/outfits"
+	"try-on/internal/pkg/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mailru/easyjson"
@@ -65,6 +67,15 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 		return err
 	}
 
+	maxAmount := maxOutfitNum(clothes)
+	if maxAmount == 0 {
+		return app_errors.ErrNotEnoughClothes
+	}
+
+	if request.Amount > maxAmount {
+		request.Amount = maxAmount
+	}
+
 	purposes, err := gen.outfits.GetPurposeEngNames(request.Purposes)
 	if err != nil {
 		return err
@@ -91,10 +102,29 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 	bytes, _ := easyjson.Marshal(modelRequest)
 	fmt.Println(string(bytes))
 
-	// return gen.publisher.Publish(ctx, modelRequest) // TODO: Uncomment
-	return nil
+	return gen.publisher.Publish(ctx, modelRequest)
 }
 
 func (gen *OutfitGenerator) ListenGenerationResults(logger *zap.SugaredLogger, handler func(*domain.OutfitGenerationResponse) domain.Result) error {
 	return gen.subscriber.Listen(logger, handler)
+}
+
+func maxOutfitNum(clothes []domain.GenClothesInfo) int {
+	upperNum := utils.Count(clothes, func(elem domain.GenClothesInfo) bool {
+		return elem.Category == domain.GenCategoryUpper
+	})
+
+	lowerNum := utils.Count(clothes, func(elem domain.GenClothesInfo) bool {
+		return elem.Category == domain.GenCategoryLower
+	})
+
+	outerNum := utils.Count(clothes, func(elem domain.GenClothesInfo) bool {
+		return elem.Category == domain.GenCategoryOuter
+	})
+
+	dressNum := utils.Count(clothes, func(elem domain.GenClothesInfo) bool {
+		return elem.Category == domain.GenCategoryDress
+	})
+
+	return upperNum*lowerNum*(outerNum+1) + dressNum
 }

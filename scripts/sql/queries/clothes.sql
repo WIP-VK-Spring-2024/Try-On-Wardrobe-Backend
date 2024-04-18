@@ -121,7 +121,8 @@ where clothes.id = any(sqlc.arg(ids)::uuid[])
 -- name: GetClothesInfoByWeather :many
 select
     clothes.id,
-    types.eng_name as category
+    (case when subtypes.layer >= 2 then 'outerwear'
+         else types.eng_name end)::text as category
 from clothes
 join types on types.id = clothes.type_id
 join subtypes on subtypes.id = clothes.subtype_id

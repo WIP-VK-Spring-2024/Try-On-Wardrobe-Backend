@@ -19,6 +19,7 @@ var (
 	ErrNotOwner                = errors.New("must be the owner to delete or edit this resource")
 	ErrTryOnInvalidClothesNum  = errors.New("try on requires at least 1 garment, but not more than 2")
 	ErrTryOnInvalidClothesType = errors.New("try on requires 1 dress, or a maximum of 1 of upper body and 1 lower body garments")
+	ErrNotEnoughClothes        = errors.New("outfit generation requires at least 1 upper and 1 lower garment")
 )
 
 var (
@@ -26,11 +27,6 @@ var (
 		Msg:  "bad request",
 		Code: http.StatusBadRequest,
 	}
-
-	// ErrNotOwner = &ResponseError{
-	// 	Msg:  "must be the owner to delete or edit this resource",
-	// 	Code: http.StatusForbidden,
-	// }
 
 	ErrUnauthorized = &ResponseError{
 		Msg:  "credentials missing or invalid",
@@ -102,9 +98,8 @@ func New(err error) error {
 	case errors.Is(err, ErrNotFound) || errors.Is(err, ErrNoRelatedEntity):
 		code = http.StatusNotFound
 
-	case errors.Is(err, ErrConstraintViolation) ||
-		errors.Is(err, ErrTryOnInvalidClothesNum) ||
-		errors.Is(err, ErrTryOnInvalidClothesType):
+	case Any(err, ErrConstraintViolation, ErrTryOnInvalidClothesNum,
+		ErrTryOnInvalidClothesType, ErrNotEnoughClothes):
 		code = http.StatusBadRequest
 
 	default:
@@ -120,4 +115,13 @@ func New(err error) error {
 		Code: code,
 		Msg:  err.Error(),
 	}
+}
+
+func Any(err error, targets ...error) bool {
+	for _, target := range targets {
+		if errors.Is(err, target) {
+			return true
+		}
+	}
+	return false
 }
