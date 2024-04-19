@@ -38,7 +38,7 @@ func (s JwtSessionUsecase) Login(creds domain.Credentials) (*domain.Session, err
 		return nil, err
 	}
 
-	if !checkPassword([]byte(creds.Password), user.Password) {
+	if !checkPassword([]byte(creds.Password), []byte(user.Password)) {
 		return nil, app_errors.ErrInvalidCredentials
 	}
 

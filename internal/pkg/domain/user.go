@@ -10,7 +10,7 @@ type User struct {
 
 	Name     string `validate:"required,alphanum"`
 	Email    string `validate:"required,email"`
-	Password []byte
+	Password string
 
 	Avatar  string
 	Gender  Gender  `validate:"omitempty,oneof=male female"`

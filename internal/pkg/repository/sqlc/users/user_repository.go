@@ -104,7 +104,7 @@ func fromSqlc(model *sqlc.User) *domain.User {
 			},
 		},
 		Name:     model.Name,
-		Password: []byte(model.Password),
+		Password: model.Password,
 		Email:    model.Email.String,
 	}
 }

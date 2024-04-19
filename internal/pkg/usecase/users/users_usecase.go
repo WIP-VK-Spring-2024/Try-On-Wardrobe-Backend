@@ -1,8 +1,6 @@
 package users
 
 import (
-	"slices"
-
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
@@ -23,7 +21,7 @@ func (u UserUsecase) Create(user *domain.User) error {
 		return err
 	}
 
-	user.Password = slices.Concat(utils.Hash([]byte(user.Password), salt), []byte{':'}, salt)
+	user.Password = string(utils.Hash([]byte(user.Password), salt)) + ":" + string(salt)
 
 	err = u.repo.Create(user)
 	if err != nil {

@@ -35,5 +35,5 @@ func PgxError(err error) error {
 		return err
 	}
 
-	return errors.Join(err, appError)
+	return appError
 }
