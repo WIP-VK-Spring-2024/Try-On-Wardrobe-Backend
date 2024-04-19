@@ -8,8 +8,8 @@ import (
 type User struct {
 	Model
 
-	Name     string `validate:"alphanumunicode | oneof=- _ , . ^ : ; $ # ! + = < > ?"`
-	Email    string `validate:"omitempty,email"`
+	Name     string `validate:"required,alphanum"`
+	Email    string `validate:"required,email"`
 	Password []byte
 
 	Avatar  string
