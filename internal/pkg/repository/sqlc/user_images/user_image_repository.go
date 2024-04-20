@@ -50,7 +50,7 @@ func (repo UserImageRepository) Create(userImage *domain.UserImage) error {
 }
 
 func (repo UserImageRepository) Delete(id utils.UUID) error {
-	err := repo.queries.DeleteTryOnResult(context.Background(), id)
+	err := repo.queries.DeleteUserImage(context.Background(), id)
 	return utils.PgxError(err)
 }
 
