@@ -7,7 +7,6 @@ import (
 
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -58,16 +57,16 @@ func CheckSession(cfg SessionConfig) fiber.Handler {
 
 func Session(ctx *fiber.Ctx) *domain.Session {
 	// userID, _ := utils.ParseUUID("2a78df8a-0277-4c72-a2d9-43fb8fef1d2c") // first account
-	userID, _ := utils.ParseUUID("7eef49f3-9b52-4dc8-bcd6-c40c6eb966bc") // ux account
+	// userID, _ := utils.ParseUUID("7eef49f3-9b52-4dc8-bcd6-c40c6eb966bc") // ux account
 
-	return &domain.Session{
-		UserID: userID,
-	}
-
-	// value := ctx.UserContext().Value(sessionKey)
-	// session, ok := value.(*domain.Session)
-	// if !ok {
-	// 	return nil
+	// return &domain.Session{
+	// 	UserID: userID,
 	// }
-	// return session
+
+	value := ctx.UserContext().Value(sessionKey)
+	session, ok := value.(*domain.Session)
+	if !ok {
+		return nil
+	}
+	return session
 }
