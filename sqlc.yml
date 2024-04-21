@@ -29,6 +29,11 @@ sql:
             go_type:
               import: "try-on/internal/pkg/domain"
               type: "Privacy"
+
+          - db_type: gender
+            go_type:
+              import: "try-on/internal/pkg/domain"
+              type: "Gender"
         query_parameter_limit: 2
         rename:
           clothe: Clothes

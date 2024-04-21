@@ -40,13 +40,7 @@ func (repo UserRepository) Update(user domain.User) error {
 		Name:    user.Name,
 		Privacy: user.Privacy,
 		Avatar:  user.Avatar,
-	}
-
-	if user.Gender != "" {
-		params.Gender = sqlc.NullGender{
-			Gender: sqlc.Gender(user.Gender),
-			Valid:  true,
-		}
+		Gender:  user.Gender,
 	}
 
 	err := repo.queries.UpdateUser(context.Background(), params)
@@ -105,5 +99,7 @@ func fromSqlc(model *sqlc.User) *domain.User {
 		Name:     model.Name,
 		Password: model.Password,
 		Email:    model.Email,
+		Gender:   model.Gender,
+		Privacy:  model.Privacy,
 	}
 }

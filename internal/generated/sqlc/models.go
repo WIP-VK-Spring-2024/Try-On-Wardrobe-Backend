@@ -335,7 +335,7 @@ type User struct {
 	Name      string
 	Email     string
 	Password  string
-	Gender    NullGender
+	Gender    domain.Gender
 	Privacy   domain.Privacy
 	Avatar    string
 }

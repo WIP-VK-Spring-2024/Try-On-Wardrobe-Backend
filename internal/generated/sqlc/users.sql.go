@@ -26,7 +26,7 @@ type CreateUserParams struct {
 	Name     string
 	Email    string
 	Password string
-	Gender   NullGender
+	Gender   domain.Gender
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (utils.UUID, error) {
@@ -193,7 +193,7 @@ where id = $1
 type UpdateUserParams struct {
 	ID      utils.UUID
 	Name    string
-	Gender  NullGender
+	Gender  domain.Gender
 	Privacy domain.Privacy
 	Avatar  string
 }
