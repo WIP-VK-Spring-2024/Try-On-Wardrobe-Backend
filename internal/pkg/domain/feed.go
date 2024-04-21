@@ -30,12 +30,15 @@ type Comment struct {
 
 	Rating     int
 	UserRating int
+
+	Replies []*Comment
 }
 
 //easyjson:json
 type CommentModel struct {
-	UserID utils.UUID
-	Body   string
+	UserID   utils.UUID
+	Body     string
+	ParentID utils.UUID
 }
 
 type GetPostsOpts struct {
@@ -46,6 +49,7 @@ type GetPostsOpts struct {
 
 type GetCommentsOpts struct {
 	PostID           utils.UUID
+	ParentID         utils.UUID
 	RequestingUserID utils.UUID
 	Limit            int32      `query:"limit"`
 	Since            utils.Time `query:"since"`

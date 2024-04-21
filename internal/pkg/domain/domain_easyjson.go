@@ -3303,6 +3303,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain26(in *jlexer.Lexer, out *Comme
 			}
 		case "body":
 			out.Body = string(in.String())
+		case "parent_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.ParentID).UnmarshalText(data))
+			}
 		default:
 			in.SkipRecursive()
 		}
@@ -3332,6 +3336,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain26(out *jwriter.Writer, in Comm
 			out.RawString(prefix)
 		}
 		out.String(string(in.Body))
+	}
+	if (in.ParentID).IsDefined() {
+		const prefix string = ",\"parent_id\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.RawText((in.ParentID).MarshalText())
 	}
 	out.RawByte('}')
 }
@@ -3384,12 +3398,47 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain27(in *jlexer.Lexer, out *Comme
 			out.Rating = int(in.Int())
 		case "user_rating":
 			out.UserRating = int(in.Int())
+		case "replies":
+			if in.IsNull() {
+				in.Skip()
+				out.Replies = nil
+			} else {
+				in.Delim('[')
+				if out.Replies == nil {
+					if !in.IsDelim(']') {
+						out.Replies = make([]*Comment, 0, 8)
+					} else {
+						out.Replies = []*Comment{}
+					}
+				} else {
+					out.Replies = (out.Replies)[:0]
+				}
+				for !in.IsDelim(']') {
+					var v33 *Comment
+					if in.IsNull() {
+						in.Skip()
+						v33 = nil
+					} else {
+						if v33 == nil {
+							v33 = new(Comment)
+						}
+						(*v33).UnmarshalEasyJSON(in)
+					}
+					out.Replies = append(out.Replies, v33)
+					in.WantComma()
+				}
+				in.Delim(']')
+			}
 		case "user_id":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
 			}
 		case "body":
 			out.Body = string(in.String())
+		case "parent_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.ParentID).UnmarshalText(data))
+			}
 		case "uuid":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.ID).UnmarshalText(data))
@@ -3442,6 +3491,29 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain27(out *jwriter.Writer, in Comm
 		}
 		out.Int(int(in.UserRating))
 	}
+	if len(in.Replies) != 0 {
+		const prefix string = ",\"replies\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		{
+			out.RawByte('[')
+			for v34, v35 := range in.Replies {
+				if v34 > 0 {
+					out.RawByte(',')
+				}
+				if v35 == nil {
+					out.RawString("null")
+				} else {
+					(*v35).MarshalEasyJSON(out)
+				}
+			}
+			out.RawByte(']')
+		}
+	}
 	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
 		if first {
@@ -3461,6 +3533,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain27(out *jwriter.Writer, in Comm
 			out.RawString(prefix)
 		}
 		out.String(string(in.Body))
+	}
+	if (in.ParentID).IsDefined() {
+		const prefix string = ",\"parent_id\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.RawText((in.ParentID).MarshalText())
 	}
 	if (in.ID).IsDefined() {
 		const prefix string = ",\"uuid\":"
@@ -3898,9 +3980,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain31(in *jlexer.Lexer, out *Cloth
 					out.Seasons = (out.Seasons)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v33 Season
-					v33 = Season(in.String())
-					out.Seasons = append(out.Seasons, v33)
+					var v36 Season
+					v36 = Season(in.String())
+					out.Seasons = append(out.Seasons, v36)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3921,9 +4003,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain31(in *jlexer.Lexer, out *Cloth
 					out.Tags = (out.Tags)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v34 string
-					v34 = string(in.String())
-					out.Tags = append(out.Tags, v34)
+					var v37 string
+					v37 = string(in.String())
+					out.Tags = append(out.Tags, v37)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -3978,11 +4060,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain31(out *jwriter.Writer, in Clot
 		}
 		{
 			out.RawByte('[')
-			for v35, v36 := range in.Seasons {
-				if v35 > 0 {
+			for v38, v39 := range in.Seasons {
+				if v38 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v36))
+				out.String(string(v39))
 			}
 			out.RawByte(']')
 		}
@@ -3997,11 +4079,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain31(out *jwriter.Writer, in Clot
 		}
 		{
 			out.RawByte('[')
-			for v37, v38 := range in.Tags {
-				if v37 > 0 {
+			for v40, v41 := range in.Tags {
+				if v40 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v38))
+				out.String(string(v41))
 			}
 			out.RawByte(']')
 		}
@@ -4067,9 +4149,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain32(in *jlexer.Lexer, out *Cloth
 					out.Tags = (out.Tags)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v39 string
-					v39 = string(in.String())
-					out.Tags = append(out.Tags, v39)
+					var v42 string
+					v42 = string(in.String())
+					out.Tags = append(out.Tags, v42)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4090,9 +4172,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain32(in *jlexer.Lexer, out *Cloth
 					out.Styles = (out.Styles)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v40 string
-					v40 = string(in.String())
-					out.Styles = append(out.Styles, v40)
+					var v43 string
+					v43 = string(in.String())
+					out.Styles = append(out.Styles, v43)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4113,9 +4195,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain32(in *jlexer.Lexer, out *Cloth
 					out.Categories = (out.Categories)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v41 string
-					v41 = string(in.String())
-					out.Categories = append(out.Categories, v41)
+					var v44 string
+					v44 = string(in.String())
+					out.Categories = append(out.Categories, v44)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4136,9 +4218,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain32(in *jlexer.Lexer, out *Cloth
 					out.Subcategories = (out.Subcategories)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v42 string
-					v42 = string(in.String())
-					out.Subcategories = append(out.Subcategories, v42)
+					var v45 string
+					v45 = string(in.String())
+					out.Subcategories = append(out.Subcategories, v45)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4159,9 +4241,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain32(in *jlexer.Lexer, out *Cloth
 					out.Seasons = (out.Seasons)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v43 string
-					v43 = string(in.String())
-					out.Seasons = append(out.Seasons, v43)
+					var v46 string
+					v46 = string(in.String())
+					out.Seasons = append(out.Seasons, v46)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4187,11 +4269,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain32(out *jwriter.Writer, in Clot
 			out.RawString("null")
 		} else {
 			out.RawByte('[')
-			for v44, v45 := range in.Tags {
-				if v44 > 0 {
+			for v47, v48 := range in.Tags {
+				if v47 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v45))
+				out.String(string(v48))
 			}
 			out.RawByte(']')
 		}
@@ -4201,11 +4283,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain32(out *jwriter.Writer, in Clot
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v46, v47 := range in.Styles {
-				if v46 > 0 {
+			for v49, v50 := range in.Styles {
+				if v49 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v47))
+				out.String(string(v50))
 			}
 			out.RawByte(']')
 		}
@@ -4215,11 +4297,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain32(out *jwriter.Writer, in Clot
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v48, v49 := range in.Categories {
-				if v48 > 0 {
+			for v51, v52 := range in.Categories {
+				if v51 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v49))
+				out.String(string(v52))
 			}
 			out.RawByte(']')
 		}
@@ -4229,11 +4311,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain32(out *jwriter.Writer, in Clot
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v50, v51 := range in.Subcategories {
-				if v50 > 0 {
+			for v53, v54 := range in.Subcategories {
+				if v53 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v51))
+				out.String(string(v54))
 			}
 			out.RawByte(']')
 		}
@@ -4243,11 +4325,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain32(out *jwriter.Writer, in Clot
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v52, v53 := range in.Seasons {
-				if v52 > 0 {
+			for v55, v56 := range in.Seasons {
+				if v55 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v53))
+				out.String(string(v56))
 			}
 			out.RawByte(']')
 		}
@@ -4310,9 +4392,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain33(in *jlexer.Lexer, out *Cloth
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v54 float32
-					v54 = float32(in.Float32())
-					(out.Tags)[key] = v54
+					var v57 float32
+					v57 = float32(in.Float32())
+					(out.Tags)[key] = v57
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4330,9 +4412,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain33(in *jlexer.Lexer, out *Cloth
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v55 float32
-					v55 = float32(in.Float32())
-					(out.Categories)[key] = v55
+					var v58 float32
+					v58 = float32(in.Float32())
+					(out.Categories)[key] = v58
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4350,9 +4432,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain33(in *jlexer.Lexer, out *Cloth
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v56 float32
-					v56 = float32(in.Float32())
-					(out.Subcategories)[key] = v56
+					var v59 float32
+					v59 = float32(in.Float32())
+					(out.Subcategories)[key] = v59
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4370,9 +4452,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain33(in *jlexer.Lexer, out *Cloth
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v57 float32
-					v57 = float32(in.Float32())
-					(out.Seasons)[key] = v57
+					var v60 float32
+					v60 = float32(in.Float32())
+					(out.Seasons)[key] = v60
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4390,9 +4472,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain33(in *jlexer.Lexer, out *Cloth
 				for !in.IsDelim('}') {
 					key := string(in.String())
 					in.WantColon()
-					var v58 float32
-					v58 = float32(in.Float32())
-					(out.Styles)[key] = v58
+					var v61 float32
+					v61 = float32(in.Float32())
+					(out.Styles)[key] = v61
 					in.WantComma()
 				}
 				in.Delim('}')
@@ -4417,16 +4499,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain33(out *jwriter.Writer, in Clot
 		out.RawString(prefix[1:])
 		{
 			out.RawByte('{')
-			v59First := true
-			for v59Name, v59Value := range in.Tags {
-				if v59First {
-					v59First = false
+			v62First := true
+			for v62Name, v62Value := range in.Tags {
+				if v62First {
+					v62First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v59Name))
+				out.String(string(v62Name))
 				out.RawByte(':')
-				out.Float32(float32(v59Value))
+				out.Float32(float32(v62Value))
 			}
 			out.RawByte('}')
 		}
@@ -4441,16 +4523,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain33(out *jwriter.Writer, in Clot
 		}
 		{
 			out.RawByte('{')
-			v60First := true
-			for v60Name, v60Value := range in.Categories {
-				if v60First {
-					v60First = false
+			v63First := true
+			for v63Name, v63Value := range in.Categories {
+				if v63First {
+					v63First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v60Name))
+				out.String(string(v63Name))
 				out.RawByte(':')
-				out.Float32(float32(v60Value))
+				out.Float32(float32(v63Value))
 			}
 			out.RawByte('}')
 		}
@@ -4465,16 +4547,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain33(out *jwriter.Writer, in Clot
 		}
 		{
 			out.RawByte('{')
-			v61First := true
-			for v61Name, v61Value := range in.Subcategories {
-				if v61First {
-					v61First = false
+			v64First := true
+			for v64Name, v64Value := range in.Subcategories {
+				if v64First {
+					v64First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v61Name))
+				out.String(string(v64Name))
 				out.RawByte(':')
-				out.Float32(float32(v61Value))
+				out.Float32(float32(v64Value))
 			}
 			out.RawByte('}')
 		}
@@ -4489,16 +4571,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain33(out *jwriter.Writer, in Clot
 		}
 		{
 			out.RawByte('{')
-			v62First := true
-			for v62Name, v62Value := range in.Seasons {
-				if v62First {
-					v62First = false
+			v65First := true
+			for v65Name, v65Value := range in.Seasons {
+				if v65First {
+					v65First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v62Name))
+				out.String(string(v65Name))
 				out.RawByte(':')
-				out.Float32(float32(v62Value))
+				out.Float32(float32(v65Value))
 			}
 			out.RawByte('}')
 		}
@@ -4513,16 +4595,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain33(out *jwriter.Writer, in Clot
 		}
 		{
 			out.RawByte('{')
-			v63First := true
-			for v63Name, v63Value := range in.Styles {
-				if v63First {
-					v63First = false
+			v66First := true
+			for v66Name, v66Value := range in.Styles {
+				if v66First {
+					v66First = false
 				} else {
 					out.RawByte(',')
 				}
-				out.String(string(v63Name))
+				out.String(string(v66Name))
 				out.RawByte(':')
-				out.Float32(float32(v63Value))
+				out.Float32(float32(v66Value))
 			}
 			out.RawByte('}')
 		}
@@ -4596,9 +4678,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain34(in *jlexer.Lexer, out *Cloth
 					out.Tags = (out.Tags)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v64 string
-					v64 = string(in.String())
-					out.Tags = append(out.Tags, v64)
+					var v67 string
+					v67 = string(in.String())
+					out.Tags = append(out.Tags, v67)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4641,9 +4723,9 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain34(in *jlexer.Lexer, out *Cloth
 					out.Seasons = (out.Seasons)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v65 Season
-					v65 = Season(in.String())
-					out.Seasons = append(out.Seasons, v65)
+					var v68 Season
+					v68 = Season(in.String())
+					out.Seasons = append(out.Seasons, v68)
 					in.WantComma()
 				}
 				in.Delim(']')
@@ -4702,11 +4784,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain34(out *jwriter.Writer, in Clot
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v66, v67 := range in.Tags {
-				if v66 > 0 {
+			for v69, v70 := range in.Tags {
+				if v69 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v67))
+				out.String(string(v70))
 			}
 			out.RawByte(']')
 		}
@@ -4746,11 +4828,11 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain34(out *jwriter.Writer, in Clot
 		out.RawString(prefix)
 		{
 			out.RawByte('[')
-			for v68, v69 := range in.Seasons {
-				if v68 > 0 {
+			for v71, v72 := range in.Seasons {
+				if v71 > 0 {
 					out.RawByte(',')
 				}
-				out.String(string(v69))
+				out.String(string(v72))
 			}
 			out.RawByte(']')
 		}

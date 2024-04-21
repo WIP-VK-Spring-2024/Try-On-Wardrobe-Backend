@@ -13,19 +13,25 @@ import (
 )
 
 const createComment = `-- name: CreateComment :one
-insert into post_comments(post_id, user_id, body)
-    values($1, $2, $3)
+insert into post_comments(post_id, user_id, body, path)
+    values($1, $2, $3, (select path from post_comments p where p.id = $4))
     returning id
 `
 
 type CreateCommentParams struct {
-	PostID utils.UUID
-	UserID utils.UUID
-	Body   string
+	PostID   utils.UUID
+	UserID   utils.UUID
+	Body     string
+	ParentID utils.UUID
 }
 
 func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (utils.UUID, error) {
-	row := q.db.QueryRow(ctx, createComment, arg.PostID, arg.UserID, arg.Body)
+	row := q.db.QueryRow(ctx, createComment,
+		arg.PostID,
+		arg.UserID,
+		arg.Body,
+		arg.ParentID,
+	)
 	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -40,13 +46,15 @@ select
     post_comments.body,
     post_comments.rating,
     users.avatar as user_image,
-    coalesce(post_comment_ratings.value, 0) as user_rating
+    coalesce(post_comment_ratings.value, 0) as user_rating,
+    case when path[1] = id then uuid_nil()
+         else path[1]::uuid end as parent_id
 from post_comments
 join users on users.id = post_comments.user_id
 left join post_comment_ratings on post_comment_ratings.user_id = $1
 where post_comments.post_id = $2
   and post_comments.created_at < $4::timestamp
-order by post_comments.created_at
+order by post_comments.created_at desc
 limit $3
 `
 
@@ -66,6 +74,7 @@ type GetCommentsRow struct {
 	Rating     int32
 	UserImage  string
 	UserRating int32
+	ParentID   utils.UUID
 }
 
 func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]GetCommentsRow, error) {
@@ -91,6 +100,116 @@ func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]Get
 			&i.Rating,
 			&i.UserImage,
 			&i.UserRating,
+			&i.ParentID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getCommentsTree = `-- name: GetCommentsTree :many
+with parents as (
+    select
+        p.id,
+        p.created_at,
+        p.updated_at,
+        p.created_at as sort_key,
+        p.user_id,
+        p.body,
+        p.rating,
+        u.avatar as user_image,
+        coalesce(r.value, 0) as user_rating,
+        p.path
+    from post_comments p
+    join users u on u.id = p.user_id
+    left join post_comment_ratings r on r.user_id = $1
+    where p.post_id = $2
+      and p.id = p.path[1]
+      and p.created_at < $4::timestamp
+    order by p.created_at desc
+    limit $3
+), final as (
+    select
+        p.id,
+        p.created_at,
+        p.updated_at,
+        parents.created_at as sort_key,
+        p.user_id,
+        p.body,
+        p.rating,
+        u.avatar as user_image,
+        coalesce(r.value, 0) as user_rating,
+        p.path
+    from post_comments p
+    join users u on u.id = p.user_id
+    left join post_comment_ratings r on r.user_id = $1
+    join parents on parents.id = p.path[1]
+    where p.id != p.path[1]
+    union all
+    select id, created_at, updated_at, sort_key, user_id, body, rating, user_image, user_rating, path from parents
+) select
+    id,
+    created_at,
+    updated_at,
+    user_id,
+    body,
+    rating,
+    user_image,
+    user_rating,
+    case when path[1] = id then uuid_nil()
+         else path[1]::uuid end as parent_id
+  from final
+  order by sort_key desc, path
+`
+
+type GetCommentsTreeParams struct {
+	UserID utils.UUID
+	PostID utils.UUID
+	Limit  int32
+	Since  pgtype.Timestamp
+}
+
+type GetCommentsTreeRow struct {
+	ID         utils.UUID
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
+	UserID     utils.UUID
+	Body       string
+	Rating     int32
+	UserImage  string
+	UserRating int32
+	ParentID   utils.UUID
+}
+
+func (q *Queries) GetCommentsTree(ctx context.Context, arg GetCommentsTreeParams) ([]GetCommentsTreeRow, error) {
+	rows, err := q.db.Query(ctx, getCommentsTree,
+		arg.UserID,
+		arg.PostID,
+		arg.Limit,
+		arg.Since,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetCommentsTreeRow
+	for rows.Next() {
+		var i GetCommentsTreeRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.UserID,
+			&i.Body,
+			&i.Rating,
+			&i.UserImage,
+			&i.UserRating,
+			&i.ParentID,
 		); err != nil {
 			return nil, err
 		}
@@ -122,7 +241,7 @@ join post_ratings on post_ratings.user_id = $1
 left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < $3::timestamp
     and post_ratings.value = 1
-order by posts.created_at
+order by posts.created_at desc
 limit $2
 `
 
@@ -197,7 +316,7 @@ join users on users.id = outfits.user_id
 left join post_ratings on post_ratings.user_id = $1
 left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < $3::timestamp
-order by posts.created_at
+order by posts.created_at desc
 limit $2
 `
 

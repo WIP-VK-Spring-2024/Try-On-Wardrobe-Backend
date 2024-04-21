@@ -1,4 +1,6 @@
 -- +migrate Up
+create extension if not exists "uuid-ossp";
+
 alter table outfits add column try_on_result_id uuid references try_on_results(id) on delete set null;
 
 alter table outfits rename column public to privacy;

@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -37,14 +38,14 @@ func CheckSession(cfg SessionConfig) fiber.Handler {
 			return err
 		}
 
-		// if err != nil {
-		// 	LogWarning(ctx, err)
-		// }
+		if err != nil {
+			LogWarning(ctx, err)
+		}
 
 		if ok {
 			context := context.WithValue(ctx.UserContext(), sessionKey, &session)
 			ctx.SetUserContext(context)
-			// fmt.Printf("log: setting session with id '%s'\n", session.ID)
+			fmt.Printf("log: setting session with id '%s', route is %s\n", session.ID, ctx.Route().Path)
 		} else if slices.ContainsFunc(cfg.SecureRoutes, func(prefix string) bool {
 			return strings.HasPrefix(ctx.Path(), prefix)
 		}) {

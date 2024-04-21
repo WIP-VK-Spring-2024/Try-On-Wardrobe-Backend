@@ -89,6 +89,20 @@ func (f FeedRepository) GetComments(opts domain.GetCommentsOpts) ([]domain.Comme
 	return utils.Map(comments, commentsFromSqlc), nil
 }
 
+func (f FeedRepository) GetCommentsTree(opts domain.GetCommentsOpts) ([]domain.Comment, error) {
+	comments, err := f.queries.GetCommentsTree(context.Background(), sqlc.GetCommentsTreeParams{
+		UserID: opts.RequestingUserID,
+		PostID: opts.PostID,
+		Limit:  opts.Limit,
+		Since:  pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
+	})
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	return utils.Map(comments, commentsTreeFromSqlc), nil
+}
+
 func (f FeedRepository) RatePost(userId, postId utils.UUID, rating int) error {
 	err := f.queries.RatePost(context.Background(), sqlc.RatePostParams{
 		UserID: userId,
@@ -109,9 +123,10 @@ func (f FeedRepository) RateComment(userId, commentId utils.UUID, rating int) er
 
 func (f FeedRepository) Comment(postId utils.UUID, comment domain.CommentModel) error {
 	_, err := f.queries.CreateComment(context.Background(), sqlc.CreateCommentParams{
-		PostID: postId,
-		UserID: comment.UserID,
-		Body:   comment.Body,
+		PostID:   postId,
+		UserID:   comment.UserID,
+		Body:     comment.Body,
+		ParentID: comment.ParentID,
 	})
 	return utils.PgxError(err)
 }
@@ -156,11 +171,17 @@ func commentsFromSqlc(model *sqlc.GetCommentsRow) *domain.Comment {
 			},
 		},
 		CommentModel: domain.CommentModel{
-			UserID: model.UserID,
-			Body:   model.Body,
+			UserID:   model.UserID,
+			Body:     model.Body,
+			ParentID: model.ParentID,
 		},
 		UserImage:  model.UserImage,
 		Rating:     int(model.Rating),
 		UserRating: int(model.UserRating),
 	}
+}
+
+func commentsTreeFromSqlc(model *sqlc.GetCommentsTreeRow) *domain.Comment {
+	tmp := sqlc.GetCommentsRow(*model)
+	return commentsFromSqlc(&tmp)
 }

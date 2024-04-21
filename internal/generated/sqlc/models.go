@@ -256,6 +256,7 @@ type PostComment struct {
 	Rating    int32
 	CreatedAt pgtype.Timestamp
 	UpdatedAt pgtype.Timestamp
+	Path      []utils.UUID
 }
 
 type PostCommentRating struct {
