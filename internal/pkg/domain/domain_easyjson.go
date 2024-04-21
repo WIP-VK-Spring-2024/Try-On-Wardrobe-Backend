@@ -1886,6 +1886,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(in *jlexer.Lexer, out *Post)
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
 			}
+		case "user_name":
+			out.UserName = string(in.String())
 		case "user_image":
 			out.UserImage = string(in.String())
 		case "rating":
@@ -1963,6 +1965,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(out *jwriter.Writer, in Post
 			out.RawString(prefix)
 		}
 		out.RawText((in.UserID).MarshalText())
+	}
+	if in.UserName != "" {
+		const prefix string = ",\"user_name\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.UserName))
 	}
 	if in.UserImage != "" {
 		const prefix string = ",\"user_image\":"
@@ -3392,6 +3404,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain27(in *jlexer.Lexer, out *Comme
 			continue
 		}
 		switch key {
+		case "user_name":
+			out.UserName = string(in.String())
 		case "user_image":
 			out.UserImage = string(in.String())
 		case "rating":
@@ -3459,10 +3473,20 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain27(out *jwriter.Writer, in Comm
 	out.RawByte('{')
 	first := true
 	_ = first
-	if in.UserImage != "" {
-		const prefix string = ",\"user_image\":"
+	if in.UserName != "" {
+		const prefix string = ",\"user_name\":"
 		first = false
 		out.RawString(prefix[1:])
+		out.String(string(in.UserName))
+	}
+	if in.UserImage != "" {
+		const prefix string = ",\"user_image\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
 		out.String(string(in.UserImage))
 	}
 	if in.Rating != 0 {

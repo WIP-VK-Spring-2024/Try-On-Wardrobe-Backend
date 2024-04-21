@@ -7,6 +7,7 @@ select
     outfits.user_id,
     outfits.image as outfit_image,
     users.avatar as user_image,
+    users.name as user_name,
     posts.rating,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
@@ -29,6 +30,7 @@ select
     outfits.user_id,
     outfits.image as outfit_image,
     users.avatar as user_image,
+    users.name as user_name,
     posts.rating,
     post_ratings.value as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
@@ -52,6 +54,7 @@ select
     post_comments.body,
     post_comments.rating,
     users.avatar as user_image,
+    users.name as user_name,
     array_length(path, 1) as level,
     coalesce(post_comment_ratings.value, 0) as user_rating,
     case when path[1] = id then uuid_nil()
@@ -75,6 +78,7 @@ with parents as (
         p.body,
         p.rating,
         u.avatar as user_image,
+        u.name as user_name,
         array_length(p.path::uuid[], 1) as level,
         coalesce(r.value, 0) as user_rating,
         p.path
@@ -96,6 +100,7 @@ with parents as (
         p.body,
         p.rating,
         u.avatar as user_image,
+        u.name as user_name,
         array_length(p.path, 1) as level,
         coalesce(r.value, 0) as user_rating,
         p.path
@@ -114,6 +119,7 @@ with parents as (
     body,
     rating,
     user_image,
+    user_name,
     level,
     user_rating,
     case when path[1] = id then uuid_nil()
@@ -130,6 +136,7 @@ select
     outfits.user_id,
     outfits.image as outfit_image,
     users.avatar as user_image,
+    users.name as user_name,
     posts.rating,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,

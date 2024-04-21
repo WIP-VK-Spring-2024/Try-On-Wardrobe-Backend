@@ -15,6 +15,7 @@ type Post struct {
 	TryOnImage string
 
 	UserID    utils.UUID
+	UserName  string
 	UserImage string
 
 	Rating     int
@@ -26,6 +27,7 @@ type Comment struct {
 	Model
 	CommentModel
 
+	UserName  string
 	UserImage string
 
 	Rating     int

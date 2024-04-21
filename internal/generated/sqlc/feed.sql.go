@@ -78,6 +78,7 @@ select
     post_comments.body,
     post_comments.rating,
     users.avatar as user_image,
+    users.name as user_name,
     array_length(path, 1) as level,
     coalesce(post_comment_ratings.value, 0) as user_rating,
     case when path[1] = id then uuid_nil()
@@ -106,6 +107,7 @@ type GetCommentsRow struct {
 	Body       string
 	Rating     int32
 	UserImage  string
+	UserName   string
 	Level      int32
 	UserRating int32
 	ParentID   utils.UUID
@@ -133,6 +135,7 @@ func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]Get
 			&i.Body,
 			&i.Rating,
 			&i.UserImage,
+			&i.UserName,
 			&i.Level,
 			&i.UserRating,
 			&i.ParentID,
@@ -158,6 +161,7 @@ with parents as (
         p.body,
         p.rating,
         u.avatar as user_image,
+        u.name as user_name,
         array_length(p.path::uuid[], 1) as level,
         coalesce(r.value, 0) as user_rating,
         p.path
@@ -179,6 +183,7 @@ with parents as (
         p.body,
         p.rating,
         u.avatar as user_image,
+        u.name as user_name,
         array_length(p.path, 1) as level,
         coalesce(r.value, 0) as user_rating,
         p.path
@@ -188,7 +193,7 @@ with parents as (
     join parents on parents.id = p.path[1]
     where p.id != p.path[1]
     union all
-    select id, created_at, updated_at, sort_key, user_id, body, rating, user_image, level, user_rating, path from parents
+    select id, created_at, updated_at, sort_key, user_id, body, rating, user_image, user_name, level, user_rating, path from parents
 ) select
     id,
     created_at,
@@ -197,6 +202,7 @@ with parents as (
     body,
     rating,
     user_image,
+    user_name,
     level,
     user_rating,
     case when path[1] = id then uuid_nil()
@@ -220,6 +226,7 @@ type GetCommentsTreeRow struct {
 	Body       string
 	Rating     int32
 	UserImage  string
+	UserName   string
 	Level      int32
 	UserRating int32
 	ParentID   utils.UUID
@@ -247,6 +254,7 @@ func (q *Queries) GetCommentsTree(ctx context.Context, arg GetCommentsTreeParams
 			&i.Body,
 			&i.Rating,
 			&i.UserImage,
+			&i.UserName,
 			&i.Level,
 			&i.UserRating,
 			&i.ParentID,
@@ -270,6 +278,7 @@ select
     outfits.user_id,
     outfits.image as outfit_image,
     users.avatar as user_image,
+    users.name as user_name,
     posts.rating,
     post_ratings.value as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
@@ -299,6 +308,7 @@ type GetLikedPostsRow struct {
 	UserID      utils.UUID
 	OutfitImage pgtype.Text
 	UserImage   string
+	UserName    string
 	Rating      int32
 	UserRating  int32
 	TryOnImage  string
@@ -322,6 +332,7 @@ func (q *Queries) GetLikedPosts(ctx context.Context, arg GetLikedPostsParams) ([
 			&i.UserID,
 			&i.OutfitImage,
 			&i.UserImage,
+			&i.UserName,
 			&i.Rating,
 			&i.UserRating,
 			&i.TryOnImage,
@@ -346,6 +357,7 @@ select
     outfits.user_id,
     outfits.image as outfit_image,
     users.avatar as user_image,
+    users.name as user_name,
     posts.rating,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
@@ -374,6 +386,7 @@ type GetPostsRow struct {
 	UserID      utils.UUID
 	OutfitImage pgtype.Text
 	UserImage   string
+	UserName    string
 	Rating      int32
 	UserRating  int32
 	TryOnImage  string
@@ -397,6 +410,7 @@ func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsR
 			&i.UserID,
 			&i.OutfitImage,
 			&i.UserImage,
+			&i.UserName,
 			&i.Rating,
 			&i.UserRating,
 			&i.TryOnImage,
@@ -421,6 +435,7 @@ select
     outfits.user_id,
     outfits.image as outfit_image,
     users.avatar as user_image,
+    users.name as user_name,
     posts.rating,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
@@ -450,6 +465,7 @@ type GetSubscriptionPostsRow struct {
 	UserID      utils.UUID
 	OutfitImage pgtype.Text
 	UserImage   string
+	UserName    string
 	Rating      int32
 	UserRating  int32
 	TryOnImage  string
@@ -473,6 +489,7 @@ func (q *Queries) GetSubscriptionPosts(ctx context.Context, arg GetSubscriptionP
 			&i.UserID,
 			&i.OutfitImage,
 			&i.UserImage,
+			&i.UserName,
 			&i.Rating,
 			&i.UserRating,
 			&i.TryOnImage,
