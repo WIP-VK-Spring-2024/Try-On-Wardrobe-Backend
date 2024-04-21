@@ -25,6 +25,9 @@ type loginResponse struct {
 	Token    string
 	UserName string
 	UserID   utils.UUID
+	Email    string
+	Gender   domain.Gender
+	Privacy  domain.Privacy
 }
 
 func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
@@ -61,6 +64,9 @@ func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 		Token:    session.ID,
 		UserID:   session.UserID,
 		UserName: user.Name,
+		Email:    user.Email,
+		Gender:   user.Gender,
+		Privacy:  user.Privacy,
 	})
 }
 
@@ -82,7 +88,10 @@ func (h *SessionHandler) Renew(ctx *fiber.Ctx) error {
 
 	return ctx.JSON(loginResponse{
 		Token:    token,
-		UserName: user.Name,
 		UserID:   session.UserID,
+		UserName: user.Name,
+		Email:    user.Email,
+		Gender:   user.Gender,
+		Privacy:  user.Privacy,
 	})
 }

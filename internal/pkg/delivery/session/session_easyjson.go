@@ -7,6 +7,7 @@ import (
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
+	domain "try-on/internal/pkg/domain"
 )
 
 // suppress unused package warning
@@ -44,6 +45,12 @@ func easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(in *jlexer.Lexer, out
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
 			}
+		case "email":
+			out.Email = string(in.String())
+		case "gender":
+			out.Gender = domain.Gender(in.String())
+		case "privacy":
+			out.Privacy = domain.Privacy(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -83,6 +90,36 @@ func easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(out *jwriter.Writer, 
 			out.RawString(prefix)
 		}
 		out.RawText((in.UserID).MarshalText())
+	}
+	if in.Email != "" {
+		const prefix string = ",\"email\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Email))
+	}
+	if in.Gender != "" {
+		const prefix string = ",\"gender\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Gender))
+	}
+	if in.Privacy != "" {
+		const prefix string = ",\"privacy\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Privacy))
 	}
 	out.RawByte('}')
 }
