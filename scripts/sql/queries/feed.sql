@@ -57,8 +57,8 @@ select
     users.name as user_name,
     array_length(path, 1) as level,
     coalesce(post_comment_ratings.value, 0) as user_rating,
-    case when path[1] = id then uuid_nil()
-         else path[1]::uuid end as parent_id
+    case when post_comments.path[1] = post_comments.id then uuid_nil()
+         else post_comments.path[1]::uuid end as parent_id
 from post_comments
 join users on users.id = post_comments.user_id
 left join post_comment_ratings on post_comment_ratings.user_id = $1
