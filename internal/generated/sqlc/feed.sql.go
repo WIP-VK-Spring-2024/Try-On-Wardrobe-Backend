@@ -46,6 +46,7 @@ select
     post_comments.body,
     post_comments.rating,
     users.avatar as user_image,
+    array_length(path, 1) as level,
     coalesce(post_comment_ratings.value, 0) as user_rating,
     case when path[1] = id then uuid_nil()
          else path[1]::uuid end as parent_id
@@ -73,6 +74,7 @@ type GetCommentsRow struct {
 	Body       string
 	Rating     int32
 	UserImage  string
+	Level      int32
 	UserRating int32
 	ParentID   utils.UUID
 }
@@ -99,6 +101,7 @@ func (q *Queries) GetComments(ctx context.Context, arg GetCommentsParams) ([]Get
 			&i.Body,
 			&i.Rating,
 			&i.UserImage,
+			&i.Level,
 			&i.UserRating,
 			&i.ParentID,
 		); err != nil {
@@ -123,6 +126,7 @@ with parents as (
         p.body,
         p.rating,
         u.avatar as user_image,
+        array_length(p.path::uuid[], 1) as level,
         coalesce(r.value, 0) as user_rating,
         p.path
     from post_comments p
@@ -143,6 +147,7 @@ with parents as (
         p.body,
         p.rating,
         u.avatar as user_image,
+        array_length(p.path, 1) as level,
         coalesce(r.value, 0) as user_rating,
         p.path
     from post_comments p
@@ -151,7 +156,7 @@ with parents as (
     join parents on parents.id = p.path[1]
     where p.id != p.path[1]
     union all
-    select id, created_at, updated_at, sort_key, user_id, body, rating, user_image, user_rating, path from parents
+    select id, created_at, updated_at, sort_key, user_id, body, rating, user_image, level, user_rating, path from parents
 ) select
     id,
     created_at,
@@ -160,6 +165,7 @@ with parents as (
     body,
     rating,
     user_image,
+    level,
     user_rating,
     case when path[1] = id then uuid_nil()
          else path[1]::uuid end as parent_id
@@ -182,6 +188,7 @@ type GetCommentsTreeRow struct {
 	Body       string
 	Rating     int32
 	UserImage  string
+	Level      int32
 	UserRating int32
 	ParentID   utils.UUID
 }
@@ -208,6 +215,7 @@ func (q *Queries) GetCommentsTree(ctx context.Context, arg GetCommentsTreeParams
 			&i.Body,
 			&i.Rating,
 			&i.UserImage,
+			&i.Level,
 			&i.UserRating,
 			&i.ParentID,
 		); err != nil {

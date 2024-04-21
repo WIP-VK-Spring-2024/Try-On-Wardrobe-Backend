@@ -52,6 +52,7 @@ select
     post_comments.body,
     post_comments.rating,
     users.avatar as user_image,
+    array_length(path, 1) as level,
     coalesce(post_comment_ratings.value, 0) as user_rating,
     case when path[1] = id then uuid_nil()
          else path[1]::uuid end as parent_id
@@ -74,6 +75,7 @@ with parents as (
         p.body,
         p.rating,
         u.avatar as user_image,
+        array_length(p.path::uuid[], 1) as level,
         coalesce(r.value, 0) as user_rating,
         p.path
     from post_comments p
@@ -94,6 +96,7 @@ with parents as (
         p.body,
         p.rating,
         u.avatar as user_image,
+        array_length(p.path, 1) as level,
         coalesce(r.value, 0) as user_rating,
         p.path
     from post_comments p
@@ -111,6 +114,7 @@ with parents as (
     body,
     rating,
     user_image,
+    level,
     user_rating,
     case when path[1] = id then uuid_nil()
          else path[1]::uuid end as parent_id

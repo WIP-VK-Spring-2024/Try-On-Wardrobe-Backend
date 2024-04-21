@@ -31,7 +31,9 @@ type Comment struct {
 	Rating     int
 	UserRating int
 
-	Replies []*Comment
+	Level int `json:"level,!omitempty"` //lint:ignore SA5008 easyjson custom tags
+
+	Replies []Comment
 }
 
 //easyjson:json
@@ -49,7 +51,6 @@ type GetPostsOpts struct {
 
 type GetCommentsOpts struct {
 	PostID           utils.UUID
-	ParentID         utils.UUID
 	RequestingUserID utils.UUID
 	Limit            int32      `query:"limit"`
 	Since            utils.Time `query:"since"`
@@ -65,6 +66,7 @@ type FeedRepository interface {
 
 	GetPost(postId utils.UUID) (*Post, error)
 	GetComments(opts GetCommentsOpts) ([]Comment, error)
+	GetCommentsTree(opts GetCommentsOpts) ([]Comment, error)
 
 	RatePost(userId, postId utils.UUID, rating int) error
 	RateComment(userId, commentId utils.UUID, rating int) error

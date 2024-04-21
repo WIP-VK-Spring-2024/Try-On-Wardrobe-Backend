@@ -3398,6 +3398,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain27(in *jlexer.Lexer, out *Comme
 			out.Rating = int(in.Int())
 		case "user_rating":
 			out.UserRating = int(in.Int())
+		case "level":
+			out.Level = int(in.Int())
 		case "replies":
 			if in.IsNull() {
 				in.Skip()
@@ -3406,24 +3408,16 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain27(in *jlexer.Lexer, out *Comme
 				in.Delim('[')
 				if out.Replies == nil {
 					if !in.IsDelim(']') {
-						out.Replies = make([]*Comment, 0, 8)
+						out.Replies = make([]Comment, 0, 0)
 					} else {
-						out.Replies = []*Comment{}
+						out.Replies = []Comment{}
 					}
 				} else {
 					out.Replies = (out.Replies)[:0]
 				}
 				for !in.IsDelim(']') {
-					var v33 *Comment
-					if in.IsNull() {
-						in.Skip()
-						v33 = nil
-					} else {
-						if v33 == nil {
-							v33 = new(Comment)
-						}
-						(*v33).UnmarshalEasyJSON(in)
-					}
+					var v33 Comment
+					(v33).UnmarshalEasyJSON(in)
 					out.Replies = append(out.Replies, v33)
 					in.WantComma()
 				}
@@ -3491,87 +3485,58 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain27(out *jwriter.Writer, in Comm
 		}
 		out.Int(int(in.UserRating))
 	}
-	if len(in.Replies) != 0 {
-		const prefix string = ",\"replies\":"
+	{
+		const prefix string = ",\"level\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
+		out.Int(int(in.Level))
+	}
+	if len(in.Replies) != 0 {
+		const prefix string = ",\"replies\":"
+		out.RawString(prefix)
 		{
 			out.RawByte('[')
 			for v34, v35 := range in.Replies {
 				if v34 > 0 {
 					out.RawByte(',')
 				}
-				if v35 == nil {
-					out.RawString("null")
-				} else {
-					(*v35).MarshalEasyJSON(out)
-				}
+				(v35).MarshalEasyJSON(out)
 			}
 			out.RawByte(']')
 		}
 	}
 	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.UserID).MarshalText())
 	}
 	if in.Body != "" {
 		const prefix string = ",\"body\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.String(string(in.Body))
 	}
 	if (in.ParentID).IsDefined() {
 		const prefix string = ",\"parent_id\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.ParentID).MarshalText())
 	}
 	if (in.ID).IsDefined() {
 		const prefix string = ",\"uuid\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.RawText((in.ID).MarshalText())
 	}
 	if (in.CreatedAt).IsDefined() {
 		const prefix string = ",\"created_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.CreatedAt).MarshalJSON())
 	}
 	if (in.UpdatedAt).IsDefined() {
 		const prefix string = ",\"updated_at\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Raw((in.UpdatedAt).MarshalJSON())
 	}
 	out.RawByte('}')

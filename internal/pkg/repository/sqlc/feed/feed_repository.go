@@ -178,6 +178,7 @@ func commentsFromSqlc(model *sqlc.GetCommentsRow) *domain.Comment {
 		UserImage:  model.UserImage,
 		Rating:     int(model.Rating),
 		UserRating: int(model.UserRating),
+		Level:      int(model.Level),
 	}
 }
 

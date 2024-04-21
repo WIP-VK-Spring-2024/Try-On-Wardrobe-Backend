@@ -106,13 +106,18 @@ func (h *FeedHandler) Unsubscribe(ctx *fiber.Ctx) error {
 	return ctx.SendString(common.EmptyJson)
 }
 
+type getCommentsRequest struct {
+	domain.GetCommentsOpts
+	Tree bool `query:"tree"`
+}
+
 func (h *FeedHandler) GetComments(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
 		return app_errors.ErrUnauthorized
 	}
 
-	var opts domain.GetCommentsOpts
+	var opts getCommentsRequest
 	if err := ctx.QueryParser(&opts); err != nil {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
@@ -120,7 +125,14 @@ func (h *FeedHandler) GetComments(ctx *fiber.Ctx) error {
 
 	opts.RequestingUserID = session.UserID
 
-	comments, err := h.feed.GetComments(opts)
+	var comments []domain.Comment
+	var err error
+
+	if opts.Tree {
+		comments, err = h.feed.GetCommentsTree(opts.GetCommentsOpts)
+	} else {
+		comments, err = h.feed.GetComments(opts.GetCommentsOpts)
+	}
 	if err != nil {
 		return app_errors.New(err)
 	}
