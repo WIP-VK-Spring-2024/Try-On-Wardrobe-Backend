@@ -17,7 +17,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(in *jlexer.Lexer, out *tokenResponse) {
+func easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(in *jlexer.Lexer, out *loginResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -38,6 +38,8 @@ func easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(in *jlexer.Lexer, out
 		switch key {
 		case "token":
 			out.Token = string(in.String())
+		case "user_name":
+			out.UserName = string(in.String())
 		case "user_id":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
@@ -52,7 +54,7 @@ func easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(in *jlexer.Lexer, out
 		in.Consumed()
 	}
 }
-func easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(out *jwriter.Writer, in tokenResponse) {
+func easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(out *jwriter.Writer, in loginResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -61,6 +63,16 @@ func easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(out *jwriter.Writer, 
 		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Token))
+	}
+	if in.UserName != "" {
+		const prefix string = ",\"user_name\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.UserName))
 	}
 	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
@@ -76,25 +88,25 @@ func easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(out *jwriter.Writer, 
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v tokenResponse) MarshalJSON() ([]byte, error) {
+func (v loginResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v tokenResponse) MarshalEasyJSON(w *jwriter.Writer) {
+func (v loginResponse) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *tokenResponse) UnmarshalJSON(data []byte) error {
+func (v *loginResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *tokenResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *loginResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(l, v)
 }

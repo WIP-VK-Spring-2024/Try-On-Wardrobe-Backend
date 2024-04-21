@@ -228,7 +228,10 @@ func (app *App) Run() error {
 	app.api.Get("/posts/:id/comments", feedHandler.GetComments)
 	app.api.Post("/posts/:id/comments", feedHandler.CreateComment)
 	app.api.Post("/posts/:id/rate", feedHandler.RatePost)
+
 	app.api.Post("/comments/:id/rate", feedHandler.RateComment)
+	app.api.Put("/comments/:id", feedHandler.UpdateComment)
+	app.api.Delete("/comments/:id", feedHandler.DeleteComment)
 
 	app.api.Get("/posts/liked", feedHandler.GetLikedPosts)
 	app.api.Get("/posts/subs", feedHandler.GetSubscriptionPosts)

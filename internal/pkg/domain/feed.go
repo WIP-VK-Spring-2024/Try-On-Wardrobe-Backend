@@ -72,4 +72,6 @@ type FeedRepository interface {
 	RateComment(userId, commentId utils.UUID, rating int) error
 
 	Comment(postId utils.UUID, comment CommentModel) error
+	DeleteComment(userId, commentId utils.UUID) error
+	UpdateComment(commentId utils.UUID, data CommentModel) error
 }

@@ -131,6 +131,36 @@ func (f FeedRepository) Comment(postId utils.UUID, comment domain.CommentModel) 
 	return utils.PgxError(err)
 }
 
+func (f FeedRepository) DeleteComment(userId, commentId utils.UUID) error {
+	ctx := context.Background()
+	comment, err := f.queries.GetComment(ctx, commentId)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	if comment.UserID != userId {
+		return app_errors.ErrNotOwner
+	}
+
+	err = f.queries.DeleteComment(ctx, commentId)
+	return utils.PgxError(err)
+}
+
+func (f FeedRepository) UpdateComment(commentId utils.UUID, data domain.CommentModel) error {
+	ctx := context.Background()
+	comment, err := f.queries.GetComment(ctx, commentId)
+	if err != nil {
+		return utils.PgxError(err)
+	}
+
+	if comment.UserID != data.UserID {
+		return app_errors.ErrNotOwner
+	}
+
+	err = f.queries.UpdateComment(ctx, commentId, data.Body)
+	return utils.PgxError(err)
+}
+
 func likedPostsFromSqlc(model *sqlc.GetLikedPostsRow) *domain.Post {
 	tmp := sqlc.GetPostsRow(*model)
 	return postsFromSqlc(&tmp)

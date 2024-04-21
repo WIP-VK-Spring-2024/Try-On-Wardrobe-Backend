@@ -37,6 +37,38 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (u
 	return id, err
 }
 
+const deleteComment = `-- name: DeleteComment :exec
+delete from post_comments
+where id = $1
+`
+
+func (q *Queries) DeleteComment(ctx context.Context, id utils.UUID) error {
+	_, err := q.db.Exec(ctx, deleteComment, id)
+	return err
+}
+
+const getComment = `-- name: GetComment :one
+select id, user_id, post_id, body, rating, created_at, updated_at, path
+from post_comments
+where id = $1
+`
+
+func (q *Queries) GetComment(ctx context.Context, id utils.UUID) (PostComment, error) {
+	row := q.db.QueryRow(ctx, getComment, id)
+	var i PostComment
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.PostID,
+		&i.Body,
+		&i.Rating,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Path,
+	)
+	return i, err
+}
+
 const getComments = `-- name: GetComments :many
 select
     post_comments.id,
@@ -509,5 +541,17 @@ where subscriber_id = $1 and user_id = $2
 
 func (q *Queries) Unsubscribe(ctx context.Context, subscriberID utils.UUID, userID utils.UUID) error {
 	_, err := q.db.Exec(ctx, unsubscribe, subscriberID, userID)
+	return err
+}
+
+const updateComment = `-- name: UpdateComment :exec
+update post_comments
+set body = $2,
+    updated_at = now()
+where id = $1
+`
+
+func (q *Queries) UpdateComment(ctx context.Context, iD utils.UUID, body string) error {
+	_, err := q.db.Exec(ctx, updateComment, iD, body)
 	return err
 }

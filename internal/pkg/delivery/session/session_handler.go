@@ -16,13 +16,15 @@ import (
 
 type SessionHandler struct {
 	Sessions domain.SessionUsecase
+	users    domain.UserRepository
 	cfg      *config.Session
 }
 
 //easyjson:json
-type tokenResponse struct {
-	Token  string
-	UserID utils.UUID
+type loginResponse struct {
+	Token    string
+	UserName string
+	UserID   utils.UUID
 }
 
 func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
@@ -33,7 +35,8 @@ func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
 			userRepo,
 			cfg,
 		),
-		cfg: cfg,
+		users: userRepo,
+		cfg:   cfg,
 	}
 }
 
@@ -48,9 +51,16 @@ func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		return app_errors.New(err)
 	}
-	return ctx.JSON(tokenResponse{
-		Token:  session.ID,
-		UserID: session.UserID,
+
+	user, err := h.users.GetByID(session.UserID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(loginResponse{
+		Token:    session.ID,
+		UserID:   session.UserID,
+		UserName: user.Name,
 	})
 }
 
@@ -65,8 +75,14 @@ func (h *SessionHandler) Renew(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	return ctx.JSON(tokenResponse{
-		Token:  token,
-		UserID: session.UserID,
+	user, err := h.users.GetByID(session.UserID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(loginResponse{
+		Token:    token,
+		UserName: user.Name,
+		UserID:   session.UserID,
 	})
 }

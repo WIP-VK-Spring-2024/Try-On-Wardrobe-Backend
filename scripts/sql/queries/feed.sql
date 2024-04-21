@@ -161,6 +161,21 @@ insert into post_comments(post_id, user_id, body, path)
     values($1, $2, $3, (select path from post_comments p where p.id = sqlc.arg(parent_id)))
     returning id;
 
+-- name: GetComment :one
+select *
+from post_comments
+where id = $1;
+
+-- name: DeleteComment :exec
+delete from post_comments
+where id = $1;
+
+-- name: UpdateComment :exec
+update post_comments
+set body = $2,
+    updated_at = now()
+where id = $1;
+
 -- name: Subscribe :exec
 insert into subs(subscriber_id, user_id)
     values($1, $2);

@@ -167,6 +167,51 @@ func (h *FeedHandler) CreateComment(ctx *fiber.Ctx) error {
 	return ctx.SendString(common.EmptyJson)
 }
 
+func (h *FeedHandler) DeleteComment(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	commentId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrCommentIdInvalid
+	}
+
+	err = h.feed.DeleteComment(session.UserID, commentId)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
+}
+
+func (h *FeedHandler) UpdateComment(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	commentId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrCommentIdInvalid
+	}
+
+	var comment domain.CommentModel
+	if err = easyjson.Unmarshal(ctx.Body(), &comment); err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+	comment.UserID = session.UserID
+
+	err = h.feed.UpdateComment(commentId, comment)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
+}
+
 //easyjson:json
 type rateRequest struct {
 	Rating int

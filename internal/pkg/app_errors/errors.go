@@ -62,6 +62,11 @@ var (
 		Code: http.StatusBadRequest,
 		Msg:  "post ID is missing or isn't a valid uuid",
 	}
+
+	ErrCommentIdInvalid = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "comment ID is missing or isn't a valid uuid",
+	}
 )
 
 type InternalError struct {
