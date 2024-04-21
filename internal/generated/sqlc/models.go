@@ -333,7 +333,7 @@ type User struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
-	Email     pgtype.Text
+	Email     string
 	Password  string
 	Gender    NullGender
 	Privacy   domain.Privacy

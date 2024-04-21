@@ -7,7 +7,6 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -24,7 +23,7 @@ func New(db *pgxpool.Pool) domain.UserRepository {
 func (repo UserRepository) Create(user *domain.User) error {
 	id, err := repo.queries.CreateUser(context.Background(), sqlc.CreateUserParams{
 		Name:     user.Name,
-		Email:    pgtype.Text{String: user.Email, Valid: true},
+		Email:    user.Email,
 		Password: string(user.Password),
 	})
 	if err != nil {
@@ -105,6 +104,6 @@ func fromSqlc(model *sqlc.User) *domain.User {
 		},
 		Name:     model.Name,
 		Password: model.Password,
-		Email:    model.Email.String,
+		Email:    model.Email,
 	}
 }

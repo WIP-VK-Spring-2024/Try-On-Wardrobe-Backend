@@ -8,7 +8,6 @@ package sqlc
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
@@ -25,7 +24,7 @@ returning id
 
 type CreateUserParams struct {
 	Name     string
-	Email    pgtype.Text
+	Email    string
 	Password string
 	Gender   NullGender
 }
