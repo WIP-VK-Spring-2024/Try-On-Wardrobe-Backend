@@ -147,20 +147,29 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 const searchUsers = `-- name: SearchUsers :many
 select users.id, users.created_at, users.updated_at, users.name, users.email, users.password, users.gender, users.privacy, users.avatar
 from users
-where lower(name) like lower($2)
-      and lower(name) > $3
+left join subs on subs.subscriber_id = $1
+     and subs.user_id = users.id
+where lower(name) like lower($3)
+      and lower(name) > $4
+      and subs.user_id is null
 order by lower(name)
-limit $1
+limit $2
 `
 
 type SearchUsersParams struct {
-	Limit int32
-	Name  string
-	Since string
+	SubscriberID utils.UUID
+	Limit        int32
+	Name         string
+	Since        string
 }
 
 func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error) {
-	rows, err := q.db.Query(ctx, searchUsers, arg.Limit, arg.Name, arg.Since)
+	rows, err := q.db.Query(ctx, searchUsers,
+		arg.SubscriberID,
+		arg.Limit,
+		arg.Name,
+		arg.Since,
+	)
 	if err != nil {
 		return nil, err
 	}

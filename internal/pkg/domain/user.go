@@ -18,9 +18,10 @@ type User struct {
 }
 
 type SearchUserOpts struct {
-	Name  string `query:"name"`
-	Limit int    `query:"limit"`
-	Since string `query:"since"`
+	UserID utils.UUID
+	Name   string `query:"name"`
+	Limit  int    `query:"limit"`
+	Since  string `query:"since"`
 }
 
 type UserUsecase interface {

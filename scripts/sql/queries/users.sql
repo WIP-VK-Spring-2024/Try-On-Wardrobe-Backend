@@ -28,10 +28,13 @@ join subs on subs.subscriber_id = $1
 -- name: SearchUsers :many
 select users.*
 from users
+left join subs on subs.subscriber_id = $1
+     and subs.user_id = users.id
 where lower(name) like lower(sqlc.arg(name))
       and lower(name) > sqlc.arg(since)
+      and subs.user_id is null
 order by lower(name)
-limit $1;
+limit $2;
 
 -- name: UpdateUser :exec
 update users

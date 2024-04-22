@@ -137,11 +137,17 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 }
 
 func (h UserHandler) SearchUsers(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
 	var opts domain.SearchUserOpts
 	if err := ctx.QueryParser(&opts); err != nil {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
+	opts.UserID = session.UserID
 
 	users, err := h.users.SearchUsers(opts)
 	if err != nil {
