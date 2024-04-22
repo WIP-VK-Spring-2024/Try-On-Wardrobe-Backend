@@ -32,9 +32,13 @@ where lower(name) like lower($1);
 
 -- name: UpdateUser :exec
 update users
-set name = coalesce($2, name),
-    gender = coalesce($3, gender),
-    privacy = coalesce($4, privacy),
-    avatar = coalesce($5, avatar),
+set name = case when sqlc.arg(name)::text = '' then name
+                else sqlc.arg(name)::text end,
+    gender = case when sqlc.arg(gender)::gender = '' then name
+                else sqlc.arg(gender)::gender end,
+    privacy = case when sqlc.arg(privacy)::privacy = '' then name
+                else sqlc.arg(privacy)::privacy end,
+    avatar = case when sqlc.arg(avatar)::text = '' then name
+                  else sqlc.arg(avatar)::text end,
     updated_at = now()
 where id = $1;

@@ -182,10 +182,14 @@ func (q *Queries) SearchUsers(ctx context.Context, lower string) ([]User, error)
 
 const updateUser = `-- name: UpdateUser :exec
 update users
-set name = coalesce($2, name),
-    gender = coalesce($3, gender),
-    privacy = coalesce($4, privacy),
-    avatar = coalesce($5, avatar),
+set name = case when $2::text = '' then name
+                else $2::text end,
+    gender = case when $3::gender = '' then name
+                else $3::gender end,
+    privacy = case when $4::privacy = '' then name
+                else $4::privacy end,
+    avatar = case when $5::text = '' then name
+                  else $5::text end,
     updated_at = now()
 where id = $1
 `
