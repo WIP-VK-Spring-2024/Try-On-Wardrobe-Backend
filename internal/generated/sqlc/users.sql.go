@@ -182,32 +182,28 @@ func (q *Queries) SearchUsers(ctx context.Context, lower string) ([]User, error)
 
 const updateUser = `-- name: UpdateUser :exec
 update users
-set name = case when $2::text = '' then name
-                else $2::text end,
-    gender = case when $3::gender = '' then name
-                else $3::gender end,
-    privacy = case when $4::privacy = '' then name
-                else $4::privacy end,
-    avatar = case when $5::text = '' then name
-                  else $5::text end,
+set name = case when $3::text = '' then name
+                else $3::text end,
+    gender = coalesce($1, gender),
+    privacy = coalesce($2, privacy),
+    avatar = case when $4::text = '' then name
+                  else $4::text end,
     updated_at = now()
 where id = $1
 `
 
 type UpdateUserParams struct {
-	ID      utils.UUID
-	Name    string
 	Gender  domain.Gender
 	Privacy domain.Privacy
+	Name    string
 	Avatar  string
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.Exec(ctx, updateUser,
-		arg.ID,
-		arg.Name,
 		arg.Gender,
 		arg.Privacy,
+		arg.Name,
 		arg.Avatar,
 	)
 	return err
