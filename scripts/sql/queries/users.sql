@@ -33,6 +33,7 @@ left join subs on subs.subscriber_id = $1
 where lower(name) like lower(sqlc.arg(name))
       and lower(name) > sqlc.arg(since)
       and subs.user_id is null
+      and users.id <> $1
 order by lower(name)
 limit $2;
 

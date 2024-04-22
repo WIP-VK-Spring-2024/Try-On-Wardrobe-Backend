@@ -43,6 +43,16 @@ var (
 		Msg:  "clothes ID is missing or isn't a valid uuid",
 	}
 
+	ErrSubscribeTarget = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "can't subscribe on yourself",
+	}
+
+	ErrUnsubscribeTarget = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "can't unsubscribe from yourself",
+	}
+
 	ErrUserImageIdInvalid = &ResponseError{
 		Code: http.StatusBadRequest,
 		Msg:  "user image ID is missing or isn't a valid uuid",

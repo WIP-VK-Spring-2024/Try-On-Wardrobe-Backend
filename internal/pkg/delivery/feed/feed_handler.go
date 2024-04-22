@@ -79,6 +79,10 @@ func (h *FeedHandler) Subscribe(ctx *fiber.Ctx) error {
 		return app_errors.ErrUserIdInvalid
 	}
 
+	if session.UserID == userId {
+		return app_errors.ErrSubscribeTarget
+	}
+
 	err = h.feed.Subscribe(session.UserID, userId)
 	if err != nil {
 		return app_errors.New(err)
@@ -96,6 +100,10 @@ func (h *FeedHandler) Unsubscribe(ctx *fiber.Ctx) error {
 	userId, err := utils.ParseUUID(ctx.Params("id"))
 	if err != nil {
 		return app_errors.ErrUserIdInvalid
+	}
+
+	if session.UserID == userId {
+		return app_errors.ErrUnsubscribeTarget
 	}
 
 	err = h.feed.Unsubscribe(session.UserID, userId)
