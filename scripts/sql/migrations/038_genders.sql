@@ -4,7 +4,7 @@ set gender = 'female'
 where name = 'Anastasia';
 
 update users
-set email = 'male'
+set gender = 'male'
 where name = 'Nikita';
 
 alter table users alter column gender set not null;
