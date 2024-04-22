@@ -147,11 +147,20 @@ func (q *Queries) GetUserByName(ctx context.Context, name string) (User, error) 
 const searchUsers = `-- name: SearchUsers :many
 select users.id, users.created_at, users.updated_at, users.name, users.email, users.password, users.gender, users.privacy, users.avatar
 from users
-where lower(name) like lower($1)
+where lower(name) like lower($2)
+      and lower(name) >= $3
+order by lower(name)
+limit $1
 `
 
-func (q *Queries) SearchUsers(ctx context.Context, lower string) ([]User, error) {
-	rows, err := q.db.Query(ctx, searchUsers, lower)
+type SearchUsersParams struct {
+	Limit int32
+	Name  string
+	Since string
+}
+
+func (q *Queries) SearchUsers(ctx context.Context, arg SearchUsersParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, searchUsers, arg.Limit, arg.Name, arg.Since)
 	if err != nil {
 		return nil, err
 	}
@@ -182,17 +191,18 @@ func (q *Queries) SearchUsers(ctx context.Context, lower string) ([]User, error)
 
 const updateUser = `-- name: UpdateUser :exec
 update users
-set name = case when $3::text = '' then name
-                else $3::text end,
-    gender = coalesce($1, gender),
-    privacy = coalesce($2, privacy),
-    avatar = case when $4::text = '' then name
-                  else $4::text end,
+set name = case when $4::text = '' then name
+                else $4::text end,
+    gender = coalesce($2, gender),
+    privacy = coalesce($3, privacy),
+    avatar = case when $5::text = '' then name
+                  else $5::text end,
     updated_at = now()
 where id = $1
 `
 
 type UpdateUserParams struct {
+	ID      utils.UUID
 	Gender  domain.Gender
 	Privacy domain.Privacy
 	Name    string
@@ -201,6 +211,7 @@ type UpdateUserParams struct {
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
 	_, err := q.db.Exec(ctx, updateUser,
+		arg.ID,
 		arg.Gender,
 		arg.Privacy,
 		arg.Name,

@@ -1,9 +1,6 @@
 package users
 
 import (
-	"net/http"
-	"strings"
-
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -140,15 +137,13 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 }
 
 func (h UserHandler) SearchUsers(ctx *fiber.Ctx) error {
-	name := strings.TrimSpace(ctx.Query("name"))
-	if name == "" {
-		return app_errors.ResponseError{
-			Code: http.StatusBadRequest,
-			Msg:  "query param 'name' should be non-empty",
-		}
+	var opts domain.SearchUserOpts
+	if err := ctx.QueryParser(&opts); err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
 	}
 
-	users, err := h.users.SearchUsers(name)
+	users, err := h.users.SearchUsers(opts)
 	if err != nil {
 		return app_errors.New(err)
 	}

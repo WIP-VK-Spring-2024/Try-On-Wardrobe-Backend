@@ -79,8 +79,12 @@ func (repo UserRepository) GetSubscriptions(userId utils.UUID) ([]domain.User, e
 	return utils.Map(users, fromSqlc), nil
 }
 
-func (repo UserRepository) SearchUsers(name string) ([]domain.User, error) {
-	users, err := repo.queries.SearchUsers(context.Background(), "%"+name+"%")
+func (repo UserRepository) SearchUsers(opts domain.SearchUserOpts) ([]domain.User, error) {
+	users, err := repo.queries.SearchUsers(context.Background(), sqlc.SearchUsersParams{
+		Name:  "%" + opts.Name + "%",
+		Since: opts.Since,
+		Limit: int32(opts.Limit),
+	})
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}

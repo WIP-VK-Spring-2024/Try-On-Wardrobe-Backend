@@ -39,8 +39,12 @@ func (u UserUsecase) GetByName(name string) (*domain.User, error) {
 	return u.repo.GetByName(name)
 }
 
-func (u UserUsecase) SearchUsers(name string) ([]domain.User, error) {
-	return u.repo.SearchUsers(name)
+func (u UserUsecase) SearchUsers(opts domain.SearchUserOpts) ([]domain.User, error) {
+	if opts.Limit == 0 {
+		opts.Limit = 16
+	}
+
+	return u.repo.SearchUsers(opts)
 }
 
 func (u UserUsecase) GetSubscriptions(id utils.UUID) ([]domain.User, error) {

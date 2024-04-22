@@ -17,11 +17,17 @@ type User struct {
 	Privacy Privacy `validate:"omitempty,oneof=private public friends"`
 }
 
+type SearchUserOpts struct {
+	Name  string `query:"name"`
+	Limit int    `query:"limit"`
+	Since string `query:"since"`
+}
+
 type UserUsecase interface {
 	Create(user *User) error
 	Update(user User) error
 	GetByName(name string) (*User, error)
-	SearchUsers(name string) ([]User, error)
+	SearchUsers(opts SearchUserOpts) ([]User, error)
 	GetSubscriptions(utils.UUID) ([]User, error)
 }
 
@@ -31,6 +37,6 @@ type UserRepository interface {
 	GetByName(name string) (*User, error)
 	GetByEmail(email string) (*User, error)
 	GetByID(id utils.UUID) (*User, error)
-	SearchUsers(name string) ([]User, error)
+	SearchUsers(opts SearchUserOpts) ([]User, error)
 	GetSubscriptions(utils.UUID) ([]User, error)
 }
