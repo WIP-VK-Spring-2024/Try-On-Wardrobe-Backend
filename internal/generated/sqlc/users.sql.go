@@ -148,7 +148,7 @@ const searchUsers = `-- name: SearchUsers :many
 select users.id, users.created_at, users.updated_at, users.name, users.email, users.password, users.gender, users.privacy, users.avatar
 from users
 where lower(name) like lower($2)
-      and lower(name) >= $3
+      and lower(name) > $3
 order by lower(name)
 limit $1
 `

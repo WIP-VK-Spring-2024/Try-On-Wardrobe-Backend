@@ -29,7 +29,7 @@ join subs on subs.subscriber_id = $1
 select users.*
 from users
 where lower(name) like lower(sqlc.arg(name))
-      and lower(name) >= sqlc.arg(since)
+      and lower(name) > sqlc.arg(since)
 order by lower(name)
 limit $1;
 
