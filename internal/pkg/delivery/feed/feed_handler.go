@@ -1,6 +1,8 @@
 package feed
 
 import (
+	"fmt"
+
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -158,10 +160,17 @@ func (h *FeedHandler) GetComments(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
+	postId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrPostIdInvalid
+	}
+
 	opts.RequestingUserID = session.UserID
+	opts.PostID = postId
+
+	fmt.Printf("get comments: %+v\n", opts)
 
 	var comments []domain.Comment
-	var err error
 
 	if opts.Tree {
 		comments, err = h.feed.GetCommentsTree(opts.GetCommentsOpts)
@@ -268,6 +277,8 @@ func (h *FeedHandler) RatePost(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
+
+	fmt.Printf("rate: %+v\n", req)
 
 	if req.Rating > 1 {
 		req.Rating = 1
