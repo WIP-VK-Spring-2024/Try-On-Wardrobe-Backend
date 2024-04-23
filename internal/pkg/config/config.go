@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 
 	"github.com/fsnotify/fsnotify"
@@ -25,17 +26,20 @@ type Config struct {
 }
 
 type Static struct {
-	HttpApi  HttpApi
-	Type     string
-	Dir      string
-	Clothes  string
-	Cut      string
-	FullBody string
-	TryOn    string
-	Outfits  string
-	Avatars  string
-	S3       S3
+	HttpApi         HttpApi
+	Type            string
+	Dir             string
+	Clothes         string
+	Cut             string
+	FullBody        string
+	TryOn           string
+	Outfits         string
+	Avatars         string
+	S3              S3
+	DefaultImgPaths DefaultImgPaths
 }
+
+type DefaultImgPaths map[domain.Gender]string
 
 type Classification struct {
 	Threshold float32

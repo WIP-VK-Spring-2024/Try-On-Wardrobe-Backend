@@ -6,6 +6,7 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/sqlc/user_images"
 	userRepo "try-on/internal/pkg/repository/sqlc/users"
 	"try-on/internal/pkg/usecase/session"
 	"try-on/internal/pkg/usecase/users"
@@ -32,9 +33,10 @@ func New(
 	cfg *config.Static,
 ) *UserHandler {
 	userRepo := userRepo.New(db)
+	images := user_images.New(db)
 
 	return &UserHandler{
-		users:    users.New(userRepo),
+		users:    users.New(userRepo, images, cfg.DefaultImgPaths),
 		sessions: session.New(userRepo, sessionCfg),
 		file:     fileManager,
 		cfg:      cfg,

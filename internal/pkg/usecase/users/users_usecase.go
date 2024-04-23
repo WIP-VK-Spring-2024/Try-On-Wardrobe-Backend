@@ -1,17 +1,24 @@
 package users
 
 import (
+	"log"
+
+	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
 
 type UserUsecase struct {
-	repo domain.UserRepository
+	repo   domain.UserRepository
+	images domain.UserImageRepository
+	cfg    config.DefaultImgPaths
 }
 
-func New(repo domain.UserRepository) domain.UserUsecase {
+func New(repo domain.UserRepository, images domain.UserImageRepository, cfg config.DefaultImgPaths) domain.UserUsecase {
 	return &UserUsecase{
-		repo: repo,
+		repo:   repo,
+		images: images,
+		cfg:    cfg,
 	}
 }
 
@@ -26,6 +33,18 @@ func (u UserUsecase) Create(user *domain.User) error {
 	err = u.repo.Create(user)
 	if err != nil {
 		return err
+	}
+
+	if user.Gender != "male" && user.Gender != "female" {
+		user.Gender = "male"
+	}
+
+	err = u.images.Create(&domain.UserImage{
+		UserID: user.ID,
+		Image:  u.cfg[user.Gender],
+	})
+	if err != nil {
+		log.Println("Error creating default image:", err)
 	}
 
 	return nil

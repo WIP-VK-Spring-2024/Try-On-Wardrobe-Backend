@@ -28,6 +28,10 @@
       "uploadUrl": "/upload",
       "deleteUrl": "/delete",
       "tokenHeader": "X-ACCESS-TOKEN"
+    },
+    "defaultImgPaths": {
+      "male": "photos/default_male.jpg",
+      "female": "photos/default_female.jpg"
     }
   },
 

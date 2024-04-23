@@ -2,6 +2,7 @@ package try_on
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"try-on/internal/generated/proto/centrifugo"
@@ -59,10 +60,14 @@ func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 
 func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.TryOnResponse) domain.Result {
 	return func(resp *domain.TryOnResponse) domain.Result {
+		fmt.Println("Got clothes from rabbit try on", resp.Clothes)
+
 		clothesIds := make([]utils.UUID, 0, len(resp.Clothes))
 		for _, clothes := range resp.Clothes {
 			clothesIds = append(clothesIds, clothes.ClothesID)
 		}
+
+		fmt.Println("Clothes IDs from try on", clothesIds)
 
 		tryOnRes := &domain.TryOnResult{
 			UserImageID: resp.UserImageID,
