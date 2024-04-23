@@ -426,6 +426,91 @@ func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsR
 	return items, nil
 }
 
+const getPostsByUser = `-- name: GetPostsByUser :many
+select
+    posts.id,
+    posts.created_at,
+    posts.updated_at,
+    posts.outfit_id,
+    outfits.user_id,
+    outfits.image as outfit_image,
+    users.avatar as user_image,
+    users.name as user_name,
+    posts.rating,
+    coalesce(post_ratings.value, 0) as user_rating,
+    coalesce(try_on_results.image, '') as try_on_image,
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+from posts
+join outfits on outfits.id = posts.outfit_id
+join users on users.id = outfits.user_id
+left join post_ratings on post_ratings.user_id = $1
+left join try_on_results on try_on_results.id = outfits.try_on_result_id
+where posts.created_at < $3::timestamp
+      and outfits.user_id = $4
+order by posts.created_at desc
+limit $2
+`
+
+type GetPostsByUserParams struct {
+	UserID   utils.UUID
+	Limit    int32
+	Since    pgtype.Timestamp
+	AuthorID utils.UUID
+}
+
+type GetPostsByUserRow struct {
+	ID          utils.UUID
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	OutfitID    utils.UUID
+	UserID      utils.UUID
+	OutfitImage pgtype.Text
+	UserImage   string
+	UserName    string
+	Rating      int32
+	UserRating  int32
+	TryOnImage  string
+	TryOnID     utils.UUID
+}
+
+func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) ([]GetPostsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getPostsByUser,
+		arg.UserID,
+		arg.Limit,
+		arg.Since,
+		arg.AuthorID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPostsByUserRow
+	for rows.Next() {
+		var i GetPostsByUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.OutfitID,
+			&i.UserID,
+			&i.OutfitImage,
+			&i.UserImage,
+			&i.UserName,
+			&i.Rating,
+			&i.UserRating,
+			&i.TryOnImage,
+			&i.TryOnID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSubscriptionPosts = `-- name: GetSubscriptionPosts :many
 select
     posts.id,

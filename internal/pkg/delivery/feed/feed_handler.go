@@ -68,6 +68,33 @@ func getPostsTemplate(getter func(domain.GetPostsOpts) ([]domain.Post, error)) f
 	}
 }
 
+func (h FeedHandler) GetPostsByUser(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	userId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrUserIdInvalid
+	}
+
+	var opts domain.GetPostsOpts
+	if err := ctx.QueryParser(&opts); err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+
+	opts.RequestingUserID = session.UserID
+
+	posts, err := h.feed.GetPostsByUser(userId, opts)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(posts)
+}
+
 func (h *FeedHandler) Subscribe(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {

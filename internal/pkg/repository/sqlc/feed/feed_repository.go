@@ -35,6 +35,20 @@ func (f FeedRepository) GetPosts(opts domain.GetPostsOpts) ([]domain.Post, error
 	return utils.Map(posts, postsFromSqlc), nil
 }
 
+func (f FeedRepository) GetPostsByUser(userId utils.UUID, opts domain.GetPostsOpts) ([]domain.Post, error) {
+	posts, err := f.queries.GetPostsByUser(context.Background(), sqlc.GetPostsByUserParams{
+		Since:    pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
+		AuthorID: userId,
+		UserID:   opts.RequestingUserID,
+		Limit:    opts.Limit,
+	})
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	return utils.Map(posts, userPostsFromSqlc), nil
+}
+
 func (f FeedRepository) GetLikedPosts(opts domain.GetPostsOpts) ([]domain.Post, error) {
 	posts, err := f.queries.GetLikedPosts(context.Background(), sqlc.GetLikedPostsParams{
 		UserID: opts.RequestingUserID,
@@ -162,6 +176,11 @@ func (f FeedRepository) UpdateComment(commentId utils.UUID, data domain.CommentM
 }
 
 func likedPostsFromSqlc(model *sqlc.GetLikedPostsRow) *domain.Post {
+	tmp := sqlc.GetPostsRow(*model)
+	return postsFromSqlc(&tmp)
+}
+
+func userPostsFromSqlc(model *sqlc.GetPostsByUserRow) *domain.Post {
 	tmp := sqlc.GetPostsRow(*model)
 	return postsFromSqlc(&tmp)
 }
