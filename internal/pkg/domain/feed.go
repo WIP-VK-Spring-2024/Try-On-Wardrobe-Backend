@@ -17,6 +17,7 @@ type Post struct {
 	UserID    utils.UUID
 	UserName  string
 	UserImage string
+	IsSubbed  bool `json:"is_subbed,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 
 	Rating     int `json:"rating,!omitempty"`      //lint:ignore SA5008 easyjson custom tags
 	UserRating int `json:"user_rating,!omitempty"` //lint:ignore SA5008 easyjson custom tags

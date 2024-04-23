@@ -199,6 +199,7 @@ func postsFromSqlc(model *sqlc.GetPostsRow) *domain.Post {
 				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
+		IsSubbed:    model.IsSubbed,
 		OutfitID:    model.OutfitID,
 		OutfitImage: model.OutfitImage.String,
 		UserName:    model.UserName,

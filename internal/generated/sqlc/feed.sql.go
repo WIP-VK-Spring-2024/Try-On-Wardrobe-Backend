@@ -23,6 +23,8 @@ select
     users.avatar as user_image,
     users.name as user_name,
     posts.rating,
+    case when subs.created_at is not null then true
+         else false end is_subbed,
     post_ratings.value as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id
@@ -31,6 +33,7 @@ join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
 join post_ratings on post_ratings.user_id = $1
         and post_ratings.post_id = posts.id
+left join subs on subs.subscriber_id = $1 and subs.user_id = outfits.user_id
 left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < $3::timestamp
     and post_ratings.value = 1
@@ -54,6 +57,7 @@ type GetLikedPostsRow struct {
 	UserImage   string
 	UserName    string
 	Rating      int32
+	IsSubbed    bool
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
@@ -78,6 +82,7 @@ func (q *Queries) GetLikedPosts(ctx context.Context, arg GetLikedPostsParams) ([
 			&i.UserImage,
 			&i.UserName,
 			&i.Rating,
+			&i.IsSubbed,
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
@@ -103,6 +108,8 @@ select
     users.avatar as user_image,
     users.name as user_name,
     posts.rating,
+    case when subs.created_at is not null then true
+         else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id
@@ -111,6 +118,7 @@ join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
 left join post_ratings on post_ratings.user_id = $1
         and post_ratings.post_id = posts.id
+left join subs on subs.subscriber_id = $1 and subs.user_id = outfits.user_id
 left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < $3::timestamp
 order by posts.created_at desc
@@ -133,6 +141,7 @@ type GetPostsRow struct {
 	UserImage   string
 	UserName    string
 	Rating      int32
+	IsSubbed    bool
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
@@ -157,6 +166,7 @@ func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsR
 			&i.UserImage,
 			&i.UserName,
 			&i.Rating,
+			&i.IsSubbed,
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
@@ -182,6 +192,8 @@ select
     users.avatar as user_image,
     users.name as user_name,
     posts.rating,
+    case when subs.created_at is not null then true
+         else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id
@@ -190,6 +202,7 @@ join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
 left join post_ratings on post_ratings.user_id = $1
         and post_ratings.post_id = posts.id
+left join subs on subs.subscriber_id = $1 and subs.user_id = outfits.user_id
 left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < $3::timestamp
       and outfits.user_id = $4
@@ -214,6 +227,7 @@ type GetPostsByUserRow struct {
 	UserImage   string
 	UserName    string
 	Rating      int32
+	IsSubbed    bool
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
@@ -243,6 +257,7 @@ func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) 
 			&i.UserImage,
 			&i.UserName,
 			&i.Rating,
+			&i.IsSubbed,
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
@@ -268,6 +283,7 @@ select
     users.avatar as user_image,
     users.name as user_name,
     posts.rating,
+    true as is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id
@@ -299,6 +315,7 @@ type GetSubscriptionPostsRow struct {
 	UserImage   string
 	UserName    string
 	Rating      int32
+	IsSubbed    bool
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
@@ -323,6 +340,7 @@ func (q *Queries) GetSubscriptionPosts(ctx context.Context, arg GetSubscriptionP
 			&i.UserImage,
 			&i.UserName,
 			&i.Rating,
+			&i.IsSubbed,
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,

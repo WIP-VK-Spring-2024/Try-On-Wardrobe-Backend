@@ -1890,6 +1890,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain15(in *jlexer.Lexer, out *Post)
 			out.UserName = string(in.String())
 		case "user_image":
 			out.UserImage = string(in.String())
+		case "is_subbed":
+			out.IsSubbed = bool(in.Bool())
 		case "rating":
 			out.Rating = int(in.Int())
 		case "user_rating":
@@ -1987,13 +1989,18 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain15(out *jwriter.Writer, in Post
 		out.String(string(in.UserImage))
 	}
 	{
-		const prefix string = ",\"rating\":"
+		const prefix string = ",\"is_subbed\":"
 		if first {
 			first = false
 			out.RawString(prefix[1:])
 		} else {
 			out.RawString(prefix)
 		}
+		out.Bool(bool(in.IsSubbed))
+	}
+	{
+		const prefix string = ",\"rating\":"
+		out.RawString(prefix)
 		out.Int(int(in.Rating))
 	}
 	{
