@@ -182,6 +182,11 @@ func (h *FeedHandler) GetComments(ctx *fiber.Ctx) error {
 	return ctx.JSON(comments)
 }
 
+//easyjson:json
+type createCommentResponse struct {
+	Uuid utils.UUID
+}
+
 func (h *FeedHandler) CreateComment(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
@@ -201,12 +206,14 @@ func (h *FeedHandler) CreateComment(ctx *fiber.Ctx) error {
 
 	comment.UserID = session.UserID
 
-	err = h.feed.Comment(postId, comment)
+	id, err := h.feed.Comment(postId, comment)
 	if err != nil {
 		return app_errors.New(err)
 	}
 
-	return ctx.SendString(common.EmptyJson)
+	return ctx.JSON(&createCommentResponse{
+		Uuid: id,
+	})
 }
 
 func (h *FeedHandler) DeleteComment(ctx *fiber.Ctx) error {

@@ -135,14 +135,14 @@ func (f FeedRepository) RateComment(userId, commentId utils.UUID, rating int) er
 	return utils.PgxError(err)
 }
 
-func (f FeedRepository) Comment(postId utils.UUID, comment domain.CommentModel) error {
-	_, err := f.queries.CreateComment(context.Background(), sqlc.CreateCommentParams{
+func (f FeedRepository) Comment(postId utils.UUID, comment domain.CommentModel) (utils.UUID, error) {
+	id, err := f.queries.CreateComment(context.Background(), sqlc.CreateCommentParams{
 		PostID:   postId,
 		UserID:   comment.UserID,
 		Body:     comment.Body,
 		ParentID: comment.ParentID,
 	})
-	return utils.PgxError(err)
+	return id, utils.PgxError(err)
 }
 
 func (f FeedRepository) DeleteComment(userId, commentId utils.UUID) error {
