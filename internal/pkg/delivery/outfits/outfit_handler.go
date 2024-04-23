@@ -65,13 +65,32 @@ func (h *OutfitHandler) GetById(ctx *fiber.Ctx) error {
 	return ctx.JSON(outfit)
 }
 
+func (h *OutfitHandler) GetOwn(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	outfits, err := h.outfits.GetByUser(session.UserID, false)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(outfits)
+}
+
 func (h *OutfitHandler) GetByUser(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
 		return app_errors.ErrUnauthorized
 	}
 
-	outfits, err := h.outfits.GetByUser(session.UserID)
+	userId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrUserIdInvalid
+	}
+
+	outfits, err := h.outfits.GetByUser(userId, true)
 	if err != nil {
 		return app_errors.New(err)
 	}

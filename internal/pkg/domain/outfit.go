@@ -121,11 +121,11 @@ type OutfitGenerator interface {
 type OutfitUsecase interface {
 	Create(*Outfit) error
 	Update(*Outfit) error
-	Delete(userId, outfitID utils.UUID) error
+	Delete(userId, outfitId utils.UUID) error
 	GetById(utils.UUID) (*Outfit, error)
 	Get(since time.Time, limit int) ([]Outfit, error)
 	GetClothesInfo(utils.UUID) ([]TryOnClothesInfo, error)
-	GetByUser(utils.UUID) ([]Outfit, error)
+	GetByUser(userId utils.UUID, publicOnly bool) ([]Outfit, error)
 	GetOutfitPurposes() ([]OutfitPurpose, error)
 }
 
@@ -136,7 +136,7 @@ type OutfitRepository interface {
 	GetById(utils.UUID) (*Outfit, error)
 	Get(since time.Time, limit int) ([]Outfit, error)
 	GetClothesInfo(utils.UUID) ([]TryOnClothesInfo, error)
-	GetByUser(utils.UUID) ([]Outfit, error)
+	GetByUser(userId utils.UUID, publicOnly bool) ([]Outfit, error)
 	GetOutfitPurposesByEngName(engNames []string) ([]OutfitPurpose, error)
 	GetOutfitPurposes() ([]OutfitPurpose, error)
 	GetPurposeEngNames(names []string) ([]string, error)

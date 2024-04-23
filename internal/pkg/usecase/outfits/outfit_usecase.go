@@ -77,6 +77,6 @@ func (u OutfitUsecase) GetClothesInfo(outfitId utils.UUID) ([]domain.TryOnClothe
 	return clothesInfo, nil
 }
 
-func (u OutfitUsecase) GetByUser(id utils.UUID) ([]domain.Outfit, error) {
-	return u.repo.GetByUser(id)
+func (u OutfitUsecase) GetByUser(userId utils.UUID, publicOnly bool) ([]domain.Outfit, error) {
+	return u.repo.GetByUser(userId, publicOnly)
 }

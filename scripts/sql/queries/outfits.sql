@@ -55,6 +55,8 @@ from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
 left join tags on tags.id = ot.tag_id 
 where outfits.user_id = $1
+    and (sqlc.arg(public_only)::boolean = false
+        or outfits.privacy = 'public')
 group by
     outfits.id,
     outfits.user_id,

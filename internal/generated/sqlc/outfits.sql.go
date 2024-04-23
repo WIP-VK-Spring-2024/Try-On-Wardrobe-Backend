@@ -275,6 +275,8 @@ from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
 left join tags on tags.id = ot.tag_id 
 where outfits.user_id = $1
+    and ($2::boolean = false
+        or outfits.privacy = 'public')
 group by
     outfits.id,
     outfits.user_id,
@@ -308,8 +310,8 @@ type GetOutfitsByUserRow struct {
 	Tags          []string
 }
 
-func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID) ([]GetOutfitsByUserRow, error) {
-	rows, err := q.db.Query(ctx, getOutfitsByUser, userID)
+func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID, publicOnly bool) ([]GetOutfitsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getOutfitsByUser, userID, publicOnly)
 	if err != nil {
 		return nil, err
 	}

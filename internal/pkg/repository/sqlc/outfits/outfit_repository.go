@@ -178,8 +178,8 @@ func (repo OutfitRepository) GetById(id utils.UUID) (*domain.Outfit, error) {
 	return fromSqlc(&outfit), nil
 }
 
-func (repo OutfitRepository) GetByUser(userId utils.UUID) ([]domain.Outfit, error) {
-	outfits, err := repo.queries.GetOutfitsByUser(context.Background(), userId)
+func (repo OutfitRepository) GetByUser(userId utils.UUID, publicOnly bool) ([]domain.Outfit, error) {
+	outfits, err := repo.queries.GetOutfitsByUser(context.Background(), userId, publicOnly)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
