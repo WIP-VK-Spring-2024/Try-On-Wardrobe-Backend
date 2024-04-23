@@ -25,6 +25,7 @@ func (repo UserRepository) Create(user *domain.User) error {
 		Name:     user.Name,
 		Email:    user.Email,
 		Password: string(user.Password),
+		Gender:   user.Gender,
 	})
 	if err != nil {
 		return utils.PgxError(err)
