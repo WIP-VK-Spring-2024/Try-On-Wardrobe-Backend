@@ -23,7 +23,7 @@ func New(db *pgxpool.Pool) domain.UserImageRepository {
 }
 
 func (repo UserImageRepository) Create(userImage *domain.UserImage) error {
-	id, err := repo.queries.CreateUserImage(context.Background(), userImage.UserID)
+	id, err := repo.queries.CreateUserImage(context.Background(), userImage.UserID, userImage.Image)
 	if err != nil {
 		return utils.PgxError(err)
 	}
