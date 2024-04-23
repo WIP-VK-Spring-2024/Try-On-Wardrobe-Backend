@@ -9,7 +9,7 @@ import (
 var validate *validator.Validate
 
 func init() {
-	usernameRegexp := regexp.MustCompile(`^[a-zA-Zа-яА-Я0-9-_()+=~@^:?;$#№%*@|{}[\]!<>]+$`)
+	usernameRegexp := regexp.MustCompile(`^[a-zA-Zа-яА-ЯёЁ0-9-_()+=~@^:?;$#№%*@|{}[\]!<>]+$`)
 
 	validate = validator.New(validator.WithRequiredStructEnabled())
 	validate.RegisterValidation("username", func(fl validator.FieldLevel) bool {
