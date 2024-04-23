@@ -168,8 +168,6 @@ func (h *FeedHandler) GetComments(ctx *fiber.Ctx) error {
 	opts.RequestingUserID = session.UserID
 	opts.PostID = postId
 
-	fmt.Printf("get comments: %+v\n", opts)
-
 	var comments []domain.Comment
 
 	if opts.Tree {

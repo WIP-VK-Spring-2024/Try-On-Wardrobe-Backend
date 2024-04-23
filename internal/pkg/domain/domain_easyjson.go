@@ -3469,7 +3469,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain27(out *jwriter.Writer, in Comm
 		}
 		out.String(string(in.UserImage))
 	}
-	if in.Rating != 0 {
+	{
 		const prefix string = ",\"rating\":"
 		if first {
 			first = false
@@ -3479,24 +3479,14 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain27(out *jwriter.Writer, in Comm
 		}
 		out.Int(int(in.Rating))
 	}
-	if in.UserRating != 0 {
+	{
 		const prefix string = ",\"user_rating\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.UserRating))
 	}
 	{
 		const prefix string = ",\"level\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
-		} else {
-			out.RawString(prefix)
-		}
+		out.RawString(prefix)
 		out.Int(int(in.Level))
 	}
 	if len(in.Replies) != 0 {

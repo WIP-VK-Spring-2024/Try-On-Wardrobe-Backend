@@ -30,8 +30,8 @@ type Comment struct {
 	UserName  string
 	UserImage string
 
-	Rating     int
-	UserRating int
+	Rating     int `json:"rating,!omitempty"`      //lint:ignore SA5008 easyjson custom tags
+	UserRating int `json:"user_rating,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 
 	Level int `json:"level,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 
