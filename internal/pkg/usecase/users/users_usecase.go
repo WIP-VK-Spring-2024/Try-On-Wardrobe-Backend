@@ -35,8 +35,8 @@ func (u UserUsecase) Create(user *domain.User) error {
 		return err
 	}
 
-	if user.Gender != "male" && user.Gender != "female" {
-		user.Gender = "male"
+	if user.Gender != domain.Male && user.Gender != domain.Female {
+		user.Gender = domain.Female
 	}
 
 	err = u.images.Create(&domain.UserImage{

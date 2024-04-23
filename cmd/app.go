@@ -52,7 +52,7 @@ type App struct {
 }
 
 func (app *App) Run() error {
-	fmt.Println("Weather api key is ", app.cfg.WeatherApiKey)
+	fmt.Println(app.cfg.Static.DefaultImgPaths)
 
 	err := applyMigrations(app.cfg.Sql, &app.cfg.Postgres)
 	if err != nil {
