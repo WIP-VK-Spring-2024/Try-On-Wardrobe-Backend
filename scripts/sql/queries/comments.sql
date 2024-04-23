@@ -41,6 +41,7 @@ select
 from post_comments
 join users on users.id = post_comments.user_id
 left join post_comment_ratings on post_comment_ratings.user_id = $1
+            and post_comment_ratings.comment_id = post_comments.id
 where post_comments.post_id = $2
   and post_comments.created_at < sqlc.arg(since)::timestamp
 order by post_comments.created_at desc
@@ -64,6 +65,7 @@ with parents as (
     from post_comments p
     join users u on u.id = p.user_id
     left join post_comment_ratings r on r.user_id = $1
+        and post_comment_ratings.comment_id = post_comments.id
     where p.post_id = $2
       and p.id = p.path[1]
       and p.created_at < sqlc.arg(since)::timestamp
@@ -86,6 +88,7 @@ with parents as (
     from post_comments p
     join users u on u.id = p.user_id
     left join post_comment_ratings r on r.user_id = $1
+        and post_comment_ratings.comment_id = post_comments.id
     join parents on parents.id = p.path[1]
     where p.id != p.path[1]
     union all
