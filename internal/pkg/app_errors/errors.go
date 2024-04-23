@@ -107,10 +107,10 @@ func New(err error) error {
 	case errors.Is(err, ErrAlreadyExists):
 		code = http.StatusConflict
 
-	case errors.Is(err, ErrNotOwner) || errors.Is(err, ErrInvalidCredentials):
+	case Any(err, ErrNotOwner, ErrInvalidCredentials, ErrTokenExpired):
 		code = http.StatusForbidden
 
-	case errors.Is(err, ErrNotFound) || errors.Is(err, ErrNoRelatedEntity):
+	case Any(err, ErrNotFound, ErrNoRelatedEntity):
 		code = http.StatusNotFound
 
 	case Any(err, ErrConstraintViolation, ErrTryOnInvalidClothesNum,

@@ -1,6 +1,8 @@
 package users
 
 import (
+	"fmt"
+
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -55,6 +57,8 @@ func (h *UserHandler) Create(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
+
+	fmt.Printf("Got user^ %+v\n", user)
 
 	err := validate.Struct(&user)
 	if err != nil {
