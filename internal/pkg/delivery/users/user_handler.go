@@ -11,8 +11,8 @@ import (
 	"try-on/internal/pkg/usecase/session"
 	"try-on/internal/pkg/usecase/users"
 	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/validate"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	easyjson "github.com/mailru/easyjson"
@@ -42,8 +42,6 @@ func New(
 		cfg:      cfg,
 	}
 }
-
-var validate = validator.New(validator.WithRequiredStructEnabled())
 
 //easyjson:json
 type tokenResponse struct {

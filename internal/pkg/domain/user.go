@@ -8,7 +8,7 @@ import (
 type User struct {
 	Model
 
-	Name     string `validate:"required,alphanum"`
+	Name     string `validate:"required,username"`
 	Email    string `validate:"required,email"`
 	Password string
 
