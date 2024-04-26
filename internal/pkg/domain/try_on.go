@@ -50,6 +50,8 @@ type TryOnClothesInfo struct {
 
 //easyjson:json
 type TryOnResponse struct {
+	QueueResponse
+
 	UserID      utils.UUID
 	OutfitID    utils.UUID
 	Clothes     []TryOnClothesInfo

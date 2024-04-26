@@ -58,8 +58,40 @@ func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 	}()
 }
 
+func (h *TryOnHandler) centrifugoPublish(message easyjson.Marshaler, channel string) domain.Result {
+	payload, _ := easyjson.Marshal(message)
+
+	h.logger.Infow("centrifugo", "channel", channel, "payload", string(payload))
+
+	centrifugoResp, err := h.centrifugo.Publish(
+		context.Background(),
+		&centrifugo.PublishRequest{
+			Channel: channel,
+			Data:    payload,
+		},
+	)
+
+	switch {
+	case err != nil:
+		h.logger.Errorw(err.Error())
+	case centrifugoResp.Error != nil:
+		h.logger.Errorw(centrifugoResp.Error.Message)
+	}
+
+	return domain.ResultOk
+}
+
 func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.TryOnResponse) domain.Result {
 	return func(resp *domain.TryOnResponse) domain.Result {
+		userChannel := cfg.TryOnChannel + resp.UserID.String()
+
+		if resp.StatusCode != http.StatusOK {
+			return h.centrifugoPublish(app_errors.ResponseError{
+				Code: http.StatusInternalServerError,
+				Msg:  resp.Message,
+			}, userChannel)
+		}
+
 		fmt.Println("Got clothes from rabbit try on", resp.Clothes)
 
 		clothesIds := make([]utils.UUID, 0, len(resp.Clothes))
@@ -83,35 +115,17 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 			handleResult = domain.ResultDiscard
 		}
 
-		var payload []byte
+		var payload easyjson.Marshaler
 		if handleResult == domain.ResultDiscard {
-			payload, _ = easyjson.Marshal(app_errors.ResponseError{
+			payload = app_errors.ResponseError{
 				Code: http.StatusInternalServerError,
 				Msg:  err.Error(),
-			})
+			}
 		} else {
-			payload, _ = easyjson.Marshal(tryOnRes)
+			payload = tryOnRes
 		}
 
-		userChannel := cfg.TryOnChannel + resp.UserID.String()
-		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(payload))
-
-		centrifugoResp, err := h.centrifugo.Publish(
-			context.Background(),
-			&centrifugo.PublishRequest{
-				Channel: userChannel,
-				Data:    payload,
-			},
-		)
-
-		switch {
-		case err != nil:
-			h.logger.Errorw(err.Error())
-		case centrifugoResp.Error != nil:
-			h.logger.Errorw(centrifugoResp.Error.Message)
-		}
-
-		return domain.ResultOk
+		return h.centrifugoPublish(payload, userChannel)
 	}
 }
 
@@ -143,6 +157,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		ClothesDir:   cfg.Static.Cut,
 	})
 	if err != nil {
+		middleware.LogWarning(ctx, err)
 		return app_errors.New(err)
 	}
 

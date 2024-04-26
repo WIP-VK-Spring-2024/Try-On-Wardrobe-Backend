@@ -18,3 +18,9 @@ type Publisher[T any] interface {
 type Subscriber[T any] interface {
 	Listen(logger *zap.SugaredLogger, handler func(*T) Result) error
 }
+
+//easyjson:json
+type QueueResponse struct {
+	StatusCode int
+	Message    string
+}
