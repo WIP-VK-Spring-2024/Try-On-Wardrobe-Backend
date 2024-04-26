@@ -86,7 +86,7 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 	return func(resp *domain.TryOnResponse) domain.Result {
 		userChannel := cfg.TryOnChannel + resp.UserID.String()
 
-		if utils.HttpOk(resp.StatusCode) {
+		if !utils.HttpOk(resp.StatusCode) {
 			return h.centrifugoPublish(app_errors.ResponseError{
 				Code: http.StatusInternalServerError,
 				Msg:  resp.Message,
