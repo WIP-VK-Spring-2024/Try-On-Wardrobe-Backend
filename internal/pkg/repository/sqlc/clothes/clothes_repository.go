@@ -65,6 +65,7 @@ func (c ClothesRepository) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothes
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
+
 	return utils.Map(clothesInfo, func(t *sqlc.GetClothesTryOnInfoRow) *domain.TryOnClothesInfo {
 		return &domain.TryOnClothesInfo{
 			ClothesID: t.ID,

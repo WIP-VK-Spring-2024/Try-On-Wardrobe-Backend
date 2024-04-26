@@ -108,6 +108,8 @@ type OutfitGenOutfit struct {
 
 //easyjson:json
 type OutfitGenerationResponse struct {
+	QueueResponse
+
 	UserID  utils.UUID
 	Outfits []OutfitGenOutfit
 }

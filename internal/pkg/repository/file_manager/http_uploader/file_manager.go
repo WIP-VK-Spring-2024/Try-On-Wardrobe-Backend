@@ -11,6 +11,7 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/utils"
 )
 
 type FileManager struct {
@@ -21,10 +22,6 @@ func New(cfg *config.HttpApi) domain.FileManager {
 	return &FileManager{
 		cfg: cfg,
 	}
-}
-
-func httpOk(code int) bool {
-	return code >= 200 && code < 300
 }
 
 func (fm *FileManager) Save(ctx context.Context, dir, name string, input io.Reader) error {
@@ -57,7 +54,7 @@ func (fm *FileManager) Save(ctx context.Context, dir, name string, input io.Read
 	}
 	defer resp.Body.Close()
 
-	if !httpOk(resp.StatusCode) {
+	if !utils.HttpOk(resp.StatusCode) {
 		return errors.New(resp.Status)
 	}
 	return err
@@ -80,7 +77,7 @@ func (fm *FileManager) Delete(ctx context.Context, dir, name string) error {
 	}
 	defer resp.Body.Close()
 
-	if !httpOk(resp.StatusCode) {
+	if !utils.HttpOk(resp.StatusCode) {
 		return errors.New(resp.Status)
 	}
 	return err

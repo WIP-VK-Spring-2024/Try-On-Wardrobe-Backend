@@ -45,17 +45,17 @@ func (u *TryOnUsecase) Close() {
 }
 
 func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts domain.TryOnOpts) error {
-	_, err := u.userImages.Get(opts.UserImageID)
-	if err != nil {
-		return err
-	}
+	// _, err := u.userImages.Get(opts.UserImageID)
+	// if err != nil {
+	// 	return err
+	// }
 
 	clothes, err := u.clothes.GetTryOnInfo(clothesIds)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Trying out clothes: %+v\n", clothes)
+	fmt.Printf("Trying out clothes : %+v\n", clothes)
 	if err := validateTryOnCategories(clothes); err != nil {
 		return err
 	}

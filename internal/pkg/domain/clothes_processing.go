@@ -48,6 +48,8 @@ type ClothesProcessingResponse struct {
 
 //easyjson:json
 type ClothesProcessingModelResponse struct {
+	QueueResponse
+
 	UserID         utils.UUID
 	ClothesID      utils.UUID
 	ClothesDir     string

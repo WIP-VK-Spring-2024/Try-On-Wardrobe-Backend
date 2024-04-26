@@ -3,6 +3,7 @@ package try_on
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"try-on/internal/generated/proto/centrifugo"
@@ -85,7 +86,7 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 	return func(resp *domain.TryOnResponse) domain.Result {
 		userChannel := cfg.TryOnChannel + resp.UserID.String()
 
-		if resp.StatusCode != http.StatusOK {
+		if utils.HttpOk(resp.StatusCode) {
 			return h.centrifugoPublish(app_errors.ResponseError{
 				Code: http.StatusInternalServerError,
 				Msg:  resp.Message,
@@ -147,6 +148,8 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
+
+	log.Printf("%+v\n", req)
 
 	cfg := middleware.Config(ctx)
 
