@@ -24,6 +24,23 @@ func New(cfg *config.HttpApi) domain.FileManager {
 	}
 }
 
+func (fm *FileManager) Get(ctx context.Context, dir, name string) (io.ReadCloser, error) {
+	url := fm.cfg.Endpoint + fm.cfg.GetUrl + "/" + name + "?folder=" + dir
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set(fm.cfg.TokenHeader, fm.cfg.Token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.Body, nil
+}
+
 func (fm *FileManager) Save(ctx context.Context, dir, name string, input io.Reader) error {
 	payload := &bytes.Buffer{}
 	form := multipart.NewWriter(payload)

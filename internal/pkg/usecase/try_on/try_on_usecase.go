@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"strings"
 
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
@@ -46,7 +45,7 @@ func (u *TryOnUsecase) Close() {
 }
 
 func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts domain.TryOnOpts) error {
-	img, err := u.userImages.Get(opts.UserImageID)
+	_, err := u.userImages.Get(opts.UserImageID)
 	if err != nil {
 		return err
 	}
@@ -58,13 +57,6 @@ func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts 
 
 	fmt.Printf("Trying out clothes : %+v\n", clothes)
 	if err := validateTryOnCategories(clothes); err != nil {
-		return err
-	}
-
-	uuid, _ := strings.CutPrefix(img.Image, "photos/")
-
-	opts.UserImageID, err = utils.ParseUUID(uuid)
-	if err != nil {
 		return err
 	}
 

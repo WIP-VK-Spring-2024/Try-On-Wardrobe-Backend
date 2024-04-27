@@ -3,7 +3,6 @@ package try_on
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"try-on/internal/generated/proto/centrifugo"
@@ -28,6 +27,7 @@ type TryOnHandler struct {
 
 	centrifugo centrifugo.CentrifugoApiClient
 	logger     *zap.SugaredLogger
+	cfg        config.DefaultImgPaths
 }
 
 func New(
@@ -35,12 +35,14 @@ func New(
 	tryOnModel domain.TryOnUsecase,
 	logger *zap.SugaredLogger,
 	centrifugoConn grpc.ClientConnInterface,
+	cfg config.DefaultImgPaths,
 ) *TryOnHandler {
 	return &TryOnHandler{
 		tryOnModel: tryOnModel,
 		results:    try_on.New(db),
 		logger:     logger,
 		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
+		cfg:        cfg,
 	}
 }
 
@@ -149,8 +151,6 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
-
-	log.Printf("%+v\n", req)
 
 	cfg := middleware.Config(ctx)
 

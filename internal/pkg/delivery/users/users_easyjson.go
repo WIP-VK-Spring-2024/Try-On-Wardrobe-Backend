@@ -7,6 +7,7 @@ import (
 	easyjson "github.com/mailru/easyjson"
 	jlexer "github.com/mailru/easyjson/jlexer"
 	jwriter "github.com/mailru/easyjson/jwriter"
+	domain "try-on/internal/pkg/domain"
 )
 
 // suppress unused package warning
@@ -17,7 +18,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(in *jlexer.Lexer, out *tokenResponse) {
+func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(in *jlexer.Lexer, out *registerResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -38,10 +39,18 @@ func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(in *jlexer.Lexer, out *
 		switch key {
 		case "token":
 			out.Token = string(in.String())
+		case "user_name":
+			out.UserName = string(in.String())
 		case "user_id":
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.UserID).UnmarshalText(data))
 			}
+		case "email":
+			out.Email = string(in.String())
+		case "gender":
+			out.Gender = domain.Gender(in.String())
+		case "privacy":
+			out.Privacy = domain.Privacy(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -52,7 +61,7 @@ func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(out *jwriter.Writer, in tokenResponse) {
+func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(out *jwriter.Writer, in registerResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -61,6 +70,16 @@ func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(out *jwriter.Writer, in
 		first = false
 		out.RawString(prefix[1:])
 		out.String(string(in.Token))
+	}
+	if in.UserName != "" {
+		const prefix string = ",\"user_name\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.UserName))
 	}
 	if (in.UserID).IsDefined() {
 		const prefix string = ",\"user_id\":"
@@ -72,29 +91,59 @@ func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(out *jwriter.Writer, in
 		}
 		out.RawText((in.UserID).MarshalText())
 	}
+	if in.Email != "" {
+		const prefix string = ",\"email\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Email))
+	}
+	if in.Gender != "" {
+		const prefix string = ",\"gender\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Gender))
+	}
+	if in.Privacy != "" {
+		const prefix string = ",\"privacy\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Privacy))
+	}
 	out.RawByte('}')
 }
 
 // MarshalJSON supports json.Marshaler interface
-func (v tokenResponse) MarshalJSON() ([]byte, error) {
+func (v registerResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
 	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
-func (v tokenResponse) MarshalEasyJSON(w *jwriter.Writer) {
+func (v registerResponse) MarshalEasyJSON(w *jwriter.Writer) {
 	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
-func (v *tokenResponse) UnmarshalJSON(data []byte) error {
+func (v *registerResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
 	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
-func (v *tokenResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+func (v *registerResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
 	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(l, v)
 }

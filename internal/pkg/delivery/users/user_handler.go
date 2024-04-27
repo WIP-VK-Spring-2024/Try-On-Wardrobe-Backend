@@ -1,16 +1,16 @@
 package users
 
 import (
-	"fmt"
+	"context"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/repository/sqlc/user_images"
 	userRepo "try-on/internal/pkg/repository/sqlc/users"
 	"try-on/internal/pkg/usecase/session"
+	userImagesUsecase "try-on/internal/pkg/usecase/user_images"
 	"try-on/internal/pkg/usecase/users"
 	"try-on/internal/pkg/utils"
 	"try-on/internal/pkg/utils/validate"
@@ -22,10 +22,11 @@ import (
 )
 
 type UserHandler struct {
-	users    domain.UserUsecase
-	sessions domain.SessionUsecase
-	file     domain.FileManager
-	cfg      *config.Static
+	users      domain.UserUsecase
+	userImages domain.UserImageUsecase
+	sessions   domain.SessionUsecase
+	file       domain.FileManager
+	cfg        *config.Static
 }
 
 func New(
@@ -35,20 +36,24 @@ func New(
 	cfg *config.Static,
 ) *UserHandler {
 	userRepo := userRepo.New(db)
-	images := user_images.New(db)
 
 	return &UserHandler{
-		users:    users.New(userRepo, images, cfg.DefaultImgPaths),
-		sessions: session.New(userRepo, sessionCfg),
-		file:     fileManager,
-		cfg:      cfg,
+		users:      users.New(userRepo),
+		userImages: userImagesUsecase.New(db),
+		sessions:   session.New(userRepo, sessionCfg),
+		file:       fileManager,
+		cfg:        cfg,
 	}
 }
 
 //easyjson:json
-type tokenResponse struct {
-	Token  string
-	UserID utils.UUID
+type registerResponse struct {
+	Token    string
+	UserName string
+	UserID   utils.UUID
+	Email    string
+	Gender   domain.Gender
+	Privacy  domain.Privacy
 }
 
 func (h *UserHandler) Create(ctx *fiber.Ctx) error {
@@ -57,8 +62,6 @@ func (h *UserHandler) Create(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
-
-	fmt.Printf("Got user^ %+v\n", user)
 
 	err := validate.Struct(&user)
 	if err != nil {
@@ -75,10 +78,43 @@ func (h *UserHandler) Create(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	return ctx.JSON(tokenResponse{
-		Token:  token,
-		UserID: user.ID,
+	err = h.createDefaultPhoto(&user, ctx.UserContext())
+	if err != nil {
+		middleware.LogWarning(ctx, err)
+	}
+	return ctx.JSON(registerResponse{
+		Token:    token,
+		UserID:   user.ID,
+		UserName: user.Name,
+		Gender:   user.Gender,
+		Privacy:  user.Privacy,
+		Email:    user.Email,
 	})
+}
+
+func (h *UserHandler) createDefaultPhoto(user *domain.User, ctx context.Context) error {
+	defaultImg, err := h.file.Get(ctx, h.cfg.FullBody, h.cfg.DefaultImgPaths[user.Gender])
+	if err != nil {
+		return err
+	}
+	defer defaultImg.Close()
+
+	img := &domain.UserImage{
+		UserID: user.ID,
+		Image:  h.cfg.FullBody,
+	}
+
+	err = h.userImages.Create(img)
+	if err != nil {
+		return err
+	}
+
+	err = h.file.Save(ctx, h.cfg.FullBody, img.ID.String(), defaultImg)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (h *UserHandler) Update(ctx *fiber.Ctx) error {

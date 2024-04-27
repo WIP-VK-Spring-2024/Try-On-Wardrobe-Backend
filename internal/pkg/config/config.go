@@ -51,6 +51,7 @@ type HttpApi struct {
 	TokenHeader string
 	UploadUrl   string
 	DeleteUrl   string
+	GetUrl      string
 }
 
 type Centrifugo struct {

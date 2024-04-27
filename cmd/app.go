@@ -141,6 +141,7 @@ func (app *App) Run() error {
 		pg, tryOnUsecase,
 		app.logger,
 		centrifugoConn,
+		app.cfg.Static.DefaultImgPaths,
 	)
 
 	outfitGenerator := outfitgen.New(
