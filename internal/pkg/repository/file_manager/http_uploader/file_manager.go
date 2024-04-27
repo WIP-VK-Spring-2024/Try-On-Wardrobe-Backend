@@ -38,6 +38,10 @@ func (fm *FileManager) Get(ctx context.Context, dir, name string) (io.ReadCloser
 		return nil, err
 	}
 
+	if !utils.HttpOk(resp.StatusCode) {
+		return nil, errors.New(resp.Status)
+	}
+
 	return resp.Body, nil
 }
 

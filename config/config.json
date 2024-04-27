@@ -31,8 +31,8 @@
       "tokenHeader": "X-ACCESS-TOKEN"
     },
     "defaultImgPaths": {
-      "male": "photos/default_male.jpg",
-      "female": "photos/default_female.jpg"
+      "male": "default_male.jpg",
+      "female": "default_female.jpg"
     }
   },
 
