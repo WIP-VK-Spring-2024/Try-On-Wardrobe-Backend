@@ -103,6 +103,7 @@ select try_on_results.id, try_on_results.created_at, try_on_results.updated_at, 
 from try_on_results
 join user_images u on u.id = try_on_results.user_image_id
 where u.user_id = $1
+order by try_on_results.created_at desc
 `
 
 func (q *Queries) GetTryOnResultsByUser(ctx context.Context, userID utils.UUID) ([]TryOnResult, error) {
