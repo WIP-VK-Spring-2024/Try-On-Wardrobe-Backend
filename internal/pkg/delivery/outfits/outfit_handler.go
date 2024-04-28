@@ -3,8 +3,8 @@ package outfits
 import (
 	"context"
 	"fmt"
+	"net/http"
 
-	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -19,7 +19,6 @@ import (
 	easyjson "github.com/mailru/easyjson"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 type OutfitHandler struct {
@@ -29,8 +28,8 @@ type OutfitHandler struct {
 	file domain.FileManager
 	cfg  *config.Static
 
-	logger     *zap.SugaredLogger
-	centrifugo centrifugo.CentrifugoApiClient
+	logger    *zap.SugaredLogger
+	publisher domain.ChannelPublisher[easyjson.Marshaler]
 }
 
 func New(
@@ -39,15 +38,15 @@ func New(
 	file domain.FileManager,
 	cfg *config.Static,
 	logger *zap.SugaredLogger,
-	centrifugoConn grpc.ClientConnInterface,
+	publisher domain.ChannelPublisher[easyjson.Marshaler],
 ) *OutfitHandler {
 	return &OutfitHandler{
-		outfits:    outfitUsecase.New(outfitRepo.New(db)),
-		generator:  generator,
-		file:       file,
-		cfg:        cfg,
-		logger:     logger,
-		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
+		outfits:   outfitUsecase.New(outfitRepo.New(db)),
+		generator: generator,
+		file:      file,
+		cfg:       cfg,
+		logger:    logger,
+		publisher: publisher,
 	}
 }
 
@@ -295,32 +294,28 @@ func (h *OutfitHandler) GetGenerationResults(cfg *config.Centrifugo) {
 }
 
 func (h *OutfitHandler) handleGenResults(cfg *config.Centrifugo) func(resp *domain.OutfitGenerationResponse) domain.Result {
+	ctx := middleware.WithLogger(context.Background(), h.logger)
+
 	return func(resp *domain.OutfitGenerationResponse) domain.Result {
 		userChannel := cfg.OutfitGenChannel + resp.UserID.String()
+		if !utils.HttpOk(resp.StatusCode) {
+			h.publisher.Publish(
+				ctx,
+				userChannel,
+				&app_errors.ResponseError{
+					Code: http.StatusInternalServerError,
+					Msg:  resp.Message,
+				},
+			)
 
-		bytes, err := easyjson.Marshal(resp)
-		if err != nil {
-			h.logger.Errorw(err.Error())
-			return domain.ResultDiscard
+			return domain.ResultOk
 		}
 
-		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(bytes))
-
-		centrifugoResp, err := h.centrifugo.Publish(
-			context.Background(),
-			&centrifugo.PublishRequest{
-				Channel: userChannel,
-				Data:    bytes,
-			},
+		h.publisher.Publish(
+			ctx,
+			userChannel,
+			resp,
 		)
-
-		switch {
-		case err != nil:
-			h.logger.Errorw(err.Error())
-			return domain.ResultRetry
-		case centrifugoResp.Error != nil:
-			h.logger.Errorw(centrifugoResp.Error.Message)
-		}
 
 		return domain.ResultOk
 	}

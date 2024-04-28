@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -18,31 +17,27 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 type TryOnHandler struct {
 	tryOnModel domain.TryOnUsecase
 	results    domain.TryOnResultRepository
 
-	centrifugo centrifugo.CentrifugoApiClient
-	logger     *zap.SugaredLogger
-	cfg        config.DefaultImgPaths
+	publisher domain.ChannelPublisher[easyjson.Marshaler]
+	logger    *zap.SugaredLogger
 }
 
 func New(
 	db *pgxpool.Pool,
 	tryOnModel domain.TryOnUsecase,
 	logger *zap.SugaredLogger,
-	centrifugoConn grpc.ClientConnInterface,
-	cfg config.DefaultImgPaths,
+	publisher domain.ChannelPublisher[easyjson.Marshaler],
 ) *TryOnHandler {
 	return &TryOnHandler{
 		tryOnModel: tryOnModel,
 		results:    try_on.New(db),
 		logger:     logger,
-		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
-		cfg:        cfg,
+		publisher:  publisher,
 	}
 }
 
@@ -61,38 +56,18 @@ func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 	}()
 }
 
-func (h *TryOnHandler) centrifugoPublish(message easyjson.Marshaler, channel string) domain.Result {
-	payload, _ := easyjson.Marshal(message)
-
-	h.logger.Infow("centrifugo", "channel", channel, "payload", string(payload))
-
-	centrifugoResp, err := h.centrifugo.Publish(
-		context.Background(),
-		&centrifugo.PublishRequest{
-			Channel: channel,
-			Data:    payload,
-		},
-	)
-
-	switch {
-	case err != nil:
-		h.logger.Errorw(err.Error())
-	case centrifugoResp.Error != nil:
-		h.logger.Errorw(centrifugoResp.Error.Message)
-	}
-
-	return domain.ResultOk
-}
-
 func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.TryOnResponse) domain.Result {
+	ctx := middleware.WithLogger(context.Background(), h.logger)
+
 	return func(resp *domain.TryOnResponse) domain.Result {
 		userChannel := cfg.TryOnChannel + resp.UserID.String()
 
 		if !utils.HttpOk(resp.StatusCode) {
-			return h.centrifugoPublish(&app_errors.ResponseError{
+			h.publisher.Publish(ctx, userChannel, &app_errors.ResponseError{
 				Code: http.StatusInternalServerError,
 				Msg:  resp.Message,
-			}, userChannel)
+			})
+			return domain.ResultOk
 		}
 
 		fmt.Println("Got clothes from rabbit try on", resp.Clothes)
@@ -129,7 +104,8 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 			fmt.Printf("%+v\n", payload)
 		}
 
-		return h.centrifugoPublish(payload, userChannel)
+		h.publisher.Publish(ctx, userChannel, payload)
+		return domain.ResultOk
 	}
 }
 

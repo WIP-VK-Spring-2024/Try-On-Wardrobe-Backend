@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"try-on/internal/middleware"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/classification"
@@ -62,7 +63,9 @@ func maxKeys(input map[string]float32, threshold float32) []string {
 }
 
 func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handler func(*domain.ClothesProcessingResponse) domain.Result) error {
-	return p.subscriber.Listen(logger, func(result *domain.ClothesProcessingModelResponse) domain.Result {
+	ctx := middleware.WithLogger(context.Background(), logger)
+
+	return p.subscriber.Listen(ctx, func(result *domain.ClothesProcessingModelResponse) domain.Result {
 		maps.DeleteFunc(result.Classification.Tags, notPassesThreshold[string](p.cfg.Threshold))
 
 		log.Println("Filtered tags:", maxKeys(result.Classification.Tags, p.cfg.Threshold))

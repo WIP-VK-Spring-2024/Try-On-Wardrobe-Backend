@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 
+	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/clothes"
@@ -91,7 +92,9 @@ func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts 
 }
 
 func (u *TryOnUsecase) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
-	return u.subscriber.Listen(logger, handler)
+	ctx := middleware.WithLogger(context.Background(), logger)
+
+	return u.subscriber.Listen(ctx, handler)
 }
 
 func filterClothesForTryOn(clothes []domain.TryOnClothesInfo) []domain.TryOnClothesInfo {

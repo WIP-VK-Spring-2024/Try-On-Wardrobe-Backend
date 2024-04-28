@@ -14,15 +14,19 @@ type loggerKeyType struct{}
 
 var loggerKey loggerKeyType
 
+func WithLogger(ctx context.Context, logger *zap.SugaredLogger) context.Context {
+	return context.WithValue(ctx, loggerKey, logger)
+}
+
 func AddLogger(logger *zap.SugaredLogger) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		ctx.SetUserContext(context.WithValue(ctx.UserContext(), loggerKey, logger))
+		ctx.SetUserContext(WithLogger(ctx.UserContext(), logger))
 		return ctx.Next()
 	}
 }
 
-func GetLogger(ctx *fiber.Ctx) *zap.SugaredLogger {
-	logger, ok := ctx.UserContext().Value(loggerKey).(*zap.SugaredLogger)
+func GetLogger(ctx context.Context) *zap.SugaredLogger {
+	logger, ok := ctx.Value(loggerKey).(*zap.SugaredLogger)
 	if !ok {
 		logger = zap.S()
 	}
@@ -46,11 +50,11 @@ func log(ctx *fiber.Ctx, err error, logfunc func(string, ...interface{}), fields
 }
 
 func LogError(ctx *fiber.Ctx, err error, fields ...interface{}) {
-	logger := GetLogger(ctx)
+	logger := GetLogger(ctx.UserContext())
 	log(ctx, err, logger.Errorw, fields...)
 }
 
 func LogWarning(ctx *fiber.Ctx, err error, fields ...interface{}) {
-	logger := GetLogger(ctx)
+	logger := GetLogger(ctx.UserContext())
 	log(ctx, err, logger.Warnw, fields...)
 }

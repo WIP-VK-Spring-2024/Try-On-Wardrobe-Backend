@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -18,6 +17,7 @@ import (
 	"try-on/internal/pkg/delivery/user_images"
 	"try-on/internal/pkg/delivery/users"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/centrifugo"
 	"try-on/internal/pkg/repository/file_manager"
 	"try-on/internal/pkg/repository/weather"
 	"try-on/internal/pkg/usecase/ml"
@@ -52,8 +52,6 @@ type App struct {
 }
 
 func (app *App) Run() error {
-	fmt.Println(app.cfg.Static.DefaultImgPaths)
-
 	err := applyMigrations(app.cfg.Sql, &app.cfg.Postgres)
 	if err != nil {
 		return err
@@ -119,6 +117,7 @@ func (app *App) Run() error {
 	tagUsecase := tagsUsecase.New(pg, &gtranslate.GoogleTranslator{})
 
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(pg))
+	centrifugoPublisher := centrifugo.New(centrifugoConn)
 
 	clothesHandler := clothes.New(
 		clothesUsecase,
@@ -127,7 +126,7 @@ func (app *App) Run() error {
 		fileManager,
 		&app.cfg.Static,
 		app.logger,
-		centrifugoConn,
+		centrifugoPublisher,
 	)
 
 	tryOnUsecase := tryon.New(
@@ -140,8 +139,7 @@ func (app *App) Run() error {
 	tryOnHandler := tryOnHandler.New(
 		pg, tryOnUsecase,
 		app.logger,
-		centrifugoConn,
-		app.cfg.Static.DefaultImgPaths,
+		centrifugoPublisher,
 	)
 
 	outfitGenerator := outfitgen.New(
@@ -156,7 +154,7 @@ func (app *App) Run() error {
 	outfitHandler := outfits.New(
 		pg, outfitGenerator,
 		fileManager, &app.cfg.Static,
-		app.logger, centrifugoConn)
+		app.logger, centrifugoPublisher)
 
 	userImageHandler := user_images.New(pg, fileManager, &app.cfg.Static)
 

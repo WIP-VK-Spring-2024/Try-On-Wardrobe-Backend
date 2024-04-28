@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/clothes"
@@ -106,7 +107,9 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 }
 
 func (gen *OutfitGenerator) ListenGenerationResults(logger *zap.SugaredLogger, handler func(*domain.OutfitGenerationResponse) domain.Result) error {
-	return gen.subscriber.Listen(logger, handler)
+	ctx := middleware.WithLogger(context.Background(), logger)
+
+	return gen.subscriber.Listen(ctx, handler)
 }
 
 func maxOutfitNum(clothes []domain.GenClothesInfo) int {

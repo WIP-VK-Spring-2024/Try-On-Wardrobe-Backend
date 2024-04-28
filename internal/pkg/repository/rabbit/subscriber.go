@@ -1,11 +1,13 @@
 package rabbit
 
 import (
+	"context"
+
+	"try-on/internal/middleware"
 	"try-on/internal/pkg/domain"
 
 	"github.com/mailru/easyjson"
 	"github.com/wagslane/go-rabbitmq"
-	"go.uber.org/zap"
 )
 
 type Subscriber[T any, PT interface {
@@ -26,7 +28,9 @@ func NewSubscriber[T any, PT interface {
 	}
 }
 
-func (s *Subscriber[T, PT]) Listen(logger *zap.SugaredLogger, handler func(*T) domain.Result) error {
+func (s *Subscriber[T, PT]) Listen(ctx context.Context, handler func(*T) domain.Result) error {
+	logger := middleware.GetLogger(ctx)
+
 	consumer, err := rabbitmq.NewConsumer(
 		s.rabbit,
 		s.queue,

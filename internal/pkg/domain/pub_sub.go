@@ -2,8 +2,6 @@ package domain
 
 import (
 	"context"
-
-	"go.uber.org/zap"
 )
 
 type Closer interface {
@@ -15,8 +13,12 @@ type Publisher[T any] interface {
 	Publish(ctx context.Context, request T) error
 }
 
+type ChannelPublisher[T any] interface {
+	Publish(ctx context.Context, channel string, message T) error
+}
+
 type Subscriber[T any] interface {
-	Listen(logger *zap.SugaredLogger, handler func(*T) Result) error
+	Listen(ctx context.Context, handler func(response *T) Result) error
 }
 
 //easyjson:json

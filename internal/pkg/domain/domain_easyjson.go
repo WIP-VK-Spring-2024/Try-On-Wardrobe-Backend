@@ -3726,6 +3726,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain29(in *jlexer.Lexer, out *Cloth
 			out.Tryonable = bool(in.Bool())
 		case "classification":
 			(out.Classification).UnmarshalEasyJSON(in)
+		case "status_code":
+			out.StatusCode = int(in.Int())
+		case "message":
+			out.Message = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -3785,6 +3789,26 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain29(out *jwriter.Writer, in Clot
 			out.RawString(prefix)
 		}
 		(in.Classification).MarshalEasyJSON(out)
+	}
+	if in.StatusCode != 0 {
+		const prefix string = ",\"status_code\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(in.StatusCode))
+	}
+	if in.Message != "" {
+		const prefix string = ",\"message\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Message))
 	}
 	out.RawByte('}')
 }
