@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -241,6 +242,11 @@ func (app *App) Run() error {
 	app.api.Delete("/users/:id/sub", feedHandler.Unsubscribe)
 
 	app.api.Static("/static", app.cfg.Static.Dir)
+
+	app.api.Post("/hook", func(c *fiber.Ctx) error {
+		fmt.Println(string(c.Body()))
+		return c.SendString("{}")
+	})
 
 	clothesHandler.ListenProcessingResults(&app.cfg.Centrifugo)
 	tryOnHandler.ListenTryOnResults(&app.cfg.Centrifugo)

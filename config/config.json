@@ -59,8 +59,7 @@
 
   "session": {
     "tokenName": "X-Session-ID",
-    "maxAge": 86400,
-    "secret": "secret"
+    "maxAge": 436800
   },
 
   "postgres": {

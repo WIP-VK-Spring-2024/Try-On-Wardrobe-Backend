@@ -45,6 +45,8 @@ services:
       POSTGRES_USER: try-on-admin
       POSTGRES_DB: try-on
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    volumes:
+      - ./pg_data:/var/lib/postgresql
     secrets:
       - postgres_password
   
