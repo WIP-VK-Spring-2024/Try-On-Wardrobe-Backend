@@ -20,6 +20,11 @@ set name = coalesce($2, name),
 where id = $1
 returning created_at, updated_at;
 
+-- name: SetOutfitTryOnResult :exec
+update outfits
+set try_on_result_id = $2
+where id = $1;
+
 -- name: SetOutfitImage :exec
 update outfits
 set image = $2::text,

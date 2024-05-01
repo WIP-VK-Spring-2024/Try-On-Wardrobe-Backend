@@ -63,6 +63,7 @@ type TryOnResponse struct {
 type TryOnResultRepository interface {
 	Create(res *TryOnResult) error
 	Delete(id utils.UUID) error
+	SetTryOnResultID(outfitId, id utils.UUID) error
 	GetByUser(userID utils.UUID) ([]TryOnResult, error)
 	Get(id utils.UUID) (*TryOnResult, error)
 	GetByClothes(clothesID utils.UUID) ([]TryOnResult, error)

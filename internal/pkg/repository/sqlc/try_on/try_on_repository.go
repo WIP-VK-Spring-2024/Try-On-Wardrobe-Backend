@@ -42,6 +42,11 @@ func (repo TryOnResultRepository) Delete(id utils.UUID) error {
 	return utils.PgxError(err)
 }
 
+func (repo TryOnResultRepository) SetTryOnResultID(outfitId, tryOnResultId utils.UUID) error {
+	err := repo.queries.SetOutfitTryOnResult(context.Background(), outfitId, tryOnResultId)
+	return utils.PgxError(err)
+}
+
 func (repo TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnResult, error) {
 	results, err := repo.queries.GetTryOnResultsByUser(context.Background(), userID)
 	if err != nil {

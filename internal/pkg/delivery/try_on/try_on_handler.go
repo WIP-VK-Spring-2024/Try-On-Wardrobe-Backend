@@ -93,6 +93,14 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 			handleResult = domain.ResultDiscard
 		}
 
+		if resp.OutfitID.IsDefined() {
+			err = h.results.SetTryOnResultID(resp.OutfitID, tryOnRes.ID)
+			if err != nil {
+				h.logger.Errorw(err.Error())
+				handleResult = domain.ResultDiscard
+			}
+		}
+
 		var payload easyjson.Marshaler
 		if handleResult == domain.ResultDiscard {
 			payload = app_errors.ResponseError{
@@ -101,7 +109,6 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 			}
 		} else {
 			payload = tryOnRes
-			fmt.Printf("%+v\n", payload)
 		}
 
 		h.publisher.Publish(ctx, userChannel, payload)

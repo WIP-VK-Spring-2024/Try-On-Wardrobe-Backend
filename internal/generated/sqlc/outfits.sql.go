@@ -314,6 +314,17 @@ func (q *Queries) SetOutfitImage(ctx context.Context, iD utils.UUID, column2 str
 	return err
 }
 
+const setOutfitTryOnResult = `-- name: SetOutfitTryOnResult :exec
+update outfits
+set try_on_result_id = $2
+where id = $1
+`
+
+func (q *Queries) SetOutfitTryOnResult(ctx context.Context, iD utils.UUID, tryOnResultID utils.UUID) error {
+	_, err := q.db.Exec(ctx, setOutfitTryOnResult, iD, tryOnResultID)
+	return err
+}
+
 const updateOutfit = `-- name: UpdateOutfit :one
 update outfits
 set name = coalesce($2, name),
