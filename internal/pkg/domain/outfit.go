@@ -31,9 +31,10 @@ var Privacies = map[Privacy]struct{}{
 type Outfit struct {
 	Model
 
-	UserID    utils.UUID
-	StyleID   utils.UUID
-	PurposeID utils.UUID
+	UserID        utils.UUID
+	StyleID       utils.UUID
+	PurposeID     utils.UUID
+	TryOnResultID utils.UUID
 
 	Privacy Privacy
 

@@ -47,50 +47,6 @@ func (q *Queries) DeleteOutfit(ctx context.Context, id utils.UUID) error {
 	return err
 }
 
-const getNotViewedOutfits = `-- name: GetNotViewedOutfits :many
-select
-    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.privacy, outfits.generated, outfits.purpose_ids, outfits.try_on_result_id
-from outfits
-join users on users.id = outfits.user_id
-where users.id = $1
-    and outfits.viewed = false
-`
-
-func (q *Queries) GetNotViewedOutfits(ctx context.Context, id utils.UUID) ([]Outfit, error) {
-	rows, err := q.db.Query(ctx, getNotViewedOutfits, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Outfit
-	for rows.Next() {
-		var i Outfit
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.StyleID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Name,
-			&i.Note,
-			&i.Image,
-			&i.Transforms,
-			&i.Seasons,
-			&i.Privacy,
-			&i.Generated,
-			&i.PurposeIds,
-			&i.TryOnResultID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getOutfit = `-- name: GetOutfit :one
 select
     outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.privacy, outfits.generated, outfits.purpose_ids, outfits.try_on_result_id,
@@ -195,7 +151,7 @@ select
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
-left join tags on tags.id = ot.tag_id 
+left join tags on tags.id = ot.tag_id
 where outfits.public = true and outfits.created_at < $1
 group by
     outfits.id,

@@ -210,6 +210,12 @@ type ClothesTag struct {
 	TagID     utils.UUID
 }
 
+type ClothesVector struct {
+	ID        utils.UUID
+	ClothesID utils.UUID
+	Tensor    []byte
+}
+
 type Outfit struct {
 	ID            utils.UUID
 	UserID        utils.UUID

@@ -2899,6 +2899,10 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain23(in *jlexer.Lexer, out *Outfi
 			if data := in.UnsafeBytes(); in.Ok() {
 				in.AddError((out.PurposeID).UnmarshalText(data))
 			}
+		case "try_on_result_id":
+			if data := in.UnsafeBytes(); in.Ok() {
+				in.AddError((out.TryOnResultID).UnmarshalText(data))
+			}
 		case "privacy":
 			out.Privacy = Privacy(in.String())
 		case "name":
@@ -3008,6 +3012,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain23(out *jwriter.Writer, in Outf
 			out.RawString(prefix)
 		}
 		out.RawText((in.PurposeID).MarshalText())
+	}
+	if (in.TryOnResultID).IsDefined() {
+		const prefix string = ",\"try_on_result_id\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.RawText((in.TryOnResultID).MarshalText())
 	}
 	if in.Privacy != "" {
 		const prefix string = ",\"privacy\":"

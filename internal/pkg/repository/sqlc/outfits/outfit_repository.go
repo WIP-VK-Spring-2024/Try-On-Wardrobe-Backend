@@ -231,14 +231,15 @@ func fromSqlc(model *sqlc.GetOutfitRow) *domain.Outfit {
 				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
-		Privacy: model.Privacy,
-		UserID:  model.UserID,
-		StyleID: model.StyleID,
-		Name:    model.Name.String,
-		Note:    optional.String{NullString: sql.NullString(model.Note)},
-		Image:   model.Image.String,
-		Seasons: model.Seasons,
-		Tags:    model.Tags,
+		Privacy:       model.Privacy,
+		UserID:        model.UserID,
+		StyleID:       model.StyleID,
+		Name:          model.Name.String,
+		Note:          optional.String{NullString: sql.NullString(model.Note)},
+		Image:         model.Image.String,
+		Seasons:       model.Seasons,
+		Tags:          model.Tags,
+		TryOnResultID: model.TryOnResultID,
 	}
 
 	err := easyjson.Unmarshal(model.Transforms, &result.Transforms)
