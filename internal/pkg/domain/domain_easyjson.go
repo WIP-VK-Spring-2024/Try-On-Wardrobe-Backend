@@ -1426,6 +1426,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain11(in *jlexer.Lexer, out *Trans
 			out.Angle = float32(in.Float32())
 		case "scale":
 			out.Scale = float32(in.Float32())
+		case "z_index":
+			out.ZIndex = int(in.Int())
 		default:
 			in.SkipRecursive()
 		}
@@ -1495,6 +1497,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Tran
 			out.RawString(prefix)
 		}
 		out.Float32(float32(in.Scale))
+	}
+	if in.ZIndex != 0 {
+		const prefix string = ",\"z_index\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.Int(int(in.ZIndex))
 	}
 	out.RawByte('}')
 }

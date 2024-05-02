@@ -65,6 +65,7 @@ type Transform struct {
 	Height float32
 	Angle  float32
 	Scale  float32
+	ZIndex int
 }
 
 //easyjson:json
