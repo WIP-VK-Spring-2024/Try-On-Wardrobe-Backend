@@ -94,6 +94,8 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 		}
 
 		if resp.OutfitID.IsDefined() {
+			tryOnRes.OutfitID = resp.OutfitID
+
 			err = h.results.SetTryOnResultID(resp.OutfitID, tryOnRes.ID)
 			if err != nil {
 				h.logger.Errorw(err.Error())
@@ -182,6 +184,7 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.OutfitID)
 	if err == nil {
 		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
+		tryOn.OutfitID = req.OutfitID
 		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
 		return ctx.SendString(common.EmptyJson)
 	}
