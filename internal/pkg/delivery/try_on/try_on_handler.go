@@ -41,6 +41,30 @@ func New(
 	}
 }
 
+func (h *TryOnHandler) DeleteResult(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	id, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrTryOnIdInvalid
+	}
+
+	// result, err := h.results.Get(id)
+	// if err != nil {
+	// 	return app_errors.New(err)
+	// }
+
+	err = h.results.Delete(id)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
+}
+
 func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 	go func() {
 		defer func() {

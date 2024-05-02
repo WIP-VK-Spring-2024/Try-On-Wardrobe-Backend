@@ -213,6 +213,7 @@ func (app *App) Run() error {
 	app.api.Post("/try-on/outfit", tryOnHandler.TryOnOutfit)
 	app.api.Get("/try-on", tryOnHandler.GetByUser)
 	app.api.Get("/try-on/:id", tryOnHandler.GetTryOnResult)
+	app.api.Delete("/try-on/:id", tryOnHandler.DeleteResult)
 	app.api.Patch("/try-on/:id/rate", tryOnHandler.Rate)
 
 	app.api.Get("/outfits/purposes", outfitHandler.GetPurposes)
