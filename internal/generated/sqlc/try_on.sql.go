@@ -67,7 +67,7 @@ func (q *Queries) GetTryOnResult(ctx context.Context, id utils.UUID) (TryOnResul
 const getTryOnResultByClothes = `-- name: GetTryOnResultByClothes :one
 select id, created_at, updated_at, rating, image, user_image_id, clothes_id
 from try_on_results
-where $2 <@ clothes_id
+where clothes_id @> $2
     and user_image_id = $1
 limit 1
 `

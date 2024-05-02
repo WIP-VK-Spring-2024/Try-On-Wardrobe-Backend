@@ -138,7 +138,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 	cfg := middleware.Config(ctx)
 
 	tryOn, err := h.results.GetByClothes(req.UserImageID, req.ClothesID)
-	if err != nil {
+	if err == nil {
 		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
 		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
 		return ctx.SendString(common.EmptyJson)
@@ -180,7 +180,7 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 	cfg := middleware.Config(ctx)
 
 	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.OutfitID)
-	if err != nil {
+	if err == nil {
 		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
 		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
 		return ctx.SendString(common.EmptyJson)

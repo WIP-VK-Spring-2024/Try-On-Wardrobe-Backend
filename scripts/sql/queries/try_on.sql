@@ -25,7 +25,7 @@ order by try_on_results.created_at desc;;
 -- name: GetTryOnResultByClothes :one
 select *
 from try_on_results
-where $2 <@ clothes_id
+where clothes_id @> $2
     and user_image_id = $1
 limit 1;
 

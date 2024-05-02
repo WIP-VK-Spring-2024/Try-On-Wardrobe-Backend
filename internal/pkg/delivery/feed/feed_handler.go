@@ -1,8 +1,6 @@
 package feed
 
 import (
-	"fmt"
-
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -282,8 +280,6 @@ func (h *FeedHandler) RatePost(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
-
-	fmt.Printf("rate: %+v\n", req)
 
 	if req.Rating > 1 {
 		req.Rating = 1
