@@ -233,7 +233,7 @@ func (q *Queries) GetClothesByUser(ctx context.Context, userID utils.UUID) ([]Ge
 const getClothesIdByOutfit = `-- name: GetClothesIdByOutfit :many
 select c.id
 from clothes c
-join outfits o on o.transforms ? c.id
+join outfits o on o.transforms ? c.id::text
 where o.id = $1
 `
 
