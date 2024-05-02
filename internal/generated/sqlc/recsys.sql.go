@@ -13,9 +13,10 @@ import (
 
 const getClothesTensors = `-- name: GetClothesTensors :many
 select
-    outfits.id,
+    outfits.id as outfit_id,
     outfits.user_id,
-    array_agg(cv.tensor) as clothes
+    array_agg(cv.clothes_id)::uuid[] as clothes_id,
+    array_agg(cv.tensor)::bytea[] as clothes_tensor
 from outfits
 join clothes_vector cv on outfits.transforms ? cv.clothes_id::text
 where outfits.privacy = 'public'
@@ -25,9 +26,10 @@ group by
 `
 
 type GetClothesTensorsRow struct {
-	ID      utils.UUID
-	UserID  utils.UUID
-	Clothes interface{}
+	OutfitID      utils.UUID
+	UserID        utils.UUID
+	ClothesID     []utils.UUID
+	ClothesTensor [][]byte
 }
 
 func (q *Queries) GetClothesTensors(ctx context.Context) ([]GetClothesTensorsRow, error) {
@@ -39,7 +41,12 @@ func (q *Queries) GetClothesTensors(ctx context.Context) ([]GetClothesTensorsRow
 	var items []GetClothesTensorsRow
 	for rows.Next() {
 		var i GetClothesTensorsRow
-		if err := rows.Scan(&i.ID, &i.UserID, &i.Clothes); err != nil {
+		if err := rows.Scan(
+			&i.OutfitID,
+			&i.UserID,
+			&i.ClothesID,
+			&i.ClothesTensor,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

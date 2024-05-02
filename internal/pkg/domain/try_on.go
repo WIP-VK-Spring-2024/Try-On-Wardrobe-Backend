@@ -64,8 +64,9 @@ type TryOnResultRepository interface {
 	Create(res *TryOnResult) error
 	Delete(id utils.UUID) error
 	SetTryOnResultID(outfitId, id utils.UUID) error
-	GetByUser(userID utils.UUID) ([]TryOnResult, error)
+	GetByUser(userId utils.UUID) ([]TryOnResult, error)
+	GetByOutfit(userImageId, outfitId utils.UUID) (*TryOnResult, error)
 	Get(id utils.UUID) (*TryOnResult, error)
-	GetByClothes(clothesID utils.UUID) ([]TryOnResult, error)
+	GetByClothes(userImageId utils.UUID, clothesId []utils.UUID) (*TryOnResult, error)
 	Rate(id utils.UUID, rating int) error
 }

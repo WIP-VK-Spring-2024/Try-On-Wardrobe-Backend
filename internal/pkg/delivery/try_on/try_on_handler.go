@@ -137,6 +137,13 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 
 	cfg := middleware.Config(ctx)
 
+	tryOn, err := h.results.GetByClothes(req.UserImageID, req.ClothesID)
+	if err != nil {
+		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
+		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
+		return ctx.SendString(common.EmptyJson)
+	}
+
 	err = h.tryOnModel.TryOn(ctx.UserContext(), req.ClothesID, domain.TryOnOpts{
 		UserID:       session.UserID,
 		UserImageID:  req.UserImageID,
@@ -171,6 +178,13 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 	}
 
 	cfg := middleware.Config(ctx)
+
+	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.OutfitID)
+	if err != nil {
+		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
+		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
+		return ctx.SendString(common.EmptyJson)
+	}
 
 	err = h.tryOnModel.TryOnOutfit(ctx.UserContext(), req.OutfitID, domain.TryOnOpts{
 		UserID:       session.UserID,
