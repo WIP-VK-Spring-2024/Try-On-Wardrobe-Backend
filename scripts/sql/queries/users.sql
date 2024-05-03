@@ -41,8 +41,8 @@ limit $2;
 update users
 set name = case when sqlc.arg(name)::text = '' then name
                 else sqlc.arg(name)::text end,
-    gender = coalesce($2, gender),
-    privacy = coalesce($3, privacy),
+    gender = coalesce(sqlc.narg(gender), gender),
+    privacy = coalesce(sqlc.narg(privacy), privacy),
     avatar = case when sqlc.arg(avatar)::text = '' then avatar
                   else sqlc.arg(avatar)::text end,
     updated_at = now()

@@ -37,11 +37,19 @@ func (repo UserRepository) Create(user *domain.User) error {
 
 func (repo UserRepository) Update(user domain.User) error {
 	params := sqlc.UpdateUserParams{
-		ID:      user.ID,
-		Name:    user.Name,
-		Privacy: user.Privacy,
-		Avatar:  user.Avatar,
-		Gender:  user.Gender,
+		ID:     user.ID,
+		Name:   user.Name,
+		Avatar: user.Avatar,
+	}
+
+	if user.Gender == domain.Male || user.Gender == domain.Female {
+		params.Gender.Gender = sqlc.Gender(user.Gender)
+		params.Gender.Valid = true
+	}
+
+	if user.Privacy == domain.PrivacyPrivate || user.Privacy == domain.PrivacyPublic {
+		params.Privacy.Privacy = sqlc.Privacy(user.Privacy)
+		params.Privacy.Valid = true
 	}
 
 	err := repo.queries.UpdateUser(context.Background(), params)
