@@ -107,5 +107,6 @@ func fromSqlc(model *sqlc.User) *domain.User {
 		Email:    model.Email,
 		Gender:   model.Gender,
 		Privacy:  model.Privacy,
+		Avatar:   model.Avatar,
 	}
 }
