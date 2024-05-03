@@ -43,7 +43,7 @@ set name = case when sqlc.arg(name)::text = '' then name
                 else sqlc.arg(name)::text end,
     gender = coalesce($2, gender),
     privacy = coalesce($3, privacy),
-    avatar = case when sqlc.arg(avatar)::text = '' then name
+    avatar = case when sqlc.arg(avatar)::text = '' then avatar
                   else sqlc.arg(avatar)::text end,
     updated_at = now()
 where id = $1;

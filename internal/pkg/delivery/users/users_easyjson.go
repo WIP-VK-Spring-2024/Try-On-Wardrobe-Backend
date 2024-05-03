@@ -18,7 +18,74 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(in *jlexer.Lexer, out *registerResponse) {
+func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(in *jlexer.Lexer, out *updateResponse) {
+	isTopLevel := in.IsStart()
+	if in.IsNull() {
+		if isTopLevel {
+			in.Consumed()
+		}
+		in.Skip()
+		return
+	}
+	in.Delim('{')
+	for !in.IsDelim('}') {
+		key := in.UnsafeFieldName(false)
+		in.WantColon()
+		if in.IsNull() {
+			in.Skip()
+			in.WantComma()
+			continue
+		}
+		switch key {
+		case "avatar":
+			out.Avatar = string(in.String())
+		default:
+			in.SkipRecursive()
+		}
+		in.WantComma()
+	}
+	in.Delim('}')
+	if isTopLevel {
+		in.Consumed()
+	}
+}
+func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(out *jwriter.Writer, in updateResponse) {
+	out.RawByte('{')
+	first := true
+	_ = first
+	if in.Avatar != "" {
+		const prefix string = ",\"avatar\":"
+		first = false
+		out.RawString(prefix[1:])
+		out.String(string(in.Avatar))
+	}
+	out.RawByte('}')
+}
+
+// MarshalJSON supports json.Marshaler interface
+func (v updateResponse) MarshalJSON() ([]byte, error) {
+	w := jwriter.Writer{}
+	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(&w, v)
+	return w.Buffer.BuildBytes(), w.Error
+}
+
+// MarshalEasyJSON supports easyjson.Marshaler interface
+func (v updateResponse) MarshalEasyJSON(w *jwriter.Writer) {
+	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(w, v)
+}
+
+// UnmarshalJSON supports json.Unmarshaler interface
+func (v *updateResponse) UnmarshalJSON(data []byte) error {
+	r := jlexer.Lexer{Data: data}
+	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(&r, v)
+	return r.Error()
+}
+
+// UnmarshalEasyJSON supports easyjson.Unmarshaler interface
+func (v *updateResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
+	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(l, v)
+}
+func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers1(in *jlexer.Lexer, out *registerResponse) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -61,7 +128,7 @@ func easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(in *jlexer.Lexer, out *
 		in.Consumed()
 	}
 }
-func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(out *jwriter.Writer, in registerResponse) {
+func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers1(out *jwriter.Writer, in registerResponse) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -127,23 +194,23 @@ func easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(out *jwriter.Writer, in
 // MarshalJSON supports json.Marshaler interface
 func (v registerResponse) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(&w, v)
+	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v registerResponse) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers(w, v)
+	easyjson84c0690eEncodeTryOnInternalPkgDeliveryUsers1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *registerResponse) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(&r, v)
+	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *registerResponse) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers(l, v)
+	easyjson84c0690eDecodeTryOnInternalPkgDeliveryUsers1(l, v)
 }

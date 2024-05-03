@@ -205,7 +205,7 @@ set name = case when $4::text = '' then name
                 else $4::text end,
     gender = coalesce($2, gender),
     privacy = coalesce($3, privacy),
-    avatar = case when $5::text = '' then name
+    avatar = case when $5::text = '' then avatar
                   else $5::text end,
     updated_at = now()
 where id = $1

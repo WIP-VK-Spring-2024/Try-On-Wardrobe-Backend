@@ -117,6 +117,11 @@ func (h *UserHandler) createDefaultPhoto(user *domain.User, ctx context.Context)
 	return nil
 }
 
+//easyjson:json
+type updateResponse struct {
+	Avatar string
+}
+
 func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
@@ -151,7 +156,7 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 	user.ID = userId
-	user.Avatar = fileName
+	user.Avatar = h.cfg.Avatars + "/" + fileName
 
 	err = h.users.Update(user)
 	if err != nil {
@@ -173,7 +178,9 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	return ctx.SendString(common.EmptyJson)
+	return ctx.JSON(updateResponse{
+		Avatar: h.cfg.Avatars,
+	})
 }
 
 func (h UserHandler) SearchUsers(ctx *fiber.Ctx) error {
