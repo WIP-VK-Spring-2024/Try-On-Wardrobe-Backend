@@ -51,6 +51,8 @@ func easyjsonA818f49aDecodeTryOnInternalPkgDeliverySession(in *jlexer.Lexer, out
 			out.Gender = domain.Gender(in.String())
 		case "privacy":
 			out.Privacy = domain.Privacy(in.String())
+		case "avatar":
+			out.Avatar = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -120,6 +122,16 @@ func easyjsonA818f49aEncodeTryOnInternalPkgDeliverySession(out *jwriter.Writer, 
 			out.RawString(prefix)
 		}
 		out.String(string(in.Privacy))
+	}
+	if in.Avatar != "" {
+		const prefix string = ",\"avatar\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Avatar))
 	}
 	out.RawByte('}')
 }

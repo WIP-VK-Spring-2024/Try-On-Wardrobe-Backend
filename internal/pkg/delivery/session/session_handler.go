@@ -28,6 +28,7 @@ type loginResponse struct {
 	Email    string
 	Gender   domain.Gender
 	Privacy  domain.Privacy
+	Avatar   string
 }
 
 func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
@@ -67,6 +68,7 @@ func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 		Email:    user.Email,
 		Gender:   user.Gender,
 		Privacy:  user.Privacy,
+		Avatar:   user.Avatar,
 	})
 }
 
@@ -93,5 +95,6 @@ func (h *SessionHandler) Renew(ctx *fiber.Ctx) error {
 		Email:    user.Email,
 		Gender:   user.Gender,
 		Privacy:  user.Privacy,
+		Avatar:   user.Avatar,
 	})
 }
