@@ -179,7 +179,7 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 	}
 
 	return ctx.JSON(updateResponse{
-		Avatar: h.cfg.Avatars,
+		Avatar: user.Avatar,
 	})
 }
 
