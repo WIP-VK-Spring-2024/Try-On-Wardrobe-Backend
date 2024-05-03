@@ -142,7 +142,7 @@ func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 
 	queries := repo.queries.WithTx(tx)
 
-	fmt.Printf("%+v\n", updateParams)
+	fmt.Printf("update params: %+v\n", updateParams)
 
 	result, err := queries.UpdateOutfit(context.Background(), updateParams)
 	if err != nil {

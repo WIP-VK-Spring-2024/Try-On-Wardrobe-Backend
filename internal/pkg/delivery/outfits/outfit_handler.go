@@ -170,8 +170,6 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 
 	var outfit domain.Outfit
 
-	fmt.Println("Body:", string(ctx.Body()))
-
 	if err := ctx.BodyParser(&outfit); err != nil {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
@@ -187,6 +185,11 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		outfit.Transforms = nil
 	}
 
+	err = h.outfits.Update(&outfit)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
 	fileHeader, err := ctx.FormFile("img")
 	switch {
 	case fileHeader == nil || err == fasthttp.ErrMissingFile || err == io.EOF:
@@ -196,11 +199,6 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	default:
 		break
-	}
-
-	err = h.outfits.Update(&outfit)
-	if err != nil {
-		return app_errors.New(err)
 	}
 
 	file, err := fileHeader.Open()
