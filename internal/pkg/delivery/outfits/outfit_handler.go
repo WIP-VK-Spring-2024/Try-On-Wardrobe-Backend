@@ -3,6 +3,7 @@ package outfits
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 
 	"try-on/internal/middleware"
@@ -190,9 +191,9 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 
 	fileHeader, err := ctx.FormFile("img")
 	switch {
-	case fileHeader == nil:
+	case fileHeader == nil || err == fasthttp.ErrMissingFile || err == io.EOF:
 		return ctx.SendString(common.EmptyJson)
-	case err != nil && err != fasthttp.ErrMissingFile:
+	case err != nil:
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	default:
