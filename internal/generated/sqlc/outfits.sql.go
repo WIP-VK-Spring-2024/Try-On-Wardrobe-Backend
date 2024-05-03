@@ -327,9 +327,9 @@ func (q *Queries) SetOutfitTryOnResult(ctx context.Context, iD utils.UUID, tryOn
 
 const updateOutfit = `-- name: UpdateOutfit :one
 update outfits
-set name = coalesce($2, name),
-    note = coalesce($3, note),
-    style_id = coalesce($4, style_id),
+set name = coalesce($4, name),
+    note = coalesce($2, note),
+    style_id = coalesce($3, style_id),
     transforms = coalesce($5, transforms),
     seasons = coalesce($6, seasons)::season[],
     privacy = coalesce($7::privacy, privacy),
@@ -340,9 +340,9 @@ returning created_at, updated_at
 
 type UpdateOutfitParams struct {
 	ID         utils.UUID
-	Name       pgtype.Text
 	Note       pgtype.Text
 	StyleID    utils.UUID
+	Name       pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
 	Privacy    NullPrivacy
@@ -356,9 +356,9 @@ type UpdateOutfitRow struct {
 func (q *Queries) UpdateOutfit(ctx context.Context, arg UpdateOutfitParams) (UpdateOutfitRow, error) {
 	row := q.db.QueryRow(ctx, updateOutfit,
 		arg.ID,
-		arg.Name,
 		arg.Note,
 		arg.StyleID,
+		arg.Name,
 		arg.Transforms,
 		arg.Seasons,
 		arg.Privacy,

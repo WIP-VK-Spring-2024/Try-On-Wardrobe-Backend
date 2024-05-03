@@ -184,8 +184,7 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 	transforms := ctx.FormValue("transforms")
 
 	if err := easyjson.Unmarshal([]byte(transforms), &outfit.Transforms); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
+		outfit.Transforms = nil
 	}
 
 	fileHeader, err := ctx.FormFile("img")

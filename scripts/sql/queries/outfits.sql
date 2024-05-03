@@ -10,10 +10,10 @@ returning id, created_at, updated_at;
 
 -- name: UpdateOutfit :one
 update outfits
-set name = coalesce($2, name),
-    note = coalesce($3, note),
-    style_id = coalesce($4, style_id),
-    transforms = coalesce($5, transforms),
+set name = coalesce(sqlc.narg(name), name),
+    note = coalesce($2, note),
+    style_id = coalesce($3, style_id),
+    transforms = coalesce(sqlc.narg(transforms), transforms),
     seasons = coalesce(sqlc.arg(seasons), seasons)::season[],
     privacy = coalesce(sqlc.narg(privacy)::privacy, privacy),
     updated_at = now()
