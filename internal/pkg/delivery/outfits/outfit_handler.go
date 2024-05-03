@@ -170,6 +170,8 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 
 	var outfit domain.Outfit
 
+	fmt.Println("Body:", string(ctx.Body()))
+
 	if err := ctx.BodyParser(&outfit); err != nil {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
@@ -177,16 +179,13 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 	outfit.UserID = session.UserID
 	outfit.ID = id
 
+	fmt.Printf("outfit: %+v\n", outfit)
+
 	transforms := ctx.FormValue("transforms")
 
 	if err := easyjson.Unmarshal([]byte(transforms), &outfit.Transforms); err != nil {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
-	}
-
-	err = h.outfits.Update(&outfit)
-	if err != nil {
-		return app_errors.New(err)
 	}
 
 	fileHeader, err := ctx.FormFile("img")
@@ -198,6 +197,11 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	default:
 		break
+	}
+
+	err = h.outfits.Update(&outfit)
+	if err != nil {
+		return app_errors.New(err)
 	}
 
 	file, err := fileHeader.Open()
