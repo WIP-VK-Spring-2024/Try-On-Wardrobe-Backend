@@ -7,7 +7,6 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -76,31 +75,27 @@ func (repo TryOnResultRepository) GetByOutfit(userImageId, outfitId utils.UUID) 
 
 	queries := repo.queries.WithTx(tx)
 
-	result, err := queries.GetTryOnResultByOutfit(ctx, userImageId, outfitId)
-	switch err {
-	case pgx.ErrNoRows:
-		clothesIds, err := queries.GetClothesIdByOutfit(ctx, outfitId)
-		if err != nil {
-			return nil, utils.PgxError(err)
-		}
-
-		result, err = queries.GetTryOnResultByClothes(context.Background(), userImageId, clothesIds)
-		if err != nil {
-			return nil, utils.PgxError(err)
-		}
-
-		queries.SetOutfitTryOnResult(ctx, outfitId, result.ID)
-		fallthrough
-	case nil:
-		err = tx.Commit(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		return fromSqlc(&result), nil
-	default:
+	clothesIds, err := queries.GetClothesIdByOutfit(ctx, outfitId)
+	if err != nil {
 		return nil, utils.PgxError(err)
 	}
+
+	result, err := queries.GetTryOnResultByClothes(context.Background(), userImageId, clothesIds)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	err = queries.SetOutfitTryOnResult(ctx, outfitId, result.ID)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return fromSqlc(&result), nil
 }
 
 func (repo TryOnResultRepository) Get(id utils.UUID) (*domain.TryOnResult, error) {

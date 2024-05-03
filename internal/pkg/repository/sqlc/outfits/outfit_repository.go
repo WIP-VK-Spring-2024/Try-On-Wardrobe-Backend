@@ -3,7 +3,6 @@ package outfits
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"log"
 	"time"
 
@@ -141,8 +140,6 @@ func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 	defer tx.Rollback(ctx)
 
 	queries := repo.queries.WithTx(tx)
-
-	fmt.Printf("update params: %+v\n", updateParams)
 
 	result, err := queries.UpdateOutfit(context.Background(), updateParams)
 	if err != nil {
