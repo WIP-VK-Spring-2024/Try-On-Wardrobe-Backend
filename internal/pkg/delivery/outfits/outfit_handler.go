@@ -190,13 +190,13 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 
 	fileHeader, err := ctx.FormFile("img")
 	switch {
-	case err == nil && fileHeader != nil:
-		break
-	case err != fasthttp.ErrMissingFile:
+	case fileHeader == nil:
+		return ctx.SendString(common.EmptyJson)
+	case err != nil && err != fasthttp.ErrMissingFile:
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	default:
-		return ctx.SendString(common.EmptyJson)
+		break
 	}
 
 	file, err := fileHeader.Open()
