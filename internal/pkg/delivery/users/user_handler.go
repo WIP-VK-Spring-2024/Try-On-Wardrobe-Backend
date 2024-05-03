@@ -141,11 +141,11 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 
 	fileHeader, err := ctx.FormFile("img")
 	switch {
-	case err != nil || fileHeader == nil:
-		break
-	case err != fasthttp.ErrMissingFile:
+	case err != nil && err != fasthttp.ErrMissingFile:
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
+	case fileHeader == nil:
+		break
 	default:
 		fileName = userId.String()
 	}
