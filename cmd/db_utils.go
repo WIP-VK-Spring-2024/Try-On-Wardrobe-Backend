@@ -37,7 +37,7 @@ func applyMigrations(cfg config.Sql, pgCfg *config.Postgres) error {
 	return nil
 }
 
-var customTypes = []string{"season", "season[]", "privacy", "gender"}
+var customTypes = []string{"season", "season[]", "privacy", "privacy[]", "gender", "gender[]"}
 
 func initPostgres(config *config.Postgres) (*pgxpool.Pool, error) {
 	till := time.Now().Add(time.Second * config.InitTimeout)
