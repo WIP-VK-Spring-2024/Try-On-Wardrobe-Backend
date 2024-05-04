@@ -27,6 +27,7 @@ type SearchUserOpts struct {
 type UserUsecase interface {
 	Create(user *User) error
 	Update(user User) error
+	GetByID(id utils.UUID) (*User, error)
 	GetByName(name string) (*User, error)
 	SearchUsers(opts SearchUserOpts) ([]User, error)
 	GetSubscriptions(utils.UUID) ([]User, error)

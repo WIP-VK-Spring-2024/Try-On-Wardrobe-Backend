@@ -2,6 +2,9 @@ package users
 
 import (
 	"context"
+	"strconv"
+	"strings"
+	"time"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
@@ -147,7 +150,7 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 	case fileHeader == nil:
 		break
 	default:
-		fileName = userId.String()
+		fileName = userId.String() + strconv.FormatInt(time.Now().Unix(), 10)
 	}
 
 	var user domain.User
@@ -157,6 +160,11 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 	}
 	user.ID = userId
 	user.Avatar = h.cfg.Avatars + "/" + fileName
+
+	oldUser, err := h.users.GetByID(user.ID)
+	if err != nil {
+		return app_errors.New(err)
+	}
 
 	err = h.users.Update(user)
 	if err != nil {
@@ -172,6 +180,12 @@ func (h *UserHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 	defer file.Close()
+
+	parts := strings.Split(oldUser.Avatar, "/")
+	err = h.file.Delete(ctx.UserContext(), h.cfg.Avatars, parts[1])
+	if err != nil {
+		middleware.LogWarning(ctx, err)
+	}
 
 	err = h.file.Save(ctx.UserContext(), h.cfg.Avatars, fileName, file)
 	if err != nil {

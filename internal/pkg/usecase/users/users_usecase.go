@@ -43,6 +43,10 @@ func (u UserUsecase) GetByName(name string) (*domain.User, error) {
 	return u.repo.GetByName(name)
 }
 
+func (u UserUsecase) GetByID(id utils.UUID) (*domain.User, error) {
+	return u.repo.GetByID(id)
+}
+
 func (u UserUsecase) SearchUsers(opts domain.SearchUserOpts) ([]domain.User, error) {
 	if opts.Limit == 0 {
 		opts.Limit = 16
