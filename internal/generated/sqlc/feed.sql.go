@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 )
 
@@ -121,14 +122,16 @@ left join post_ratings on post_ratings.user_id = $1
 left join subs on subs.subscriber_id = $1 and subs.user_id = outfits.user_id
 left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < $3::timestamp
+    and users.gender = any($4::gender[])
 order by posts.created_at desc
 limit $2
 `
 
 type GetPostsParams struct {
-	UserID utils.UUID
-	Limit  int32
-	Since  pgtype.Timestamp
+	UserID  utils.UUID
+	Limit   int32
+	Since   pgtype.Timestamp
+	Genders []domain.Gender
 }
 
 type GetPostsRow struct {
@@ -148,7 +151,12 @@ type GetPostsRow struct {
 }
 
 func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsRow, error) {
-	rows, err := q.db.Query(ctx, getPosts, arg.UserID, arg.Limit, arg.Since)
+	rows, err := q.db.Query(ctx, getPosts,
+		arg.UserID,
+		arg.Limit,
+		arg.Since,
+		arg.Genders,
+	)
 	if err != nil {
 		return nil, err
 	}

@@ -50,6 +50,10 @@ type GetPostsOpts struct {
 	RequestingUserID utils.UUID
 	Limit            int32      `query:"limit"`
 	Since            utils.Time `query:"since"`
+	Genders          []Gender   `query:"gender"`
+	Query            string     `query:"query"`
+	Tags             []string   `query:"tags"`
+	Style            utils.UUID `query:"style"`
 }
 
 type GetCommentsOpts struct {

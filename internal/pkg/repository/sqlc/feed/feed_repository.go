@@ -23,10 +23,15 @@ func New(db *pgxpool.Pool) domain.FeedRepository {
 }
 
 func (f FeedRepository) GetPosts(opts domain.GetPostsOpts) ([]domain.Post, error) {
+	if len(opts.Genders) == 0 {
+		opts.Genders = []domain.Gender{domain.Male, domain.Female}
+	}
+
 	posts, err := f.queries.GetPosts(context.Background(), sqlc.GetPostsParams{
-		UserID: opts.RequestingUserID,
-		Limit:  opts.Limit,
-		Since:  pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
+		UserID:  opts.RequestingUserID,
+		Limit:   opts.Limit,
+		Since:   pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
+		Genders: opts.Genders,
 	})
 	if err != nil {
 		return nil, utils.PgxError(err)

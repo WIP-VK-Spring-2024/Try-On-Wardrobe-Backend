@@ -22,6 +22,7 @@ left join post_ratings on post_ratings.user_id = $1
 left join subs on subs.subscriber_id = $1 and subs.user_id = outfits.user_id
 left join try_on_results on try_on_results.id = outfits.try_on_result_id
 where posts.created_at < sqlc.arg(since)::timestamp
+    and users.gender = any(sqlc.arg(genders)::gender[])
 order by posts.created_at desc
 limit $2;
 
