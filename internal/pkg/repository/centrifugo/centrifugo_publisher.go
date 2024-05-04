@@ -24,7 +24,10 @@ func New(conn grpc.ClientConnInterface) domain.ChannelPublisher[easyjson.Marshal
 func (h CentrifugoPublisher) Publish(ctx context.Context, channel string, message easyjson.Marshaler) error {
 	logger := middleware.GetLogger(ctx)
 
-	payload, _ := easyjson.Marshal(message)
+	payload, err := easyjson.Marshal(message)
+	if err != nil {
+		logger.Errorw(err.Error())
+	}
 
 	logger.Infow("centrifugo", "channel", channel, "payload", string(payload))
 

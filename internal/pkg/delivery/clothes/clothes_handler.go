@@ -2,6 +2,7 @@ package clothes
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -258,6 +259,7 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 
 	return func(resp *domain.ClothesProcessingResponse) domain.Result {
 		userChannel := cfg.ProcessingChannel + resp.UserID.String()
+
 		if !utils.HttpOk(resp.StatusCode) {
 			h.publisher.Publish(
 				ctx,
@@ -287,6 +289,8 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 			Tryonable:      resp.Tryonable,
 			Classification: resp.Classification,
 		}
+
+		fmt.Printf("Sending to centrifugo: %+v\n", payload)
 
 		h.publisher.Publish(
 			ctx,
