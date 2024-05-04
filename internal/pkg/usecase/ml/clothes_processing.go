@@ -99,10 +99,11 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 		}
 
 		return handler(&domain.ClothesProcessingResponse{
-			UserID:     result.UserID,
-			ClothesID:  result.ClothesID,
-			ClothesDir: result.ClothesDir,
-			Tryonable:  tryonable,
+			QueueResponse: result.QueueResponse,
+			UserID:        result.UserID,
+			ClothesID:     result.ClothesID,
+			ClothesDir:    result.ClothesDir,
+			Tryonable:     tryonable,
 			Classification: domain.ClothesClassificationResponse{
 				Tags:    tags,
 				Seasons: removeClothesSuffix(maxKeys(result.Classification.Seasons, p.cfg.Threshold)),
