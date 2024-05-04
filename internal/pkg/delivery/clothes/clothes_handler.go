@@ -260,7 +260,11 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 	return func(resp *domain.ClothesProcessingResponse) domain.Result {
 		userChannel := cfg.ProcessingChannel + resp.UserID.String()
 
+		fmt.Printf("Resp in handler after post processing: %+v\n", resp)
+
 		if !utils.HttpOk(resp.StatusCode) {
+			fmt.Println("Resp code is", resp.StatusCode)
+
 			h.publisher.Publish(
 				ctx,
 				userChannel,
