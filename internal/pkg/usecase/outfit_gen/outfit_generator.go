@@ -3,6 +3,7 @@ package outfitgen
 import (
 	"context"
 	"fmt"
+	"log"
 	"strings"
 
 	"try-on/internal/middleware"
@@ -13,7 +14,6 @@ import (
 	"try-on/internal/pkg/utils"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
 )
 
@@ -77,9 +77,13 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 		request.Amount = maxAmount
 	}
 
-	purposes, err := gen.outfits.GetPurposeEngNames(request.Purposes)
-	if err != nil {
-		return err
+	var purposes []string
+	if len(request.Purposes) > 0 {
+		purposes, err = gen.outfits.GetPurposeEngNames(request.Purposes)
+		if err != nil {
+			log.Println("Get purpose eng names err:", err)
+			return err
+		}
 	}
 
 	translatedPrompt := ""
@@ -87,6 +91,7 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 	if request.Prompt != "" {
 		translatedPrompt, err = gen.translator.Translate(request.Prompt, domain.LanguageRU, domain.LanguageEN)
 		if err != nil {
+			log.Println("Translate error:", err)
 			return err
 		}
 	}
@@ -99,9 +104,6 @@ func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitG
 		Amount:  request.Amount,
 		Prompt:  strings.Join(purposes, ". "),
 	}
-
-	bytes, _ := easyjson.Marshal(modelRequest)
-	fmt.Println(string(bytes))
 
 	return gen.publisher.Publish(ctx, modelRequest)
 }

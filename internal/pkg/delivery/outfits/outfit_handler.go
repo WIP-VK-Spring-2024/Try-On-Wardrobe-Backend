@@ -249,8 +249,6 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
-	fmt.Println(ctx.GetReqHeaders())
-
 	var req domain.OutfitGenerationRequest
 	if err := ctx.QueryParser(&req); err != nil {
 		middleware.LogWarning(ctx, err)
@@ -261,7 +259,6 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 
 	req.UserID = session.UserID
 	req.Pos.IP = ctx.IP()
-	fmt.Println("Generating outfit for: ", req.Pos.IP)
 
 	err := h.generator.Generate(ctx.UserContext(), req)
 	if err != nil {
