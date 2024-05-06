@@ -12,6 +12,7 @@ import (
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/validate"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mailru/easyjson"
@@ -112,6 +113,12 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
+
+	err = validate.Struct(clothesUpdate)
+	if err != nil {
+		return app_errors.ValidationError(err)
+	}
+
 	clothesUpdate.ID = clothesID
 	clothesUpdate.UserID = session.UserID
 

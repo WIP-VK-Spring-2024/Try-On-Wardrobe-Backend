@@ -1498,7 +1498,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain11(out *jwriter.Writer, in Tran
 		}
 		out.Float32(float32(in.Scale))
 	}
-	if in.ZIndex != 0 {
+	{
 		const prefix string = ",\"z_index\":"
 		if first {
 			first = false

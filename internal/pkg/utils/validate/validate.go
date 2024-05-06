@@ -8,11 +8,18 @@ import (
 
 var validate = validator.New(validator.WithRequiredStructEnabled())
 
-var usernameRegexp = regexp.MustCompile(`^[a-zA-Zа-яёА-ЯЁ0-9-_()+=~@^:?;$#№%*@|{}[\]!<>]+$`)
+var (
+	usernameRegexp   = regexp.MustCompile(`^[a-zA-Zа-яёА-ЯЁ0-9-_()+=~@^:?;$#№%*@|{}[\]!<>]+$`)
+	otherNamesRegexp = regexp.MustCompile(`^[a-zA-Zа-яёА-ЯЁ0-9 -_()+=~@^:?;$#№%*@|{}[\]!<>]+$`)
+)
 
 func init() {
 	validate.RegisterValidation("username", func(fl validator.FieldLevel) bool {
 		return usernameRegexp.MatchString(fl.Field().String())
+	})
+
+	validate.RegisterValidation("name", func(fl validator.FieldLevel) bool {
+		return otherNamesRegexp.MatchString(fl.Field().String())
 	})
 }
 

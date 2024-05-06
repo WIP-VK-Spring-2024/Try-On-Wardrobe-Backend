@@ -14,10 +14,10 @@ const (
 type Clothes struct {
 	Model
 
-	Name      string
-	Tryonable bool `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
+	Name      string `validate:"name"`
+	Tryonable bool   `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	Note      optional.String
-	Tags      []string
+	Tags      []string `validate:"dive,name"`
 
 	UserID utils.UUID
 	Image  string

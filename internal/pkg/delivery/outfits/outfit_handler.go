@@ -14,6 +14,7 @@ import (
 	outfitRepo "try-on/internal/pkg/repository/sqlc/outfits"
 	outfitUsecase "try-on/internal/pkg/usecase/outfits"
 	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/validate"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -174,10 +175,16 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
-	outfit.UserID = session.UserID
-	outfit.ID = id
 
 	fmt.Printf("outfit: %+v\n", outfit)
+
+	err = validate.Struct(&outfit)
+	if err != nil {
+		return app_errors.ValidationError(err)
+	}
+
+	outfit.UserID = session.UserID
+	outfit.ID = id
 
 	transforms := ctx.FormValue("transforms")
 

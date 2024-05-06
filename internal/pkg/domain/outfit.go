@@ -38,7 +38,7 @@ type Outfit struct {
 
 	Privacy Privacy
 
-	Name       string
+	Name       string `validate:"name"`
 	Note       optional.String
 	Image      string
 	Transforms TransformMap
