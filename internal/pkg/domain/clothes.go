@@ -17,7 +17,7 @@ type Clothes struct {
 	Name      string `validate:"name"`
 	Tryonable bool   `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	Note      optional.String
-	Tags      []string `validate:"dive,name"`
+	Tags      []string `validate:"name_slice"`
 
 	UserID utils.UUID
 	Image  string

@@ -3,6 +3,8 @@ package validate
 import (
 	"regexp"
 
+	"try-on/internal/pkg/utils"
+
 	"github.com/go-playground/validator/v10"
 )
 
@@ -20,6 +22,14 @@ func init() {
 
 	validate.RegisterValidation("name", func(fl validator.FieldLevel) bool {
 		return otherNamesRegexp.MatchString(fl.Field().String())
+	})
+
+	validate.RegisterValidation("name_slice", func(fl validator.FieldLevel) bool {
+		slice, ok := fl.Field().Interface().([]string)
+		if !ok {
+			return false
+		}
+		return utils.Every(slice, otherNamesRegexp.MatchString)
 	})
 }
 

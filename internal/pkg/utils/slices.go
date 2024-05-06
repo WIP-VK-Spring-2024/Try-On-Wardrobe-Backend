@@ -61,3 +61,12 @@ func Filter[T any, S ~[]T](slice S, predicate func(T) bool) S {
 	}
 	return result
 }
+
+func Every[T any, S ~[]T](slice S, predicate func(T) bool) bool {
+	for _, elem := range slice {
+		if predicate(elem) {
+			return false
+		}
+	}
+	return true
+}
