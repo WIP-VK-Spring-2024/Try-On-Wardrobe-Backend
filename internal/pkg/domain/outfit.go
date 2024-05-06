@@ -65,7 +65,7 @@ type Transform struct {
 	Height float32
 	Angle  float32
 	Scale  float32
-	ZIndex int
+	ZIndex int `json:"z_index,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 }
 
 //easyjson:json
