@@ -291,6 +291,22 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 			return domain.ResultDiscard
 		}
 
+		clothesUpdate := domain.Clothes{
+			Model: domain.Model{
+				ID: resp.ClothesID,
+			},
+			Seasons:   resp.Classification.Seasons,
+			Tags:      resp.Classification.Tags,
+			StyleID:   resp.Classification.Style,
+			TypeID:    resp.Classification.Type,
+			SubtypeID: resp.Classification.Subtype,
+		}
+
+		err = h.clothes.Update(&clothesUpdate)
+		if err != nil {
+			h.logger.Errorw(err.Error())
+		}
+
 		payload := &processingResponse{
 			uploadResponse: uploadResponse{
 				Uuid:  resp.ClothesID,
