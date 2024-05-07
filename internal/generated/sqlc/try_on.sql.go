@@ -64,38 +64,51 @@ func (q *Queries) GetTryOnResult(ctx context.Context, id utils.UUID) (TryOnResul
 	return i, err
 }
 
-const getTryOnResultsByClothes = `-- name: GetTryOnResultsByClothes :many
+const getTryOnResultByClothes = `-- name: GetTryOnResultByClothes :one
 select id, created_at, updated_at, rating, image, user_image_id, clothes_id
 from try_on_results
-where $1::uuid = any(clothes_id)
+where clothes_id @> $2
+    and user_image_id = $1
+limit 1
 `
 
-func (q *Queries) GetTryOnResultsByClothes(ctx context.Context, dollar_1 utils.UUID) ([]TryOnResult, error) {
-	rows, err := q.db.Query(ctx, getTryOnResultsByClothes, dollar_1)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []TryOnResult
-	for rows.Next() {
-		var i TryOnResult
-		if err := rows.Scan(
-			&i.ID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Rating,
-			&i.Image,
-			&i.UserImageID,
-			&i.ClothesID,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) GetTryOnResultByClothes(ctx context.Context, userImageID utils.UUID, clothesID []utils.UUID) (TryOnResult, error) {
+	row := q.db.QueryRow(ctx, getTryOnResultByClothes, userImageID, clothesID)
+	var i TryOnResult
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Rating,
+		&i.Image,
+		&i.UserImageID,
+		&i.ClothesID,
+	)
+	return i, err
+}
+
+const getTryOnResultByOutfit = `-- name: GetTryOnResultByOutfit :one
+select try_on_results.id, try_on_results.created_at, try_on_results.updated_at, try_on_results.rating, try_on_results.image, try_on_results.user_image_id, try_on_results.clothes_id
+from try_on_results
+join outfits on outfits.try_on_result_id = try_on_results.id
+where outfits.id = $2
+     and user_image_id = $1
+limit 1
+`
+
+func (q *Queries) GetTryOnResultByOutfit(ctx context.Context, userImageID utils.UUID, iD utils.UUID) (TryOnResult, error) {
+	row := q.db.QueryRow(ctx, getTryOnResultByOutfit, userImageID, iD)
+	var i TryOnResult
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Rating,
+		&i.Image,
+		&i.UserImageID,
+		&i.ClothesID,
+	)
+	return i, err
 }
 
 const getTryOnResultsByUser = `-- name: GetTryOnResultsByUser :many
@@ -103,6 +116,7 @@ select try_on_results.id, try_on_results.created_at, try_on_results.updated_at, 
 from try_on_results
 join user_images u on u.id = try_on_results.user_image_id
 where u.user_id = $1
+order by try_on_results.created_at desc
 `
 
 func (q *Queries) GetTryOnResultsByUser(ctx context.Context, userID utils.UUID) ([]TryOnResult, error) {

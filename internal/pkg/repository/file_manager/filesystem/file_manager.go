@@ -49,6 +49,10 @@ func (fm *FileManager) Delete(_ context.Context, dir, name string) error {
 	return err
 }
 
+func (fm *FileManager) Get(ctx context.Context, dir, name string) (io.ReadCloser, error) {
+	return nil, app_errors.ErrUnimplemented
+}
+
 func (fm *FileManager) fullName(dir, name string) string {
 	filepath := fm.baseDir + "/"
 	if dir != "" {

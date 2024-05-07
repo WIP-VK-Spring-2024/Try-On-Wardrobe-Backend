@@ -75,9 +75,11 @@ where id = $1;
 insert into clothes(
     name,
     user_id,
-    image
+    image,
+    privacy
 )
-values ($1, $2, $3)
+select $1, $2, $3, users.privacy
+from users where users.id = $2
 returning id;
 
 -- name: SetClothesImage :exec
@@ -95,13 +97,14 @@ set name = coalesce($2, name),
     style_id = coalesce($6, style_id),
     color = coalesce($7, color),
     seasons = coalesce(sqlc.arg(seasons), seasons)::season[],
+    privacy = coalesce(sqlc.narg(privacy)::privacy, privacy),
     updated_at = now()
 where id = $1;
 
 -- name: GetClothesIdByOutfit :many
 select c.id
 from clothes c
-join outfits o on o.transforms ? c.id
+join outfits o on o.transforms ? c.id::text
 where o.id = $1;
 
 -- name: GetClothesTryOnInfo :many
@@ -118,10 +121,11 @@ where clothes.id = any(sqlc.arg(ids)::uuid[])
 -- name: GetClothesInfoByWeather :many
 select
     clothes.id,
-    types.eng_name as category
+    (case when subtypes.layer >= 2 then 'outerwear'
+         else types.eng_name end)::text as category
 from clothes
 join types on types.id = clothes.type_id
 join subtypes on subtypes.id = clothes.subtype_id
 where clothes.user_id = $1
-    and sqlc.narg(temp)::int is null or subtypes.temp_range @> sqlc.narg(temp)::int 
+    and (sqlc.narg(temp)::int is null or subtypes.temp_range @> sqlc.narg(temp)::int) 
     and is_valid_for_generation(types.eng_name);

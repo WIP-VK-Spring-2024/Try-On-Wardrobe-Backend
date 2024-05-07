@@ -23,10 +23,12 @@ func New(db *pgxpool.Pool) domain.ClothesClassificationRepository {
 }
 
 func (c ClothesClassificationRepository) GetClassifications(userId utils.UUID, tagLimit int32) (*domain.ClothesClassificationRequest, error) {
-	tagNames, err := c.queries.GetPopularTagEngNames(context.Background(), tagLimit)
-	if err != nil {
-		return nil, utils.PgxError(err)
-	}
+	// tagNames, err := c.queries.GetPopularTagEngNames(context.Background(), tagLimit)
+	// if err != nil {
+	// 	return nil, utils.PgxError(err)
+	// }
+
+	tagNames := []pgtype.Text{}
 
 	userTags, err := c.queries.GetUserFavouriteTags(context.Background(), userId, tagLimit)
 	if err != nil {

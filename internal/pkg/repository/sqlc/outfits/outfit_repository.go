@@ -84,18 +84,21 @@ func (repo OutfitRepository) Create(outfit *domain.Outfit) error {
 		return err
 	}
 
-	id, err := queries.CreateOutfit(context.Background(), outfit.UserID, transforms)
+	result, err := queries.CreateOutfit(context.Background(), outfit.UserID, transforms)
 	if err != nil {
 		return utils.PgxError(err)
 	}
-	outfit.Image = outfit.Image + "/" + id.String()
+	outfit.Image = outfit.Image + "/" + result.ID.String()
 
-	err = queries.SetOutfitImage(ctx, id, outfit.Image)
+	err = queries.SetOutfitImage(ctx, result.ID, outfit.Image)
 	if err != nil {
 		return utils.PgxError(err)
 	}
 
-	outfit.ID = id
+	outfit.ID = result.ID
+	outfit.CreatedAt = utils.Time{Time: result.CreatedAt.Time}
+	outfit.UpdatedAt = utils.Time{Time: result.UpdatedAt.Time}
+
 	return tx.Commit(ctx)
 }
 
@@ -116,9 +119,22 @@ func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 		Transforms: transforms,
 	}
 
+	_, contains := domain.Privacies[outfit.Privacy]
+	if contains {
+		updateParams.Privacy = sqlc.NullPrivacy{
+			Privacy: sqlc.Privacy(outfit.Privacy),
+			Valid:   true,
+		}
+	}
+
 	if outfit.Name != "" {
 		updateParams.Name.String = outfit.Name
 		updateParams.Name.Valid = true
+	}
+
+	if outfit.Image != "" {
+		updateParams.Image.String = outfit.Image
+		updateParams.Image.Valid = true
 	}
 
 	ctx := context.Background()
@@ -130,10 +146,12 @@ func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 
 	queries := repo.queries.WithTx(tx)
 
-	err = queries.UpdateOutfit(context.Background(), updateParams)
+	result, err := queries.UpdateOutfit(context.Background(), updateParams)
 	if err != nil {
 		return utils.PgxError(err)
 	}
+	outfit.CreatedAt = utils.TimeFromPgTz(result.CreatedAt)
+	outfit.UpdatedAt = utils.TimeFromPgTz(result.UpdatedAt)
 
 	err = queries.CreateTags(ctx, outfit.Tags)
 	if err != nil {
@@ -165,8 +183,8 @@ func (repo OutfitRepository) GetById(id utils.UUID) (*domain.Outfit, error) {
 	return fromSqlc(&outfit), nil
 }
 
-func (repo OutfitRepository) GetByUser(userId utils.UUID) ([]domain.Outfit, error) {
-	outfits, err := repo.queries.GetOutfitsByUser(context.Background(), userId)
+func (repo OutfitRepository) GetByUser(userId utils.UUID, publicOnly bool) ([]domain.Outfit, error) {
+	outfits, err := repo.queries.GetOutfitsByUser(context.Background(), userId, publicOnly)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
@@ -218,14 +236,15 @@ func fromSqlc(model *sqlc.GetOutfitRow) *domain.Outfit {
 				UpdatedAt: utils.Time{Time: model.UpdatedAt.Time},
 			},
 		},
-		Privacy: model.Public,
-		UserID:  model.UserID,
-		StyleID: model.StyleID,
-		Name:    model.Name.String,
-		Note:    optional.String{NullString: sql.NullString(model.Note)},
-		Image:   model.Image.String,
-		Seasons: model.Seasons,
-		Tags:    model.Tags,
+		Privacy:       model.Privacy,
+		UserID:        model.UserID,
+		StyleID:       model.StyleID,
+		Name:          model.Name.String,
+		Note:          optional.String{NullString: sql.NullString(model.Note)},
+		Image:         model.Image.String,
+		Seasons:       model.Seasons,
+		Tags:          model.Tags,
+		TryOnResultID: model.TryOnResultID,
 	}
 
 	err := easyjson.Unmarshal(model.Transforms, &result.Transforms)

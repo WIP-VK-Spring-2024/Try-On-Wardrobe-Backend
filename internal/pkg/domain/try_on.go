@@ -16,6 +16,7 @@ type TryOnResult struct {
 	Rating      int `json:"rating,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	UserImageID utils.UUID
 	ClothesID   []utils.UUID
+	OutfitID    utils.UUID
 }
 
 type TryOnUsecase interface {
@@ -36,7 +37,8 @@ type TryOnOpts struct {
 //easyjson:json
 type TryOnRequest struct {
 	TryOnOpts
-	Clothes []TryOnClothesInfo
+	OutfitID utils.UUID
+	Clothes  []TryOnClothesInfo
 }
 
 //easyjson:json
@@ -48,7 +50,10 @@ type TryOnClothesInfo struct {
 
 //easyjson:json
 type TryOnResponse struct {
+	QueueResponse
+
 	UserID      utils.UUID
+	OutfitID    utils.UUID
 	Clothes     []TryOnClothesInfo
 	UserImageID utils.UUID
 	TryOnID     string
@@ -58,8 +63,10 @@ type TryOnResponse struct {
 type TryOnResultRepository interface {
 	Create(res *TryOnResult) error
 	Delete(id utils.UUID) error
-	GetByUser(userID utils.UUID) ([]TryOnResult, error)
+	SetTryOnResultID(outfitId, id utils.UUID) error
+	GetByUser(userId utils.UUID) ([]TryOnResult, error)
+	GetByOutfit(userImageId, outfitId utils.UUID) (*TryOnResult, error)
 	Get(id utils.UUID) (*TryOnResult, error)
-	GetByClothes(clothesID utils.UUID) ([]TryOnResult, error)
+	GetByClothes(userImageId utils.UUID, clothesId []utils.UUID) (*TryOnResult, error)
 	Rate(id utils.UUID, rating int) error
 }

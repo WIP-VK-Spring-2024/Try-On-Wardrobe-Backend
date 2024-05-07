@@ -17,9 +17,11 @@ const createClothes = `-- name: CreateClothes :one
 insert into clothes(
     name,
     user_id,
-    image
+    image,
+    privacy
 )
-values ($1, $2, $3)
+select $1, $2, $3, users.privacy
+from users where users.id = $2
 returning id
 `
 
@@ -231,7 +233,7 @@ func (q *Queries) GetClothesByUser(ctx context.Context, userID utils.UUID) ([]Ge
 const getClothesIdByOutfit = `-- name: GetClothesIdByOutfit :many
 select c.id
 from clothes c
-join outfits o on o.transforms ? c.id
+join outfits o on o.transforms ? c.id::text
 where o.id = $1
 `
 
@@ -258,12 +260,13 @@ func (q *Queries) GetClothesIdByOutfit(ctx context.Context, id utils.UUID) ([]ut
 const getClothesInfoByWeather = `-- name: GetClothesInfoByWeather :many
 select
     clothes.id,
-    types.eng_name as category
+    (case when subtypes.layer >= 2 then 'outerwear'
+         else types.eng_name end)::text as category
 from clothes
 join types on types.id = clothes.type_id
 join subtypes on subtypes.id = clothes.subtype_id
 where clothes.user_id = $1
-    and $2::int is null or subtypes.temp_range @> $2::int 
+    and ($2::int is null or subtypes.temp_range @> $2::int) 
     and is_valid_for_generation(types.eng_name)
 `
 
@@ -351,6 +354,7 @@ set name = coalesce($2, name),
     style_id = coalesce($6, style_id),
     color = coalesce($7, color),
     seasons = coalesce($8, seasons)::season[],
+    privacy = coalesce($9::privacy, privacy),
     updated_at = now()
 where id = $1
 `
@@ -364,6 +368,7 @@ type UpdateClothesParams struct {
 	StyleID   utils.UUID
 	Color     pgtype.Text
 	Seasons   []domain.Season
+	Privacy   NullPrivacy
 }
 
 func (q *Queries) UpdateClothes(ctx context.Context, arg UpdateClothesParams) error {
@@ -376,6 +381,7 @@ func (q *Queries) UpdateClothes(ctx context.Context, arg UpdateClothesParams) er
 		arg.StyleID,
 		arg.Color,
 		arg.Seasons,
+		arg.Privacy,
 	)
 	return err
 }

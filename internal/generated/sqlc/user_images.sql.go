@@ -13,12 +13,12 @@ import (
 
 const createUserImage = `-- name: CreateUserImage :one
 insert into user_images(user_id, image)
-values ($1, '')
+values ($1, $2)
 returning id
 `
 
-func (q *Queries) CreateUserImage(ctx context.Context, userID utils.UUID) (utils.UUID, error) {
-	row := q.db.QueryRow(ctx, createUserImage, userID)
+func (q *Queries) CreateUserImage(ctx context.Context, userID utils.UUID, image string) (utils.UUID, error) {
+	row := q.db.QueryRow(ctx, createUserImage, userID, image)
 	var id utils.UUID
 	err := row.Scan(&id)
 	return id, err
@@ -55,6 +55,7 @@ func (q *Queries) GetUserImageByID(ctx context.Context, id utils.UUID) (UserImag
 const getUserImageByUser = `-- name: GetUserImageByUser :many
 select id, created_at, updated_at, user_id, image from user_images
 where user_id = $1
+order by created_at desc
 `
 
 func (q *Queries) GetUserImageByUser(ctx context.Context, userID utils.UUID) ([]UserImage, error) {

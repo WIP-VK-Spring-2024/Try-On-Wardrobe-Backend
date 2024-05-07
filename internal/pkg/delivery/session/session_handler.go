@@ -7,7 +7,6 @@ import (
 	"try-on/internal/pkg/domain"
 	userRepo "try-on/internal/pkg/repository/sqlc/users"
 	sessionUsecase "try-on/internal/pkg/usecase/session"
-	userUsecase "try-on/internal/pkg/usecase/users"
 	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -17,14 +16,19 @@ import (
 
 type SessionHandler struct {
 	Sessions domain.SessionUsecase
-	users    domain.UserUsecase
+	users    domain.UserRepository
 	cfg      *config.Session
 }
 
 //easyjson:json
-type tokenResponse struct {
-	Token  string
-	UserID utils.UUID
+type loginResponse struct {
+	Token    string
+	UserName string
+	UserID   utils.UUID
+	Email    string
+	Gender   domain.Gender
+	Privacy  domain.Privacy
+	Avatar   string
 }
 
 func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
@@ -35,32 +39,9 @@ func New(db *pgxpool.Pool, cfg *config.Session) *SessionHandler {
 			userRepo,
 			cfg,
 		),
-		users: userUsecase.New(userRepo),
+		users: userRepo,
 		cfg:   cfg,
 	}
-}
-
-func (h *SessionHandler) Register(ctx *fiber.Ctx) error {
-	var credentials domain.Credentials
-	if err := easyjson.Unmarshal(ctx.Body(), &credentials); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
-	}
-
-	user, err := h.users.Create(credentials)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	token, err := h.Sessions.IssueToken(user.ID)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
-	return ctx.JSON(tokenResponse{
-		Token:  token,
-		UserID: user.ID,
-	})
 }
 
 func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
@@ -74,9 +55,20 @@ func (h *SessionHandler) Login(ctx *fiber.Ctx) error {
 	if err != nil {
 		return app_errors.New(err)
 	}
-	return ctx.JSON(tokenResponse{
-		Token:  session.ID,
-		UserID: session.UserID,
+
+	user, err := h.users.GetByID(session.UserID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(loginResponse{
+		Token:    session.ID,
+		UserID:   session.UserID,
+		UserName: user.Name,
+		Email:    user.Email,
+		Gender:   user.Gender,
+		Privacy:  user.Privacy,
+		Avatar:   user.Avatar,
 	})
 }
 
@@ -91,8 +83,18 @@ func (h *SessionHandler) Renew(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	return ctx.JSON(tokenResponse{
-		Token:  token,
-		UserID: session.UserID,
+	user, err := h.users.GetByID(session.UserID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(loginResponse{
+		Token:    token,
+		UserID:   session.UserID,
+		UserName: user.Name,
+		Email:    user.Email,
+		Gender:   user.Gender,
+		Privacy:  user.Privacy,
+		Avatar:   user.Avatar,
 	})
 }

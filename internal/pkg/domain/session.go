@@ -10,6 +10,7 @@ type Session struct {
 //easyjson:json
 type Credentials struct {
 	Name     string
+	Email    string
 	Password string
 }
 

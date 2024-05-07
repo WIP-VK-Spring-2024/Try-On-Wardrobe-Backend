@@ -3,9 +3,11 @@ package outfits
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
-	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -14,13 +16,13 @@ import (
 	outfitRepo "try-on/internal/pkg/repository/sqlc/outfits"
 	outfitUsecase "try-on/internal/pkg/usecase/outfits"
 	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/validate"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	easyjson "github.com/mailru/easyjson"
 	"github.com/valyala/fasthttp"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 type OutfitHandler struct {
@@ -30,8 +32,8 @@ type OutfitHandler struct {
 	file domain.FileManager
 	cfg  *config.Static
 
-	logger     *zap.SugaredLogger
-	centrifugo centrifugo.CentrifugoApiClient
+	logger    *zap.SugaredLogger
+	publisher domain.ChannelPublisher[easyjson.Marshaler]
 }
 
 func New(
@@ -40,15 +42,15 @@ func New(
 	file domain.FileManager,
 	cfg *config.Static,
 	logger *zap.SugaredLogger,
-	centrifugoConn grpc.ClientConnInterface,
+	publisher domain.ChannelPublisher[easyjson.Marshaler],
 ) *OutfitHandler {
 	return &OutfitHandler{
-		outfits:    outfitUsecase.New(outfitRepo.New(db)),
-		generator:  generator,
-		file:       file,
-		cfg:        cfg,
-		logger:     logger,
-		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
+		outfits:   outfitUsecase.New(outfitRepo.New(db)),
+		generator: generator,
+		file:      file,
+		cfg:       cfg,
+		logger:    logger,
+		publisher: publisher,
 	}
 }
 
@@ -66,21 +68,13 @@ func (h *OutfitHandler) GetById(ctx *fiber.Ctx) error {
 	return ctx.JSON(outfit)
 }
 
-//easyjson:json
-type getOutfitsParams struct {
-	Limit int
-	Since time.Time
-}
-
-func (h *OutfitHandler) Get(ctx *fiber.Ctx) error {
-	var params getOutfitsParams
-
-	if err := ctx.QueryParser(&params); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
+func (h *OutfitHandler) GetOwn(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
 	}
 
-	outfits, err := h.outfits.Get(params.Since, params.Limit)
+	outfits, err := h.outfits.GetByUser(session.UserID, false)
 	if err != nil {
 		return app_errors.New(err)
 	}
@@ -94,7 +88,12 @@ func (h *OutfitHandler) GetByUser(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
-	outfits, err := h.outfits.GetByUser(session.UserID)
+	userId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrUserIdInvalid
+	}
+
+	outfits, err := h.outfits.GetByUser(userId, true)
 	if err != nil {
 		return app_errors.New(err)
 	}
@@ -106,6 +105,7 @@ func (h *OutfitHandler) GetByUser(ctx *fiber.Ctx) error {
 type createdResponse struct {
 	Uuid  utils.UUID
 	Image string
+	domain.Timestamp
 }
 
 func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
@@ -153,6 +153,10 @@ func (h *OutfitHandler) Create(ctx *fiber.Ctx) error {
 	return ctx.JSON(&createdResponse{
 		Uuid:  outfit.ID,
 		Image: outfit.Image,
+		Timestamp: domain.Timestamp{
+			CreatedAt: outfit.CreatedAt,
+			UpdatedAt: outfit.UpdatedAt,
+		},
 	})
 }
 
@@ -173,30 +177,46 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
+
+	fmt.Printf("outfit: %+v\n", outfit)
+
+	err = validate.Struct(&outfit)
+	if err != nil {
+		return app_errors.ValidationError(err)
+	}
+
+	oldOutfit, err := h.outfits.GetById(id)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	var fileName string
+	fileHeader, err := ctx.FormFile("img")
+	switch {
+	case err != nil && err != fasthttp.ErrMissingFile:
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	case fileHeader == nil:
+		break
+	default:
+		fileName = id.String() + strconv.FormatInt(time.Now().Unix(), 10)
+	}
+
 	outfit.UserID = session.UserID
 	outfit.ID = id
+	if fileName != "" {
+		outfit.Image = h.cfg.Outfits + "/" + fileName
+	}
 
 	transforms := ctx.FormValue("transforms")
 
 	if err := easyjson.Unmarshal([]byte(transforms), &outfit.Transforms); err != nil {
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
+		outfit.Transforms = nil
 	}
 
 	err = h.outfits.Update(&outfit)
 	if err != nil {
 		return app_errors.New(err)
-	}
-
-	fileHeader, err := ctx.FormFile("img")
-	switch {
-	case err == nil && fileHeader != nil:
-		break
-	case err != fasthttp.ErrMissingFile:
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
-	default:
-		return ctx.SendString(common.EmptyJson)
 	}
 
 	file, err := fileHeader.Open()
@@ -205,12 +225,23 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 	}
 	defer file.Close()
 
-	err = h.file.Save(ctx.UserContext(), h.cfg.Outfits, outfit.ID.String(), file)
+	parts := strings.Split(oldOutfit.Image, "/")
+	err = h.file.Delete(ctx.UserContext(), h.cfg.Outfits, parts[1])
+	if err != nil {
+		middleware.LogWarning(ctx, err)
+	}
+
+	err = h.file.Save(ctx.UserContext(), h.cfg.Outfits, fileName, file)
 	if err != nil {
 		return app_errors.New(err)
 	}
 
-	return ctx.SendString(common.EmptyJson)
+	return ctx.JSON(createdResponse{
+		Timestamp: domain.Timestamp{
+			CreatedAt: outfit.CreatedAt,
+			UpdatedAt: outfit.UpdatedAt,
+		},
+	})
 }
 
 func (h *OutfitHandler) Delete(ctx *fiber.Ctx) error {
@@ -242,8 +273,6 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
-	fmt.Println(ctx.GetReqHeaders())
-
 	var req domain.OutfitGenerationRequest
 	if err := ctx.QueryParser(&req); err != nil {
 		middleware.LogWarning(ctx, err)
@@ -254,7 +283,6 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 
 	req.UserID = session.UserID
 	req.Pos.IP = ctx.IP()
-	fmt.Println("Generating outfit for: ", req.Pos.IP)
 
 	err := h.generator.Generate(ctx.UserContext(), req)
 	if err != nil {
@@ -289,32 +317,28 @@ func (h *OutfitHandler) GetGenerationResults(cfg *config.Centrifugo) {
 }
 
 func (h *OutfitHandler) handleGenResults(cfg *config.Centrifugo) func(resp *domain.OutfitGenerationResponse) domain.Result {
+	ctx := middleware.WithLogger(context.Background(), h.logger)
+
 	return func(resp *domain.OutfitGenerationResponse) domain.Result {
 		userChannel := cfg.OutfitGenChannel + resp.UserID.String()
+		if !utils.HttpOk(resp.StatusCode) {
+			h.publisher.Publish(
+				ctx,
+				userChannel,
+				&app_errors.ResponseError{
+					Code: http.StatusInternalServerError,
+					Msg:  resp.Message,
+				},
+			)
 
-		bytes, err := easyjson.Marshal(resp)
-		if err != nil {
-			h.logger.Errorw(err.Error())
-			return domain.ResultDiscard
+			return domain.ResultOk
 		}
 
-		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(bytes))
-
-		centrifugoResp, err := h.centrifugo.Publish(
-			context.Background(),
-			&centrifugo.PublishRequest{
-				Channel: userChannel,
-				Data:    bytes,
-			},
+		h.publisher.Publish(
+			ctx,
+			userChannel,
+			resp,
 		)
-
-		switch {
-		case err != nil:
-			h.logger.Errorw(err.Error())
-			return domain.ResultRetry
-		case centrifugoResp.Error != nil:
-			h.logger.Errorw(centrifugoResp.Error.Message)
-		}
 
 		return domain.ResultOk
 	}

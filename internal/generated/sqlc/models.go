@@ -210,20 +210,27 @@ type ClothesTag struct {
 	TagID     utils.UUID
 }
 
+type ClothesVector struct {
+	ID        utils.UUID
+	ClothesID utils.UUID
+	Tensor    []byte
+}
+
 type Outfit struct {
-	ID         utils.UUID
-	UserID     utils.UUID
-	StyleID    utils.UUID
-	CreatedAt  pgtype.Timestamptz
-	UpdatedAt  pgtype.Timestamptz
-	Name       pgtype.Text
-	Note       pgtype.Text
-	Image      pgtype.Text
-	Transforms []byte
-	Seasons    []domain.Season
-	Public     domain.Privacy
-	Generated  bool
-	PurposeIds []utils.UUID
+	ID            utils.UUID
+	UserID        utils.UUID
+	StyleID       utils.UUID
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	Name          pgtype.Text
+	Note          pgtype.Text
+	Image         pgtype.Text
+	Transforms    []byte
+	Seasons       []domain.Season
+	Privacy       domain.Privacy
+	Generated     bool
+	PurposeIds    []utils.UUID
+	TryOnResultID utils.UUID
 }
 
 type OutfitPurpose struct {
@@ -239,12 +246,53 @@ type OutfitsTag struct {
 	TagID    utils.UUID
 }
 
+type Post struct {
+	ID        utils.UUID
+	OutfitID  utils.UUID
+	Rating    int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type PostComment struct {
+	ID        utils.UUID
+	UserID    utils.UUID
+	PostID    utils.UUID
+	Body      string
+	Rating    int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+	Path      []utils.UUID
+}
+
+type PostCommentRating struct {
+	UserID    utils.UUID
+	CommentID utils.UUID
+	Value     int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
+type PostRating struct {
+	UserID    utils.UUID
+	PostID    utils.UUID
+	Value     int32
+	CreatedAt pgtype.Timestamp
+	UpdatedAt pgtype.Timestamp
+}
+
 type Style struct {
 	ID        utils.UUID
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
 	EngName   string
+}
+
+type Sub struct {
+	SubscriberID utils.UUID
+	UserID       utils.UUID
+	CreatedAt    pgtype.Timestamp
 }
 
 type Subtype struct {
@@ -291,10 +339,11 @@ type User struct {
 	CreatedAt pgtype.Timestamptz
 	UpdatedAt pgtype.Timestamptz
 	Name      string
-	Email     pgtype.Text
+	Email     string
 	Password  string
-	Gender    NullGender
+	Gender    domain.Gender
 	Privacy   domain.Privacy
+	Avatar    string
 }
 
 type UserImage struct {

@@ -7,7 +7,6 @@ import (
 
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -35,7 +34,7 @@ func CheckSession(cfg SessionConfig) fiber.Handler {
 
 		ok, err := cfg.Sessions.IsLoggedIn(&session)
 		if err != nil && err != app_errors.ErrInvalidCredentials {
-			return err
+			return app_errors.New(err)
 		}
 
 		if ok {
@@ -52,16 +51,10 @@ func CheckSession(cfg SessionConfig) fiber.Handler {
 }
 
 func Session(ctx *fiber.Ctx) *domain.Session {
-	userID, _ := utils.ParseUUID("2a78df8a-0277-4c72-a2d9-43fb8fef1d2c")
-
-	return &domain.Session{
-		UserID: userID,
+	value := ctx.UserContext().Value(sessionKey)
+	session, ok := value.(*domain.Session)
+	if !ok {
+		return nil
 	}
-
-	// value := ctx.UserContext().Value(sessionKey)
-	// session, ok := value.(*domain.Session)
-	// if !ok {
-	// 	return nil
-	// }
-	// return session
+	return session
 }

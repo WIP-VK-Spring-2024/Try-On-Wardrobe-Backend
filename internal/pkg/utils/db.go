@@ -35,13 +35,5 @@ func PgxError(err error) error {
 		return err
 	}
 
-	return errors.Join(err, appError)
-}
-
-func TranslatePgxError[T any](item *T, err error) (*T, error) {
-	err = PgxError(err)
-	if err != nil {
-		return nil, err
-	}
-	return item, nil
+	return appError
 }

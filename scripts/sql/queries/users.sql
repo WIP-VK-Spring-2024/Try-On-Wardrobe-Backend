@@ -2,8 +2,9 @@
 insert into users(
     name,
     email,
-    password
-) values (sqlc.arg(name), sqlc.arg(email), sqlc.arg(password))
+    password,
+    gender
+) values ($1, $2, $3, $4)
 returning id;
 
 -- name: GetUserByID :one
@@ -14,11 +15,35 @@ where id = $1;
 select * from users
 where name = $1;
 
--- name: GetUsersForOutfitGeneration :many
+-- name: GetUserByEmail :one
+select * from users
+where lower(email) = lower($1);
+
+-- name: GetSubscribedToUsers :many
 select users.*
 from users
-where not exists (
-    select 1 from outfits
-    where user_id = users.id
-    and viewed = false
-);
+join subs on subs.subscriber_id = $1
+     and subs.user_id = users.id;
+
+-- name: SearchUsers :many
+select users.*
+from users
+left join subs on subs.subscriber_id = $1
+     and subs.user_id = users.id
+where lower(name) like lower(sqlc.arg(name))
+      and lower(name) > sqlc.arg(since)
+      and subs.user_id is null
+      and users.id <> $1
+order by lower(name)
+limit $2;
+
+-- name: UpdateUser :exec
+update users
+set name = case when sqlc.arg(name)::text = '' then name
+                else sqlc.arg(name)::text end,
+    gender = coalesce(sqlc.narg(gender), gender),
+    privacy = coalesce(sqlc.narg(privacy), privacy),
+    avatar = case when sqlc.arg(avatar)::text = '' then avatar
+                  else sqlc.arg(avatar)::text end,
+    updated_at = now()
+where id = $1;

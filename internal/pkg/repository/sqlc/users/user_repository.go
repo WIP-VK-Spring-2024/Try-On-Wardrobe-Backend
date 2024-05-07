@@ -2,14 +2,11 @@ package users
 
 import (
 	"context"
-	"database/sql"
 
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
-	"try-on/internal/pkg/utils/optional"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,8 +23,9 @@ func New(db *pgxpool.Pool) domain.UserRepository {
 func (repo UserRepository) Create(user *domain.User) error {
 	id, err := repo.queries.CreateUser(context.Background(), sqlc.CreateUserParams{
 		Name:     user.Name,
-		Email:    pgtype.Text(user.Email.NullString),
+		Email:    user.Email,
 		Password: string(user.Password),
+		Gender:   user.Gender,
 	})
 	if err != nil {
 		return utils.PgxError(err)
@@ -37,8 +35,37 @@ func (repo UserRepository) Create(user *domain.User) error {
 	return nil
 }
 
+func (repo UserRepository) Update(user domain.User) error {
+	params := sqlc.UpdateUserParams{
+		ID:     user.ID,
+		Name:   user.Name,
+		Avatar: user.Avatar,
+	}
+
+	if user.Gender == domain.Male || user.Gender == domain.Female {
+		params.Gender.Gender = sqlc.Gender(user.Gender)
+		params.Gender.Valid = true
+	}
+
+	if user.Privacy == domain.PrivacyPrivate || user.Privacy == domain.PrivacyPublic {
+		params.Privacy.Privacy = sqlc.Privacy(user.Privacy)
+		params.Privacy.Valid = true
+	}
+
+	err := repo.queries.UpdateUser(context.Background(), params)
+	return utils.PgxError(err)
+}
+
 func (repo UserRepository) GetByName(name string) (*domain.User, error) {
 	user, err := repo.queries.GetUserByName(context.Background(), name)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return fromSqlc(&user), nil
+}
+
+func (repo UserRepository) GetByEmail(email string) (*domain.User, error) {
+	user, err := repo.queries.GetUserByEmail(context.Background(), email)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
@@ -53,6 +80,27 @@ func (repo UserRepository) GetByID(id utils.UUID) (*domain.User, error) {
 	return fromSqlc(&user), nil
 }
 
+func (repo UserRepository) GetSubscriptions(userId utils.UUID) ([]domain.User, error) {
+	users, err := repo.queries.GetSubscribedToUsers(context.Background(), userId)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return utils.Map(users, fromSqlc), nil
+}
+
+func (repo UserRepository) SearchUsers(opts domain.SearchUserOpts) ([]domain.User, error) {
+	users, err := repo.queries.SearchUsers(context.Background(), sqlc.SearchUsersParams{
+		SubscriberID: opts.UserID,
+		Name:         "%" + opts.Name + "%",
+		Since:        opts.Since,
+		Limit:        int32(opts.Limit),
+	})
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+	return utils.Map(users, fromSqlc), nil
+}
+
 func fromSqlc(model *sqlc.User) *domain.User {
 	return &domain.User{
 		Model: domain.Model{
@@ -63,7 +111,10 @@ func fromSqlc(model *sqlc.User) *domain.User {
 			},
 		},
 		Name:     model.Name,
-		Password: []byte(model.Password),
-		Email:    optional.String{NullString: sql.NullString(model.Email)},
+		Password: model.Password,
+		Email:    model.Email,
+		Gender:   model.Gender,
+		Privacy:  model.Privacy,
+		Avatar:   model.Avatar,
 	}
 }

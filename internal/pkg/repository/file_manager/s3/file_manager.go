@@ -18,6 +18,10 @@ type FileManager struct {
 	client *minio.Client
 }
 
+func (fm *FileManager) Get(ctx context.Context, dir, name string) (io.ReadCloser, error) {
+	return nil, app_errors.ErrUnimplemented
+}
+
 func New(cfg *config.S3) (domain.FileManager, error) {
 	client, err := minio.New(cfg.Endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),

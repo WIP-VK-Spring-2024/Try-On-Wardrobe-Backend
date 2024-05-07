@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"slices"
 
+	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/sqlc/clothes"
@@ -55,7 +56,7 @@ func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts 
 		return err
 	}
 
-	fmt.Printf("Trying out clothes: %+v\n", clothes)
+	fmt.Printf("Trying out clothes : %+v\n", clothes)
 	if err := validateTryOnCategories(clothes); err != nil {
 		return err
 	}
@@ -80,18 +81,20 @@ func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts 
 	fmt.Printf("Trying out clothes from outfit: %+v\n", clothes)
 
 	filteredClothes := filterClothesForTryOn(clothes)
-	// TODO: Sort upper clothes by layer
 
 	fmt.Printf("Filtered clothes from outfit for try on: %+v\n", filteredClothes)
 
 	return u.publisher.Publish(ctx, domain.TryOnRequest{
 		TryOnOpts: opts,
+		OutfitID:  outfit,
 		Clothes:   filteredClothes,
 	})
 }
 
 func (u *TryOnUsecase) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
-	return u.subscriber.Listen(logger, handler)
+	ctx := middleware.WithLogger(context.Background(), logger)
+
+	return u.subscriber.Listen(ctx, handler)
 }
 
 func filterClothesForTryOn(clothes []domain.TryOnClothesInfo) []domain.TryOnClothesInfo {

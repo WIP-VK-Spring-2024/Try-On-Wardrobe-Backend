@@ -2,20 +2,21 @@ package clothes
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"strconv"
 
-	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
+	"try-on/internal/pkg/utils/validate"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 type ClothesHandler struct {
@@ -25,8 +26,8 @@ type ClothesHandler struct {
 	model   domain.ClothesProcessingModel
 	cfg     *config.Static
 
-	logger     *zap.SugaredLogger
-	centrifugo centrifugo.CentrifugoApiClient
+	logger    *zap.SugaredLogger
+	publisher domain.ChannelPublisher[easyjson.Marshaler]
 }
 
 func New(
@@ -36,16 +37,16 @@ func New(
 	fileManager domain.FileManager,
 	cfg *config.Static,
 	logger *zap.SugaredLogger,
-	grpcConn grpc.ClientConnInterface,
+	publisher domain.ChannelPublisher[easyjson.Marshaler],
 ) *ClothesHandler {
 	return &ClothesHandler{
-		clothes:    clothes,
-		tags:       tags,
-		file:       fileManager,
-		model:      model,
-		cfg:        cfg,
-		logger:     logger,
-		centrifugo: centrifugo.NewCentrifugoApiClient(grpcConn),
+		clothes:   clothes,
+		tags:      tags,
+		file:      fileManager,
+		model:     model,
+		cfg:       cfg,
+		logger:    logger,
+		publisher: publisher,
 	}
 }
 
@@ -112,6 +113,12 @@ func (h *ClothesHandler) Update(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 		return app_errors.ErrBadRequest
 	}
+
+	err = validate.Struct(clothesUpdate)
+	if err != nil {
+		return app_errors.ValidationError(err)
+	}
+
 	clothesUpdate.ID = clothesID
 	clothesUpdate.UserID = session.UserID
 
@@ -255,12 +262,49 @@ type processingResponse struct {
 }
 
 func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.ClothesProcessingResponse) domain.Result {
+	ctx := middleware.WithLogger(context.Background(), h.logger)
+
 	return func(resp *domain.ClothesProcessingResponse) domain.Result {
+		userChannel := cfg.ProcessingChannel + resp.UserID.String()
+
+		fmt.Printf("Resp in handler after post processing: %+v\n", resp)
+
+		if !utils.HttpOk(resp.StatusCode) {
+			fmt.Println("Resp code is", resp.StatusCode)
+
+			h.publisher.Publish(
+				ctx,
+				userChannel,
+				&app_errors.ResponseError{
+					Code: http.StatusInternalServerError,
+					Msg:  resp.Message,
+				},
+			)
+
+			return domain.ResultOk
+		}
+
 		cutImageUrl := h.cfg.Cut + "/" + resp.ClothesID.String()
 		err := h.clothes.SetImage(resp.ClothesID, cutImageUrl)
 		if err != nil {
 			h.logger.Errorw(err.Error())
 			return domain.ResultDiscard
+		}
+
+		clothesUpdate := domain.Clothes{
+			Model: domain.Model{
+				ID: resp.ClothesID,
+			},
+			Seasons:   resp.Classification.Seasons,
+			Tags:      resp.Classification.Tags,
+			StyleID:   resp.Classification.Style,
+			TypeID:    resp.Classification.Type,
+			SubtypeID: resp.Classification.Subtype,
+		}
+
+		err = h.clothes.Update(&clothesUpdate)
+		if err != nil {
+			h.logger.Errorw(err.Error())
 		}
 
 		payload := &processingResponse{
@@ -273,31 +317,13 @@ func (h *ClothesHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *
 			Classification: resp.Classification,
 		}
 
-		bytes, err := easyjson.Marshal(payload)
-		if err != nil {
-			h.logger.Errorw(err.Error())
-			return domain.ResultDiscard
-		}
+		fmt.Printf("Sending to centrifugo: %+v\n", payload)
 
-		userChannel := cfg.ProcessingChannel + resp.UserID.String()
-
-		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(bytes))
-
-		centrifugoResp, err := h.centrifugo.Publish(
-			context.Background(),
-			&centrifugo.PublishRequest{
-				Channel: userChannel,
-				Data:    bytes,
-			},
+		h.publisher.Publish(
+			ctx,
+			userChannel,
+			payload,
 		)
-
-		switch {
-		case err != nil:
-			h.logger.Errorw(err.Error())
-			return domain.ResultRetry
-		case centrifugoResp.Error != nil:
-			h.logger.Errorw(centrifugoResp.Error.Message)
-		}
 
 		return domain.ResultOk
 	}

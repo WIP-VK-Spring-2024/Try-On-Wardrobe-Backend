@@ -65,6 +65,7 @@ func (c ClothesRepository) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothes
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
+
 	return utils.Map(clothesInfo, func(t *sqlc.GetClothesTryOnInfoRow) *domain.TryOnClothesInfo {
 		return &domain.TryOnClothesInfo{
 			ClothesID: t.ID,
@@ -112,6 +113,14 @@ func (c ClothesRepository) Update(clothes *domain.Clothes) error {
 		StyleID:   clothes.StyleID,
 		Color:     pgtype.Text(clothes.Color.NullString),
 		Seasons:   clothes.Seasons,
+	}
+
+	_, constains := domain.Privacies[clothes.Privacy]
+	if constains {
+		updateParams.Privacy = sqlc.NullPrivacy{
+			Privacy: sqlc.Privacy(clothes.Privacy),
+			Valid:   true,
+		}
 	}
 
 	err = c.queries.UpdateClothes(ctx, updateParams)

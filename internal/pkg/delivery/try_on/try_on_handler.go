@@ -2,9 +2,9 @@ package try_on
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
-	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
@@ -17,29 +17,52 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mailru/easyjson"
 	"go.uber.org/zap"
-	"google.golang.org/grpc"
 )
 
 type TryOnHandler struct {
 	tryOnModel domain.TryOnUsecase
 	results    domain.TryOnResultRepository
 
-	centrifugo centrifugo.CentrifugoApiClient
-	logger     *zap.SugaredLogger
+	publisher domain.ChannelPublisher[easyjson.Marshaler]
+	logger    *zap.SugaredLogger
 }
 
 func New(
 	db *pgxpool.Pool,
 	tryOnModel domain.TryOnUsecase,
 	logger *zap.SugaredLogger,
-	centrifugoConn grpc.ClientConnInterface,
+	publisher domain.ChannelPublisher[easyjson.Marshaler],
 ) *TryOnHandler {
 	return &TryOnHandler{
 		tryOnModel: tryOnModel,
 		results:    try_on.New(db),
 		logger:     logger,
-		centrifugo: centrifugo.NewCentrifugoApiClient(centrifugoConn),
+		publisher:  publisher,
 	}
+}
+
+func (h *TryOnHandler) DeleteResult(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	id, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrTryOnIdInvalid
+	}
+
+	// result, err := h.results.Get(id)
+	// if err != nil {
+	// 	return app_errors.New(err)
+	// }
+
+	err = h.results.Delete(id)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
 }
 
 func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
@@ -58,11 +81,27 @@ func (h *TryOnHandler) ListenTryOnResults(cfg *config.Centrifugo) {
 }
 
 func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *domain.TryOnResponse) domain.Result {
+	ctx := middleware.WithLogger(context.Background(), h.logger)
+
 	return func(resp *domain.TryOnResponse) domain.Result {
+		userChannel := cfg.TryOnChannel + resp.UserID.String()
+
+		if !utils.HttpOk(resp.StatusCode) {
+			h.publisher.Publish(ctx, userChannel, &app_errors.ResponseError{
+				Code: http.StatusInternalServerError,
+				Msg:  resp.Message,
+			})
+			return domain.ResultOk
+		}
+
+		fmt.Println("Got clothes from rabbit try on", resp.Clothes)
+
 		clothesIds := make([]utils.UUID, 0, len(resp.Clothes))
 		for _, clothes := range resp.Clothes {
 			clothesIds = append(clothesIds, clothes.ClothesID)
 		}
+
+		fmt.Println("Clothes IDs from try on", clothesIds)
 
 		tryOnRes := &domain.TryOnResult{
 			UserImageID: resp.UserImageID,
@@ -78,34 +117,27 @@ func (h *TryOnHandler) handleQueueResponse(cfg *config.Centrifugo) func(resp *do
 			handleResult = domain.ResultDiscard
 		}
 
-		var payload []byte
+		if resp.OutfitID.IsDefined() {
+			tryOnRes.OutfitID = resp.OutfitID
+
+			err = h.results.SetTryOnResultID(resp.OutfitID, tryOnRes.ID)
+			if err != nil {
+				h.logger.Errorw(err.Error())
+				handleResult = domain.ResultDiscard
+			}
+		}
+
+		var payload easyjson.Marshaler
 		if handleResult == domain.ResultDiscard {
-			payload, _ = easyjson.Marshal(app_errors.ResponseError{
+			payload = app_errors.ResponseError{
 				Code: http.StatusInternalServerError,
 				Msg:  err.Error(),
-			})
+			}
 		} else {
-			payload, _ = easyjson.Marshal(tryOnRes)
+			payload = tryOnRes
 		}
 
-		userChannel := cfg.TryOnChannel + resp.UserID.String()
-		h.logger.Infow("centrifugo", "channel", userChannel, "payload", string(payload))
-
-		centrifugoResp, err := h.centrifugo.Publish(
-			context.Background(),
-			&centrifugo.PublishRequest{
-				Channel: userChannel,
-				Data:    payload,
-			},
-		)
-
-		switch {
-		case err != nil:
-			h.logger.Errorw(err.Error())
-		case centrifugoResp.Error != nil:
-			h.logger.Errorw(centrifugoResp.Error.Message)
-		}
-
+		h.publisher.Publish(ctx, userChannel, payload)
 		return domain.ResultOk
 	}
 }
@@ -131,6 +163,13 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 
 	cfg := middleware.Config(ctx)
 
+	tryOn, err := h.results.GetByClothes(req.UserImageID, req.ClothesID)
+	if err == nil {
+		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
+		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
+		return ctx.SendString(common.EmptyJson)
+	}
+
 	err = h.tryOnModel.TryOn(ctx.UserContext(), req.ClothesID, domain.TryOnOpts{
 		UserID:       session.UserID,
 		UserImageID:  req.UserImageID,
@@ -138,6 +177,7 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		ClothesDir:   cfg.Static.Cut,
 	})
 	if err != nil {
+		middleware.LogWarning(ctx, err)
 		return app_errors.New(err)
 	}
 
@@ -164,6 +204,14 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 	}
 
 	cfg := middleware.Config(ctx)
+
+	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.OutfitID)
+	if err == nil {
+		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
+		tryOn.OutfitID = req.OutfitID
+		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
+		return ctx.SendString(common.EmptyJson)
+	}
 
 	err = h.tryOnModel.TryOnOutfit(ctx.UserContext(), req.OutfitID, domain.TryOnOpts{
 		UserID:       session.UserID,

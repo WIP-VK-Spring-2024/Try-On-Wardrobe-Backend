@@ -23,34 +23,22 @@ func New(db *pgxpool.Pool) domain.UserImageRepository {
 }
 
 func (repo UserImageRepository) Create(userImage *domain.UserImage) error {
-	ctx := context.Background()
-
-	tx, err := repo.db.Begin(ctx)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback(ctx)
-
-	queries := repo.queries.WithTx(tx)
-
-	id, err := queries.CreateUserImage(context.Background(), userImage.UserID)
+	id, err := repo.queries.CreateUserImage(context.Background(), userImage.UserID, userImage.Image)
 	if err != nil {
 		return utils.PgxError(err)
 	}
 	userImage.ID = id
 
-	userImage.Image = userImage.Image + "/" + id.String()
+	return nil
+}
 
-	err = queries.SetUserImageUrl(context.Background(), id, userImage.Image)
-	if err != nil {
-		return utils.PgxError(err)
-	}
-
-	return tx.Commit(ctx)
+func (repo UserImageRepository) SetUserImageUrl(id utils.UUID, url string) error {
+	err := repo.queries.SetUserImageUrl(context.Background(), id, url)
+	return utils.PgxError(err)
 }
 
 func (repo UserImageRepository) Delete(id utils.UUID) error {
-	err := repo.queries.DeleteTryOnResult(context.Background(), id)
+	err := repo.queries.DeleteUserImage(context.Background(), id)
 	return utils.PgxError(err)
 }
 

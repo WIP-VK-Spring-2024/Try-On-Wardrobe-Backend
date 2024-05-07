@@ -12,11 +12,13 @@ import (
 
 type TryOnResultRepository struct {
 	queries *sqlc.Queries
+	db      *pgxpool.Pool
 }
 
 func New(db *pgxpool.Pool) domain.TryOnResultRepository {
 	return &TryOnResultRepository{
 		queries: sqlc.New(db),
+		db:      db,
 	}
 }
 
@@ -42,6 +44,11 @@ func (repo TryOnResultRepository) Delete(id utils.UUID) error {
 	return utils.PgxError(err)
 }
 
+func (repo TryOnResultRepository) SetTryOnResultID(outfitId, tryOnResultId utils.UUID) error {
+	err := repo.queries.SetOutfitTryOnResult(context.Background(), outfitId, tryOnResultId)
+	return utils.PgxError(err)
+}
+
 func (repo TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnResult, error) {
 	results, err := repo.queries.GetTryOnResultsByUser(context.Background(), userID)
 	if err != nil {
@@ -50,12 +57,45 @@ func (repo TryOnResultRepository) GetByUser(userID utils.UUID) ([]domain.TryOnRe
 	return utils.Map(results, fromSqlc), nil
 }
 
-func (repo TryOnResultRepository) GetByClothes(clothesID utils.UUID) ([]domain.TryOnResult, error) {
-	results, err := repo.queries.GetTryOnResultsByClothes(context.Background(), clothesID)
+func (repo TryOnResultRepository) GetByClothes(userImageId utils.UUID, clothesID []utils.UUID) (*domain.TryOnResult, error) {
+	result, err := repo.queries.GetTryOnResultByClothes(context.Background(), userImageId, clothesID)
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}
-	return utils.Map(results, fromSqlc), nil
+	return fromSqlc(&result), nil
+}
+
+func (repo TryOnResultRepository) GetByOutfit(userImageId, outfitId utils.UUID) (*domain.TryOnResult, error) {
+	ctx := context.Background()
+	tx, err := repo.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	queries := repo.queries.WithTx(tx)
+
+	clothesIds, err := queries.GetClothesIdByOutfit(ctx, outfitId)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	result, err := queries.GetTryOnResultByClothes(context.Background(), userImageId, clothesIds)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	err = queries.SetOutfitTryOnResult(ctx, outfitId, result.ID)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return fromSqlc(&result), nil
 }
 
 func (repo TryOnResultRepository) Get(id utils.UUID) (*domain.TryOnResult, error) {

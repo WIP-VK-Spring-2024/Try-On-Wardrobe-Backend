@@ -19,6 +19,7 @@ var (
 	ErrNotOwner                = errors.New("must be the owner to delete or edit this resource")
 	ErrTryOnInvalidClothesNum  = errors.New("try on requires at least 1 garment, but not more than 2")
 	ErrTryOnInvalidClothesType = errors.New("try on requires 1 dress, or a maximum of 1 of upper body and 1 lower body garments")
+	ErrNotEnoughClothes        = errors.New("outfit generation requires at least 1 upper and 1 lower garment")
 )
 
 var (
@@ -26,11 +27,6 @@ var (
 		Msg:  "bad request",
 		Code: http.StatusBadRequest,
 	}
-
-	// ErrNotOwner = &ResponseError{
-	// 	Msg:  "must be the owner to delete or edit this resource",
-	// 	Code: http.StatusForbidden,
-	// }
 
 	ErrUnauthorized = &ResponseError{
 		Msg:  "credentials missing or invalid",
@@ -47,6 +43,16 @@ var (
 		Msg:  "clothes ID is missing or isn't a valid uuid",
 	}
 
+	ErrSubscribeTarget = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "can't subscribe on yourself",
+	}
+
+	ErrUnsubscribeTarget = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "can't unsubscribe from yourself",
+	}
+
 	ErrUserImageIdInvalid = &ResponseError{
 		Code: http.StatusBadRequest,
 		Msg:  "user image ID is missing or isn't a valid uuid",
@@ -60,6 +66,16 @@ var (
 	ErrOutfitIdInvalid = &ResponseError{
 		Code: http.StatusBadRequest,
 		Msg:  "outfit ID is missing or isn't a valid uuid",
+	}
+
+	ErrPostIdInvalid = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "post ID is missing or isn't a valid uuid",
+	}
+
+	ErrCommentIdInvalid = &ResponseError{
+		Code: http.StatusBadRequest,
+		Msg:  "comment ID is missing or isn't a valid uuid",
 	}
 )
 
@@ -75,8 +91,9 @@ func (err *InternalError) Error() string {
 
 //easyjson:json
 type ResponseError struct {
-	Code int `json:"-"`
-	Msg  string
+	Code   int `json:"-"`
+	Msg    string
+	Errors map[string][]string
 }
 
 func (err ResponseError) Error() string {
@@ -90,15 +107,14 @@ func New(err error) error {
 	case errors.Is(err, ErrAlreadyExists):
 		code = http.StatusConflict
 
-	case errors.Is(err, ErrNotOwner) || errors.Is(err, ErrInvalidCredentials):
+	case Any(err, ErrNotOwner, ErrInvalidCredentials, ErrTokenExpired):
 		code = http.StatusForbidden
 
-	case errors.Is(err, ErrNotFound) || errors.Is(err, ErrNoRelatedEntity):
+	case Any(err, ErrNotFound, ErrNoRelatedEntity):
 		code = http.StatusNotFound
 
-	case errors.Is(err, ErrConstraintViolation) ||
-		errors.Is(err, ErrTryOnInvalidClothesNum) ||
-		errors.Is(err, ErrTryOnInvalidClothesType):
+	case Any(err, ErrConstraintViolation, ErrTryOnInvalidClothesNum,
+		ErrTryOnInvalidClothesType, ErrNotEnoughClothes):
 		code = http.StatusBadRequest
 
 	default:
@@ -114,4 +130,13 @@ func New(err error) error {
 		Code: code,
 		Msg:  err.Error(),
 	}
+}
+
+func Any(err error, targets ...error) bool {
+	for _, target := range targets {
+		if errors.Is(err, target) {
+			return true
+		}
+	}
+	return false
 }

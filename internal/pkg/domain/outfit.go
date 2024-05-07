@@ -15,20 +15,30 @@ type Privacy string
 const (
 	PrivacyPublic  Privacy = "public"
 	PrivacyPrivate Privacy = "private"
-	PrivacyFriends Privacy = "public"
+	PrivacyFriends Privacy = "friends"
+
+	GenCategoryUpper = "upper garment"
+	GenCategoryLower = "lower garment"
+	GenCategoryOuter = "outerwear"
+	GenCategoryDress = "dress"
 )
+
+var Privacies = map[Privacy]struct{}{
+	PrivacyPublic: {}, PrivacyPrivate: {}, PrivacyFriends: {},
+}
 
 //easyjson:json
 type Outfit struct {
 	Model
 
-	UserID    utils.UUID
-	StyleID   utils.UUID
-	PurposeID utils.UUID
+	UserID        utils.UUID
+	StyleID       utils.UUID
+	PurposeID     utils.UUID
+	TryOnResultID utils.UUID
 
 	Privacy Privacy
 
-	Name       string
+	Name       string `validate:"name"`
 	Note       optional.String
 	Image      string
 	Transforms TransformMap
@@ -55,6 +65,7 @@ type Transform struct {
 	Height float32
 	Angle  float32
 	Scale  float32
+	ZIndex int `json:"z_index,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 }
 
 //easyjson:json
@@ -99,6 +110,8 @@ type OutfitGenOutfit struct {
 
 //easyjson:json
 type OutfitGenerationResponse struct {
+	QueueResponse
+
 	UserID  utils.UUID
 	Outfits []OutfitGenOutfit
 }
@@ -112,11 +125,11 @@ type OutfitGenerator interface {
 type OutfitUsecase interface {
 	Create(*Outfit) error
 	Update(*Outfit) error
-	Delete(userId, outfitID utils.UUID) error
+	Delete(userId, outfitId utils.UUID) error
 	GetById(utils.UUID) (*Outfit, error)
 	Get(since time.Time, limit int) ([]Outfit, error)
 	GetClothesInfo(utils.UUID) ([]TryOnClothesInfo, error)
-	GetByUser(utils.UUID) ([]Outfit, error)
+	GetByUser(userId utils.UUID, publicOnly bool) ([]Outfit, error)
 	GetOutfitPurposes() ([]OutfitPurpose, error)
 }
 
@@ -127,7 +140,7 @@ type OutfitRepository interface {
 	GetById(utils.UUID) (*Outfit, error)
 	Get(since time.Time, limit int) ([]Outfit, error)
 	GetClothesInfo(utils.UUID) ([]TryOnClothesInfo, error)
-	GetByUser(utils.UUID) ([]Outfit, error)
+	GetByUser(userId utils.UUID, publicOnly bool) ([]Outfit, error)
 	GetOutfitPurposesByEngName(engNames []string) ([]OutfitPurpose, error)
 	GetOutfitPurposes() ([]OutfitPurpose, error)
 	GetPurposeEngNames(names []string) ([]string, error)

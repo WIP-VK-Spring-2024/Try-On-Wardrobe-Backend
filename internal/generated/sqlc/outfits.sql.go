@@ -16,16 +16,25 @@ import (
 const createOutfit = `-- name: CreateOutfit :one
 insert into outfits(
     user_id,
-    transforms
-) values ($1, $2)
-returning id
+    transforms,
+    privacy
+)
+select $1, $2, users.privacy
+from users where users.id = $1
+returning id, created_at, updated_at
 `
 
-func (q *Queries) CreateOutfit(ctx context.Context, userID utils.UUID, transforms []byte) (utils.UUID, error) {
+type CreateOutfitRow struct {
+	ID        utils.UUID
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) CreateOutfit(ctx context.Context, userID utils.UUID, transforms []byte) (CreateOutfitRow, error) {
 	row := q.db.QueryRow(ctx, createOutfit, userID, transforms)
-	var id utils.UUID
-	err := row.Scan(&id)
-	return id, err
+	var i CreateOutfitRow
+	err := row.Scan(&i.ID, &i.CreatedAt, &i.UpdatedAt)
+	return i, err
 }
 
 const deleteOutfit = `-- name: DeleteOutfit :exec
@@ -38,52 +47,9 @@ func (q *Queries) DeleteOutfit(ctx context.Context, id utils.UUID) error {
 	return err
 }
 
-const getNotViewedOutfits = `-- name: GetNotViewedOutfits :many
-select
-    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public, outfits.generated, outfits.purpose_ids
-from outfits
-join users on users.id = outfits.user_id
-where users.id = $1
-    and outfits.viewed = false
-`
-
-func (q *Queries) GetNotViewedOutfits(ctx context.Context, id utils.UUID) ([]Outfit, error) {
-	rows, err := q.db.Query(ctx, getNotViewedOutfits, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Outfit
-	for rows.Next() {
-		var i Outfit
-		if err := rows.Scan(
-			&i.ID,
-			&i.UserID,
-			&i.StyleID,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.Name,
-			&i.Note,
-			&i.Image,
-			&i.Transforms,
-			&i.Seasons,
-			&i.Public,
-			&i.Generated,
-			&i.PurposeIds,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getOutfit = `-- name: GetOutfit :one
 select
-    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public, outfits.generated, outfits.purpose_ids,
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.privacy, outfits.generated, outfits.purpose_ids, outfits.try_on_result_id,
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
@@ -100,24 +66,25 @@ group by
     outfits.image,
     outfits.transforms,
     outfits.seasons,
-    outfits.public
+    outfits.privacy
 `
 
 type GetOutfitRow struct {
-	ID         utils.UUID
-	UserID     utils.UUID
-	StyleID    utils.UUID
-	CreatedAt  pgtype.Timestamptz
-	UpdatedAt  pgtype.Timestamptz
-	Name       pgtype.Text
-	Note       pgtype.Text
-	Image      pgtype.Text
-	Transforms []byte
-	Seasons    []domain.Season
-	Public     domain.Privacy
-	Generated  bool
-	PurposeIds []utils.UUID
-	Tags       []string
+	ID            utils.UUID
+	UserID        utils.UUID
+	StyleID       utils.UUID
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	Name          pgtype.Text
+	Note          pgtype.Text
+	Image         pgtype.Text
+	Transforms    []byte
+	Seasons       []domain.Season
+	Privacy       domain.Privacy
+	Generated     bool
+	PurposeIds    []utils.UUID
+	TryOnResultID utils.UUID
+	Tags          []string
 }
 
 func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (GetOutfitRow, error) {
@@ -134,9 +101,10 @@ func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (GetOutfitRow, e
 		&i.Image,
 		&i.Transforms,
 		&i.Seasons,
-		&i.Public,
+		&i.Privacy,
 		&i.Generated,
 		&i.PurposeIds,
+		&i.TryOnResultID,
 		&i.Tags,
 	)
 	return i, err
@@ -147,7 +115,7 @@ select
     clothes.id,
     try_on_type(types.name) as category
 from outfits
-join clothes on outfit.transforms ? clothes.id
+join clothes on outfits.transforms ? clothes.id::text
 join types on types.id = clothes.type_id
 where outfits.id = $1 and try_on_type(types.name) <> ''
 `
@@ -179,11 +147,11 @@ func (q *Queries) GetOutfitClothesInfo(ctx context.Context, id utils.UUID) ([]Ge
 
 const getOutfits = `-- name: GetOutfits :many
 select 
-    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public, outfits.generated, outfits.purpose_ids,
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.privacy, outfits.generated, outfits.purpose_ids, outfits.try_on_result_id,
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
-left join tags on tags.id = ot.tag_id 
+left join tags on tags.id = ot.tag_id
 where outfits.public = true and outfits.created_at < $1
 group by
     outfits.id,
@@ -196,26 +164,27 @@ group by
     outfits.image,
     outfits.transforms,
     outfits.seasons,
-    outfits.public
+    outfits.privacy
 order by outfits.created_at desc
 limit $2
 `
 
 type GetOutfitsRow struct {
-	ID         utils.UUID
-	UserID     utils.UUID
-	StyleID    utils.UUID
-	CreatedAt  pgtype.Timestamptz
-	UpdatedAt  pgtype.Timestamptz
-	Name       pgtype.Text
-	Note       pgtype.Text
-	Image      pgtype.Text
-	Transforms []byte
-	Seasons    []domain.Season
-	Public     domain.Privacy
-	Generated  bool
-	PurposeIds []utils.UUID
-	Tags       []string
+	ID            utils.UUID
+	UserID        utils.UUID
+	StyleID       utils.UUID
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	Name          pgtype.Text
+	Note          pgtype.Text
+	Image         pgtype.Text
+	Transforms    []byte
+	Seasons       []domain.Season
+	Privacy       domain.Privacy
+	Generated     bool
+	PurposeIds    []utils.UUID
+	TryOnResultID utils.UUID
+	Tags          []string
 }
 
 func (q *Queries) GetOutfits(ctx context.Context, createdAt pgtype.Timestamptz, limit int32) ([]GetOutfitsRow, error) {
@@ -238,9 +207,10 @@ func (q *Queries) GetOutfits(ctx context.Context, createdAt pgtype.Timestamptz, 
 			&i.Image,
 			&i.Transforms,
 			&i.Seasons,
-			&i.Public,
+			&i.Privacy,
 			&i.Generated,
 			&i.PurposeIds,
+			&i.TryOnResultID,
 			&i.Tags,
 		); err != nil {
 			return nil, err
@@ -255,12 +225,14 @@ func (q *Queries) GetOutfits(ctx context.Context, createdAt pgtype.Timestamptz, 
 
 const getOutfitsByUser = `-- name: GetOutfitsByUser :many
 select
-    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.public, outfits.generated, outfits.purpose_ids,
+    outfits.id, outfits.user_id, outfits.style_id, outfits.created_at, outfits.updated_at, outfits.name, outfits.note, outfits.image, outfits.transforms, outfits.seasons, outfits.privacy, outfits.generated, outfits.purpose_ids, outfits.try_on_result_id,
     array_remove(array_agg(tags.name), null)::text[] as tags
 from outfits
 left join outfits_tags ot on ot.outfit_id = outfits.id
 left join tags on tags.id = ot.tag_id 
 where outfits.user_id = $1
+    and ($2::boolean = false
+        or outfits.privacy = 'public')
 group by
     outfits.id,
     outfits.user_id,
@@ -272,29 +244,30 @@ group by
     outfits.image,
     outfits.transforms,
     outfits.seasons,
-    outfits.public
+    outfits.privacy
 order by outfits.created_at desc
 `
 
 type GetOutfitsByUserRow struct {
-	ID         utils.UUID
-	UserID     utils.UUID
-	StyleID    utils.UUID
-	CreatedAt  pgtype.Timestamptz
-	UpdatedAt  pgtype.Timestamptz
-	Name       pgtype.Text
-	Note       pgtype.Text
-	Image      pgtype.Text
-	Transforms []byte
-	Seasons    []domain.Season
-	Public     domain.Privacy
-	Generated  bool
-	PurposeIds []utils.UUID
-	Tags       []string
+	ID            utils.UUID
+	UserID        utils.UUID
+	StyleID       utils.UUID
+	CreatedAt     pgtype.Timestamptz
+	UpdatedAt     pgtype.Timestamptz
+	Name          pgtype.Text
+	Note          pgtype.Text
+	Image         pgtype.Text
+	Transforms    []byte
+	Seasons       []domain.Season
+	Privacy       domain.Privacy
+	Generated     bool
+	PurposeIds    []utils.UUID
+	TryOnResultID utils.UUID
+	Tags          []string
 }
 
-func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID) ([]GetOutfitsByUserRow, error) {
-	rows, err := q.db.Query(ctx, getOutfitsByUser, userID)
+func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID, publicOnly bool) ([]GetOutfitsByUserRow, error) {
+	rows, err := q.db.Query(ctx, getOutfitsByUser, userID, publicOnly)
 	if err != nil {
 		return nil, err
 	}
@@ -313,9 +286,10 @@ func (q *Queries) GetOutfitsByUser(ctx context.Context, userID utils.UUID) ([]Ge
 			&i.Image,
 			&i.Transforms,
 			&i.Seasons,
-			&i.Public,
+			&i.Privacy,
 			&i.Generated,
 			&i.PurposeIds,
+			&i.TryOnResultID,
 			&i.Tags,
 		); err != nil {
 			return nil, err
@@ -340,34 +314,59 @@ func (q *Queries) SetOutfitImage(ctx context.Context, iD utils.UUID, column2 str
 	return err
 }
 
-const updateOutfit = `-- name: UpdateOutfit :exec
+const setOutfitTryOnResult = `-- name: SetOutfitTryOnResult :exec
 update outfits
-set name = coalesce($2, name),
-    note = coalesce($3, note),
-    style_id = coalesce($4, style_id),
-    transforms = coalesce($5, transforms),
-    seasons = coalesce($6, seasons)::season[],
+set try_on_result_id = $2
+where id = $1
+`
+
+func (q *Queries) SetOutfitTryOnResult(ctx context.Context, iD utils.UUID, tryOnResultID utils.UUID) error {
+	_, err := q.db.Exec(ctx, setOutfitTryOnResult, iD, tryOnResultID)
+	return err
+}
+
+const updateOutfit = `-- name: UpdateOutfit :one
+update outfits
+set name = coalesce($4, name),
+    note = coalesce($2, note),
+    style_id = coalesce($3, style_id),
+    image = coalesce($5, image),
+    transforms = coalesce($6, transforms),
+    seasons = coalesce($7, seasons)::season[],
+    privacy = coalesce($8::privacy, privacy),
     updated_at = now()
 where id = $1
+returning created_at, updated_at
 `
 
 type UpdateOutfitParams struct {
 	ID         utils.UUID
-	Name       pgtype.Text
 	Note       pgtype.Text
 	StyleID    utils.UUID
+	Name       pgtype.Text
+	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
+	Privacy    NullPrivacy
 }
 
-func (q *Queries) UpdateOutfit(ctx context.Context, arg UpdateOutfitParams) error {
-	_, err := q.db.Exec(ctx, updateOutfit,
+type UpdateOutfitRow struct {
+	CreatedAt pgtype.Timestamptz
+	UpdatedAt pgtype.Timestamptz
+}
+
+func (q *Queries) UpdateOutfit(ctx context.Context, arg UpdateOutfitParams) (UpdateOutfitRow, error) {
+	row := q.db.QueryRow(ctx, updateOutfit,
 		arg.ID,
-		arg.Name,
 		arg.Note,
 		arg.StyleID,
+		arg.Name,
+		arg.Image,
 		arg.Transforms,
 		arg.Seasons,
+		arg.Privacy,
 	)
-	return err
+	var i UpdateOutfitRow
+	err := row.Scan(&i.CreatedAt, &i.UpdatedAt)
+	return i, err
 }

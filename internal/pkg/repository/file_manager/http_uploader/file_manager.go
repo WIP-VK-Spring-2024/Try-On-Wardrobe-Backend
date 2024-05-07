@@ -11,6 +11,7 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/utils"
 )
 
 type FileManager struct {
@@ -23,8 +24,25 @@ func New(cfg *config.HttpApi) domain.FileManager {
 	}
 }
 
-func httpOk(code int) bool {
-	return code >= 200 && code < 300
+func (fm *FileManager) Get(ctx context.Context, dir, name string) (io.ReadCloser, error) {
+	url := fm.cfg.Endpoint + fm.cfg.GetUrl + "/" + name + "?folder=" + dir
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set(fm.cfg.TokenHeader, fm.cfg.Token)
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if !utils.HttpOk(resp.StatusCode) {
+		return nil, errors.New(resp.Status)
+	}
+
+	return resp.Body, nil
 }
 
 func (fm *FileManager) Save(ctx context.Context, dir, name string, input io.Reader) error {
@@ -57,7 +75,7 @@ func (fm *FileManager) Save(ctx context.Context, dir, name string, input io.Read
 	}
 	defer resp.Body.Close()
 
-	if !httpOk(resp.StatusCode) {
+	if !utils.HttpOk(resp.StatusCode) {
 		return errors.New(resp.Status)
 	}
 	return err
@@ -80,7 +98,7 @@ func (fm *FileManager) Delete(ctx context.Context, dir, name string) error {
 	}
 	defer resp.Body.Close()
 
-	if !httpOk(resp.StatusCode) {
+	if !utils.HttpOk(resp.StatusCode) {
 		return errors.New(resp.Status)
 	}
 	return err

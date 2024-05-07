@@ -8,7 +8,7 @@
   },
 
   "classification": {
-    "threshold": 0.9
+    "threshold": 0.95
   },
 
   "static": {
@@ -16,6 +16,7 @@
     "dir": "static",
     "clothes": "clothes",
     "cut": "cut",
+    "avatars": "avatars",
     "fullBody": "photos",
     "tryOn": "try-on",
     "outfits": "outfits",
@@ -26,7 +27,12 @@
     "httpApi": {
       "uploadUrl": "/upload",
       "deleteUrl": "/delete",
+      "getUrl": "/read",
       "tokenHeader": "X-ACCESS-TOKEN"
+    },
+    "defaultImgPaths": {
+      "male": "default_male.jpg",
+      "female": "default_female.jpg"
     }
   },
 
@@ -53,8 +59,7 @@
 
   "session": {
     "tokenName": "X-Session-ID",
-    "maxAge": 86400,
-    "secret": "secret"
+    "maxAge": 436800
   },
 
   "postgres": {

@@ -14,10 +14,10 @@ const (
 type Clothes struct {
 	Model
 
-	Name      string
-	Tryonable bool `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
+	Name      string `validate:"name"`
+	Tryonable bool   `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 	Note      optional.String
-	Tags      []string
+	Tags      []string `validate:"name_slice"`
 
 	UserID utils.UUID
 	Image  string
@@ -33,6 +33,8 @@ type Clothes struct {
 
 	Color   optional.String
 	Seasons []Season
+
+	Privacy Privacy
 }
 
 type ClothesUsecase interface {

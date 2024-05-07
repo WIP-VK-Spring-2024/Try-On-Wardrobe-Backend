@@ -10,12 +10,15 @@ import (
 	"try-on/internal/middleware/heartbeat"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/config"
+	"try-on/internal/pkg/delivery/feed"
 	"try-on/internal/pkg/delivery/outfits"
 	"try-on/internal/pkg/delivery/styles"
 	"try-on/internal/pkg/delivery/tags"
 	"try-on/internal/pkg/delivery/types"
 	"try-on/internal/pkg/delivery/user_images"
+	"try-on/internal/pkg/delivery/users"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/centrifugo"
 	"try-on/internal/pkg/repository/file_manager"
 	"try-on/internal/pkg/repository/weather"
 	"try-on/internal/pkg/usecase/ml"
@@ -50,8 +53,6 @@ type App struct {
 }
 
 func (app *App) Run() error {
-	fmt.Println("Weather api key is ", app.cfg.WeatherApiKey)
-
 	err := applyMigrations(app.cfg.Sql, &app.cfg.Postgres)
 	if err != nil {
 		return err
@@ -117,6 +118,7 @@ func (app *App) Run() error {
 	tagUsecase := tagsUsecase.New(pg, &gtranslate.GoogleTranslator{})
 
 	clothesUsecase := clothesUsecase.New(clothesRepo.New(pg))
+	centrifugoPublisher := centrifugo.New(centrifugoConn)
 
 	clothesHandler := clothes.New(
 		clothesUsecase,
@@ -125,7 +127,7 @@ func (app *App) Run() error {
 		fileManager,
 		&app.cfg.Static,
 		app.logger,
-		centrifugoConn,
+		centrifugoPublisher,
 	)
 
 	tryOnUsecase := tryon.New(
@@ -138,7 +140,7 @@ func (app *App) Run() error {
 	tryOnHandler := tryOnHandler.New(
 		pg, tryOnUsecase,
 		app.logger,
-		centrifugoConn,
+		centrifugoPublisher,
 	)
 
 	outfitGenerator := outfitgen.New(
@@ -153,7 +155,7 @@ func (app *App) Run() error {
 	outfitHandler := outfits.New(
 		pg, outfitGenerator,
 		fileManager, &app.cfg.Static,
-		app.logger, centrifugoConn)
+		app.logger, centrifugoPublisher)
 
 	userImageHandler := user_images.New(pg, fileManager, &app.cfg.Static)
 
@@ -162,6 +164,10 @@ func (app *App) Run() error {
 	styleHandler := styles.New(pg)
 
 	tagsHandler := tags.New(pg)
+
+	feedHandler := feed.New(pg)
+
+	usersHandler := users.New(pg, fileManager, &app.cfg.Session, &app.cfg.Static)
 
 	app.api.Use(
 		recover,
@@ -177,7 +183,11 @@ func (app *App) Run() error {
 		Centrifugo: centrifugoConn,
 	}))
 
-	app.api.Post("/register", sessionHandler.Register)
+	app.api.Post("/users", usersHandler.Create)
+	app.api.Get("/users/subbed", usersHandler.GetSubscriptions)
+	app.api.Get("/users", usersHandler.SearchUsers)
+	app.api.Put("/users/:id", usersHandler.Update)
+
 	app.api.Post("/login", sessionHandler.Login)
 	app.api.Post("/renew", sessionHandler.Renew)
 
@@ -203,19 +213,41 @@ func (app *App) Run() error {
 	app.api.Post("/try-on/outfit", tryOnHandler.TryOnOutfit)
 	app.api.Get("/try-on", tryOnHandler.GetByUser)
 	app.api.Get("/try-on/:id", tryOnHandler.GetTryOnResult)
+	app.api.Delete("/try-on/:id", tryOnHandler.DeleteResult)
 	app.api.Patch("/try-on/:id/rate", tryOnHandler.Rate)
 
 	app.api.Get("/outfits/purposes", outfitHandler.GetPurposes)
 	app.api.Get("/outfits/gen", outfitHandler.Generate)
 
 	app.api.Post("/outfits", outfitHandler.Create)
-	app.api.Get("/outfits", outfitHandler.GetByUser)
-	app.api.Get("/posts", outfitHandler.Get)
+	app.api.Get("/outfits", outfitHandler.GetOwn)
+	app.api.Get("/user/:id/outfits", outfitHandler.GetByUser)
 	app.api.Get("/outfits/:id", outfitHandler.GetById)
 	app.api.Delete("/outfits/:id", outfitHandler.Delete)
 	app.api.Put("/outfits/:id", outfitHandler.Update)
 
+	app.api.Get("/posts", feedHandler.GetPosts)
+	app.api.Get("/users/:id/posts", feedHandler.GetPostsByUser)
+	app.api.Get("/posts/:id/comments", feedHandler.GetComments)
+	app.api.Post("/posts/:id/comments", feedHandler.CreateComment)
+	app.api.Post("/posts/:id/rate", feedHandler.RatePost)
+
+	app.api.Post("/comments/:id/rate", feedHandler.RateComment)
+	app.api.Put("/comments/:id", feedHandler.UpdateComment)
+	app.api.Delete("/comments/:id", feedHandler.DeleteComment)
+
+	app.api.Get("/posts/liked", feedHandler.GetLikedPosts)
+	app.api.Get("/posts/subs", feedHandler.GetSubscriptionPosts)
+
+	app.api.Post("/users/:id/sub", feedHandler.Subscribe)
+	app.api.Delete("/users/:id/sub", feedHandler.Unsubscribe)
+
 	app.api.Static("/static", app.cfg.Static.Dir)
+
+	app.api.Post("/hook", func(c *fiber.Ctx) error {
+		fmt.Println(string(c.Body()))
+		return c.SendString("{}")
+	})
 
 	clothesHandler.ListenProcessingResults(&app.cfg.Centrifugo)
 	tryOnHandler.ListenTryOnResults(&app.cfg.Centrifugo)

@@ -8,7 +8,7 @@ import (
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/config"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/repository/sqlc/user_images"
+	"try-on/internal/pkg/usecase/user_images"
 	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +16,7 @@ import (
 )
 
 type UserImageHandler struct {
-	userImages domain.UserImageRepository
+	userImages domain.UserImageUsecase
 	file       domain.FileManager
 	cfg        *config.Static
 }
