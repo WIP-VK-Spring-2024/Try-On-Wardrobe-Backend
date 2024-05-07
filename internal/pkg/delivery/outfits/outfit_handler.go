@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
@@ -192,6 +195,11 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		outfit.Transforms = nil
 	}
 
+	oldOutfit, err := h.outfits.GetById(id)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
 	err = h.outfits.Update(&outfit)
 	if err != nil {
 		return app_errors.New(err)
@@ -214,7 +222,15 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 	}
 	defer file.Close()
 
-	err = h.file.Save(ctx.UserContext(), h.cfg.Outfits, outfit.ID.String(), file)
+	parts := strings.Split(oldOutfit.Image, "/")
+	err = h.file.Delete(ctx.UserContext(), h.cfg.Outfits, parts[1])
+	if err != nil {
+		middleware.LogWarning(ctx, err)
+	}
+
+	now := strconv.FormatInt(time.Now().Unix(), 10)
+
+	err = h.file.Save(ctx.UserContext(), h.cfg.Outfits, outfit.ID.String()+now, file)
 	if err != nil {
 		return app_errors.New(err)
 	}
