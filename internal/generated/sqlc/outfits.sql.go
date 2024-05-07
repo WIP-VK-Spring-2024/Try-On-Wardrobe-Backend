@@ -330,9 +330,10 @@ update outfits
 set name = coalesce($4, name),
     note = coalesce($2, note),
     style_id = coalesce($3, style_id),
-    transforms = coalesce($5, transforms),
-    seasons = coalesce($6, seasons)::season[],
-    privacy = coalesce($7::privacy, privacy),
+    image = coalesce($5, image),
+    transforms = coalesce($6, transforms),
+    seasons = coalesce($7, seasons)::season[],
+    privacy = coalesce($8::privacy, privacy),
     updated_at = now()
 where id = $1
 returning created_at, updated_at
@@ -343,6 +344,7 @@ type UpdateOutfitParams struct {
 	Note       pgtype.Text
 	StyleID    utils.UUID
 	Name       pgtype.Text
+	Image      pgtype.Text
 	Transforms []byte
 	Seasons    []domain.Season
 	Privacy    NullPrivacy
@@ -359,6 +361,7 @@ func (q *Queries) UpdateOutfit(ctx context.Context, arg UpdateOutfitParams) (Upd
 		arg.Note,
 		arg.StyleID,
 		arg.Name,
+		arg.Image,
 		arg.Transforms,
 		arg.Seasons,
 		arg.Privacy,

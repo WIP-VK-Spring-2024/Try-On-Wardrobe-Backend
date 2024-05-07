@@ -3,7 +3,6 @@ package outfits
 import (
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"strconv"
 	"strings"
@@ -186,8 +185,28 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.ValidationError(err)
 	}
 
+	oldOutfit, err := h.outfits.GetById(id)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	var fileName string
+	fileHeader, err := ctx.FormFile("img")
+	switch {
+	case err != nil && err != fasthttp.ErrMissingFile:
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	case fileHeader == nil:
+		break
+	default:
+		fileName = id.String() + strconv.FormatInt(time.Now().Unix(), 10)
+	}
+
 	outfit.UserID = session.UserID
 	outfit.ID = id
+	if fileName != "" {
+		outfit.Image = h.cfg.Outfits + "/" + fileName
+	}
 
 	transforms := ctx.FormValue("transforms")
 
@@ -195,25 +214,9 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		outfit.Transforms = nil
 	}
 
-	oldOutfit, err := h.outfits.GetById(id)
-	if err != nil {
-		return app_errors.New(err)
-	}
-
 	err = h.outfits.Update(&outfit)
 	if err != nil {
 		return app_errors.New(err)
-	}
-
-	fileHeader, err := ctx.FormFile("img")
-	switch {
-	case fileHeader == nil || err == fasthttp.ErrMissingFile || err == io.EOF:
-		return ctx.SendString(common.EmptyJson)
-	case err != nil:
-		middleware.LogWarning(ctx, err)
-		return app_errors.ErrBadRequest
-	default:
-		break
 	}
 
 	file, err := fileHeader.Open()
@@ -228,9 +231,7 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		middleware.LogWarning(ctx, err)
 	}
 
-	now := strconv.FormatInt(time.Now().Unix(), 10)
-
-	err = h.file.Save(ctx.UserContext(), h.cfg.Outfits, outfit.ID.String()+now, file)
+	err = h.file.Save(ctx.UserContext(), h.cfg.Outfits, fileName, file)
 	if err != nil {
 		return app_errors.New(err)
 	}

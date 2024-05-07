@@ -13,6 +13,7 @@ update outfits
 set name = coalesce(sqlc.narg(name), name),
     note = coalesce($2, note),
     style_id = coalesce($3, style_id),
+    image = coalesce(sqlc.narg(image), image),
     transforms = coalesce(sqlc.narg(transforms), transforms),
     seasons = coalesce(sqlc.arg(seasons), seasons)::season[],
     privacy = coalesce(sqlc.narg(privacy)::privacy, privacy),

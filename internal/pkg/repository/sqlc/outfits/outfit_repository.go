@@ -132,6 +132,11 @@ func (repo OutfitRepository) Update(outfit *domain.Outfit) (err error) {
 		updateParams.Name.Valid = true
 	}
 
+	if outfit.Image != "" {
+		updateParams.Image.String = outfit.Image
+		updateParams.Image.Valid = true
+	}
+
 	ctx := context.Background()
 	tx, err := repo.db.Begin(ctx)
 	if err != nil {
