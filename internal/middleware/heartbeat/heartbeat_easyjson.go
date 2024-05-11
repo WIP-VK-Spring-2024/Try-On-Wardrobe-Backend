@@ -40,6 +40,8 @@ func easyjson2e157c16DecodeTryOnInternalMiddlewareHeartbeat(in *jlexer.Lexer, ou
 			out.DB = string(in.String())
 		case "centrifugo":
 			out.Centrifugo = string(in.String())
+		case "redis":
+			out.Redis = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -69,6 +71,16 @@ func easyjson2e157c16EncodeTryOnInternalMiddlewareHeartbeat(out *jwriter.Writer,
 			out.RawString(prefix)
 		}
 		out.String(string(in.Centrifugo))
+	}
+	if in.Redis != "" {
+		const prefix string = ",\"redis\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Redis))
 	}
 	out.RawByte('}')
 }

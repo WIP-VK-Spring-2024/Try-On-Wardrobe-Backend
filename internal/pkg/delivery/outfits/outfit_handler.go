@@ -219,6 +219,17 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
+	resp := &createdResponse{
+		Timestamp: domain.Timestamp{
+			CreatedAt: outfit.CreatedAt,
+			UpdatedAt: outfit.UpdatedAt,
+		},
+	}
+
+	if fileName == "" {
+		return ctx.JSON(resp)
+	}
+
 	file, err := fileHeader.Open()
 	if err != nil {
 		return app_errors.New(err)
@@ -236,12 +247,7 @@ func (h *OutfitHandler) Update(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
-	return ctx.JSON(createdResponse{
-		Timestamp: domain.Timestamp{
-			CreatedAt: outfit.CreatedAt,
-			UpdatedAt: outfit.UpdatedAt,
-		},
-	})
+	return ctx.JSON(resp)
 }
 
 func (h *OutfitHandler) Delete(ctx *fiber.Ctx) error {

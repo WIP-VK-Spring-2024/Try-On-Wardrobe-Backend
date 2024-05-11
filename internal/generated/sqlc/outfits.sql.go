@@ -114,7 +114,7 @@ const getOutfitClothesInfo = `-- name: GetOutfitClothesInfo :many
 select
     clothes.id,
     try_on_type(types.name) as category,
-    subtypes.name as subcategory,
+    subtypes.eng_name as subcategory,
     subtypes.layer
 from outfits
 join clothes on outfits.transforms ? clothes.id::text

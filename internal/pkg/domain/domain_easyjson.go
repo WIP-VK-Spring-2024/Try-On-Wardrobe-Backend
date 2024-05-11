@@ -1268,6 +1268,8 @@ func easyjson3e1fa5ecDecodeTryOnInternalPkgDomain9(in *jlexer.Lexer, out *TryOnC
 			}
 		case "category":
 			out.Category = string(in.String())
+		case "subcategory":
+			out.Subcategory = string(in.String())
 		default:
 			in.SkipRecursive()
 		}
@@ -1297,6 +1299,16 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain9(out *jwriter.Writer, in TryOn
 			out.RawString(prefix)
 		}
 		out.String(string(in.Category))
+	}
+	if in.Subcategory != "" {
+		const prefix string = ",\"subcategory\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.Subcategory))
 	}
 	out.RawByte('}')
 }
