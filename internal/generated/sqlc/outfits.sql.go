@@ -113,16 +113,21 @@ func (q *Queries) GetOutfit(ctx context.Context, id utils.UUID) (GetOutfitRow, e
 const getOutfitClothesInfo = `-- name: GetOutfitClothesInfo :many
 select
     clothes.id,
-    try_on_type(types.name) as category
+    try_on_type(types.name) as category,
+    subtypes.name as subcategory,
+    subtypes.layer
 from outfits
 join clothes on outfits.transforms ? clothes.id::text
 join types on types.id = clothes.type_id
+join subtypes on clothes.subtype_id = subtypes.id
 where outfits.id = $1 and try_on_type(types.name) <> ''
 `
 
 type GetOutfitClothesInfoRow struct {
-	ID       utils.UUID
-	Category string
+	ID          utils.UUID
+	Category    string
+	Subcategory string
+	Layer       int16
 }
 
 func (q *Queries) GetOutfitClothesInfo(ctx context.Context, id utils.UUID) ([]GetOutfitClothesInfoRow, error) {
@@ -134,7 +139,12 @@ func (q *Queries) GetOutfitClothesInfo(ctx context.Context, id utils.UUID) ([]Ge
 	var items []GetOutfitClothesInfoRow
 	for rows.Next() {
 		var i GetOutfitClothesInfoRow
-		if err := rows.Scan(&i.ID, &i.Category); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Category,
+			&i.Subcategory,
+			&i.Layer,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

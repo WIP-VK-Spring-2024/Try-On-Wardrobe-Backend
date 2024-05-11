@@ -17,8 +17,9 @@ insert into users(
     name,
     email,
     password,
-    gender
-) values ($1, $2, $3, $4)
+    gender,
+    privacy
+) values ($1, $2, $3, $4, 'private')
 returning id
 `
 

@@ -111,6 +111,7 @@ where o.id = $1;
 select
     clothes.id,
     try_on_type(types.name) as category,
+    subtypes.eng_name as subcategory,
     subtypes.layer as layer
 from clothes
 join types on types.id = clothes.type_id

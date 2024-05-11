@@ -43,9 +43,10 @@ type TryOnRequest struct {
 
 //easyjson:json
 type TryOnClothesInfo struct {
-	ClothesID utils.UUID
-	Category  string
-	Layer     int `json:"-"`
+	ClothesID   utils.UUID
+	Category    string
+	Subcategory string
+	Layer       int `json:"-"`
 }
 
 //easyjson:json

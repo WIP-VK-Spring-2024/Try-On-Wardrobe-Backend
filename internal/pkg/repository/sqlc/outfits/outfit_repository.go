@@ -199,8 +199,10 @@ func (repo OutfitRepository) GetClothesInfo(outfitId utils.UUID) ([]domain.TryOn
 
 	return utils.Map(clothesInfoSlice, func(t *sqlc.GetOutfitClothesInfoRow) *domain.TryOnClothesInfo {
 		return &domain.TryOnClothesInfo{
-			ClothesID: t.ID,
-			Category:  t.Category,
+			ClothesID:   t.ID,
+			Category:    t.Category,
+			Subcategory: t.Subcategory,
+			Layer:       int(t.Layer),
 		}
 	}), nil
 }

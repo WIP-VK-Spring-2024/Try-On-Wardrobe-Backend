@@ -2,13 +2,11 @@ package classification
 
 import (
 	"context"
-	"slices"
 
 	"try-on/internal/generated/sqlc"
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -23,30 +21,6 @@ func New(db *pgxpool.Pool) domain.ClothesClassificationRepository {
 }
 
 func (c ClothesClassificationRepository) GetClassifications(userId utils.UUID, tagLimit int32) (*domain.ClothesClassificationRequest, error) {
-	// tagNames, err := c.queries.GetPopularTagEngNames(context.Background(), tagLimit)
-	// if err != nil {
-	// 	return nil, utils.PgxError(err)
-	// }
-
-	tagNames := []pgtype.Text{}
-
-	userTags, err := c.queries.GetUserFavouriteTags(context.Background(), userId, tagLimit)
-	if err != nil {
-		return nil, utils.PgxError(err)
-	}
-
-	userTagNames := utils.Map(userTags, func(t *sqlc.Tag) *pgtype.Text {
-		return &t.EngName
-	})
-
-	tagNames = append(tagNames, userTagNames...)
-
-	strTagNames := utils.Map(tagNames, func(t *pgtype.Text) *string {
-		return &t.String
-	})
-	slices.Sort(strTagNames)
-	strTagNames = slices.Compact(strTagNames)
-
 	styleNames, err := c.queries.GetStyleEngNames(context.Background())
 	if err != nil {
 		return nil, utils.PgxError(err)
@@ -67,7 +41,7 @@ func (c ClothesClassificationRepository) GetClassifications(userId utils.UUID, t
 		Categories:    typeNames,
 		Subcategories: subtypeNames,
 		Seasons:       domain.Seasons,
-		Tags:          strTagNames,
+		Tags:          []string{},
 	}, nil
 }
 
