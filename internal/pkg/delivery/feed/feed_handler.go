@@ -124,6 +124,10 @@ func (h FeedHandler) GetRecommendedPosts(ctx *fiber.Ctx) error {
 		return app_errors.New(err)
 	}
 
+	if posts == nil {
+		posts = []domain.Post{}
+	}
+
 	return ctx.JSON(posts)
 }
 

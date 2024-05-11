@@ -37,18 +37,35 @@ func (rec Recsys) Close() {
 	rec.publisher.Close()
 }
 
-func (rec Recsys) GetRecommendations(ctx context.Context, limit int, request domain.RecsysRequest) ([]domain.Post, error) {
-	result, err := rec.redis.SRandMemberN(recsysSetKey(request.UserID), int64(request.SamplesAmount)).Result()
+func (rec Recsys) makeRecsysRequest(ctx context.Context, request domain.RecsysRequest) error {
+	key := recsysFlagKey(request.UserID)
+	err := rec.redis.Get(key).Err()
+	if err != redis.Nil {
+		return nil
+	}
+
+	err = rec.redis.Set(key, true, 0).Err()
 	if err != nil {
+		return err
+	}
+	return rec.publisher.Publish(ctx, request)
+}
+
+func (rec Recsys) GetRecommendations(ctx context.Context, limit int, request domain.RecsysRequest) ([]domain.Post, error) {
+	redisKey := recsysSetKey(request.UserID)
+
+	result, err := rec.redis.SPopN(redisKey, int64(request.SamplesAmount)).Result()
+	if err != nil && err != redis.Nil {
 		return nil, err
 	}
 
 	if len(result) == 0 {
-		return nil, rec.publisher.Publish(ctx, request)
+		return nil, rec.makeRecsysRequest(ctx, request)
 	}
 
 	resultUUIDs := make([]utils.UUID, 0, len(result))
 	for _, elem := range result {
+
 		uuid, err := utils.ParseUUID(elem)
 		if err != nil {
 			return nil, err
@@ -75,8 +92,12 @@ func (rec Recsys) ListenResults(logger *zap.SugaredLogger) error {
 				args = append(args, outfitId)
 			}
 
-			result := rec.redis.SAdd(recsysSetKey(response.UserID), args...)
-			if err := result.Err(); err != nil {
+			_, err := rec.redis.TxPipelined(func(pipeline redis.Pipeliner) error {
+				pipeline.SAdd(recsysSetKey(response.UserID), args...)
+				pipeline.Del(recsysFlagKey(response.UserID))
+				return nil
+			})
+			if err != nil {
 				logger.Errorw("recsys redis error", "error", err)
 				return domain.ResultDiscard
 			}
@@ -89,5 +110,9 @@ func (rec Recsys) ListenResults(logger *zap.SugaredLogger) error {
 }
 
 func recsysSetKey(userId utils.UUID) string {
-	return fmt.Sprintf("user:%s:recsys", userId.String())
+	return fmt.Sprintf("user:%s:recsys:items", userId.String())
+}
+
+func recsysFlagKey(userId utils.UUID) string {
+	return fmt.Sprintf("user:%s:recsys:flag", userId.String())
 }
