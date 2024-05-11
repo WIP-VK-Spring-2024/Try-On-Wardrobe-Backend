@@ -20,9 +20,11 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/centrifugo"
 	"try-on/internal/pkg/repository/file_manager"
+	feedRepo "try-on/internal/pkg/repository/sqlc/feed"
 	"try-on/internal/pkg/repository/weather"
 	"try-on/internal/pkg/usecase/ml"
 	outfitgen "try-on/internal/pkg/usecase/outfit_gen"
+	"try-on/internal/pkg/usecase/recsys"
 	"try-on/internal/pkg/usecase/translator/gtranslate"
 	tryon "try-on/internal/pkg/usecase/try_on"
 	"try-on/internal/pkg/utils"
@@ -36,6 +38,7 @@ import (
 	clothesUsecase "try-on/internal/pkg/usecase/clothes"
 	tagsUsecase "try-on/internal/pkg/usecase/tags"
 
+	"github.com/go-redis/redis"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -137,6 +140,20 @@ func (app *App) Run() error {
 	)
 	defer tryOnUsecase.Close()
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: app.cfg.Redis.DSN(),
+	})
+
+	feedRepo := feedRepo.New(pg)
+
+	recsys := recsys.New(
+		feedRepo,
+		redisClient,
+		rabbit.NewPublisher[domain.RecsysRequest](rabbitConn, app.cfg.Rabbit.Recsys.Request),
+		rabbit.NewSubscriber[domain.RecsysResponse](rabbitConn, app.cfg.Rabbit.Recsys.Response),
+	)
+	defer recsys.Close()
+
 	tryOnHandler := tryOnHandler.New(
 		pg, tryOnUsecase,
 		app.logger,
@@ -165,7 +182,7 @@ func (app *App) Run() error {
 
 	tagsHandler := tags.New(pg)
 
-	feedHandler := feed.New(pg)
+	feedHandler := feed.New(feedRepo, recsys)
 
 	usersHandler := users.New(pg, fileManager, &app.cfg.Session, &app.cfg.Static)
 
@@ -181,6 +198,7 @@ func (app *App) Run() error {
 	app.api.Get("/heartbeat", heartbeat.Hearbeat(heartbeat.Dependencies{
 		DB:         pg,
 		Centrifugo: centrifugoConn,
+		Redis:      redisClient,
 	}))
 
 	app.api.Post("/users", usersHandler.Create)
@@ -231,6 +249,7 @@ func (app *App) Run() error {
 	app.api.Get("/posts/:id/comments", feedHandler.GetComments)
 	app.api.Post("/posts/:id/comments", feedHandler.CreateComment)
 	app.api.Post("/posts/:id/rate", feedHandler.RatePost)
+	app.api.Post("/posts/recommended", feedHandler.GetRecommendedPosts)
 
 	app.api.Post("/comments/:id/rate", feedHandler.RateComment)
 	app.api.Put("/comments/:id", feedHandler.UpdateComment)
@@ -252,6 +271,7 @@ func (app *App) Run() error {
 	clothesHandler.ListenProcessingResults(&app.cfg.Centrifugo)
 	tryOnHandler.ListenTryOnResults(&app.cfg.Centrifugo)
 	outfitHandler.GetGenerationResults(&app.cfg.Centrifugo)
+	recsys.ListenResults(app.logger)
 
 	return app.api.Listen(app.cfg.Addr)
 }

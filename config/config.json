@@ -36,6 +36,11 @@
     }
   },
 
+  "redis": {
+    "host": "redis",
+    "port": 6379
+  },
+
   "rabbit": {
     "port": 8003,
     "user": "usr",
@@ -50,6 +55,10 @@
     "outfitGen": {
       "request": "outfit_gen",
       "response": "outfit_gen_response"
+    },
+    "recsys": {
+      "request": "recsys",
+      "response": "recsys_response"
     }
   },
 

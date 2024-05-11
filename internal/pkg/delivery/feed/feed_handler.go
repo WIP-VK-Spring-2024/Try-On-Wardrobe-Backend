@@ -1,34 +1,34 @@
 package feed
 
 import (
+	"strconv"
+
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/common"
 	"try-on/internal/pkg/domain"
-	"try-on/internal/pkg/repository/sqlc/feed"
 	"try-on/internal/pkg/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/mailru/easyjson"
 )
 
 type FeedHandler struct {
-	feed domain.FeedRepository
+	feed   domain.FeedRepository
+	recsys domain.Recsys
 
 	getPosts      fiber.Handler
 	getLikedPosts fiber.Handler
-	geSubPosts    fiber.Handler
+	getSubPosts   fiber.Handler
 }
 
-func New(db *pgxpool.Pool) *FeedHandler {
-	feed := feed.New(db)
-
+func New(feed domain.FeedRepository, recsys domain.Recsys) *FeedHandler {
 	return &FeedHandler{
 		feed:          feed,
+		recsys:        recsys,
 		getPosts:      getPostsTemplate(feed.GetPosts),
 		getLikedPosts: getPostsTemplate(feed.GetLikedPosts),
-		geSubPosts:    getPostsTemplate(feed.GetSubscriptionPosts),
+		getSubPosts:   getPostsTemplate(feed.GetSubscriptionPosts),
 	}
 }
 
@@ -41,7 +41,7 @@ func (h *FeedHandler) GetLikedPosts(ctx *fiber.Ctx) error {
 }
 
 func (h *FeedHandler) GetSubscriptionPosts(ctx *fiber.Ctx) error {
-	return h.geSubPosts(ctx)
+	return h.getSubPosts(ctx)
 }
 
 func getPostsTemplate(getter func(domain.GetPostsOpts) ([]domain.Post, error)) fiber.Handler {
@@ -88,6 +88,38 @@ func (h FeedHandler) GetPostsByUser(ctx *fiber.Ctx) error {
 	opts.RequestingUserID = session.UserID
 
 	posts, err := h.feed.GetPostsByUser(userId, opts)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.JSON(posts)
+}
+
+func (h FeedHandler) GetRecommendedPosts(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	userId, err := utils.ParseUUID(ctx.Params("id"))
+	if err != nil {
+		return app_errors.ErrUserIdInvalid
+	}
+
+	limit, _ := strconv.Atoi(ctx.Query("limit"))
+	if limit == 0 {
+		limit = 9
+	}
+
+	samplesAmount, _ := strconv.Atoi(ctx.Query("sample_amount"))
+	if samplesAmount == 0 {
+		samplesAmount = 100
+	}
+
+	posts, err := h.recsys.GetRecommendations(ctx.UserContext(), limit, domain.RecsysRequest{
+		UserID:        userId,
+		SamplesAmount: samplesAmount,
+	})
 	if err != nil {
 		return app_errors.New(err)
 	}

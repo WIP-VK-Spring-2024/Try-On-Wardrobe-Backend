@@ -68,6 +68,7 @@ type FeedRepository interface {
 	GetLikedPosts(opts GetPostsOpts) ([]Post, error)
 	GetSubscriptionPosts(opts GetPostsOpts) ([]Post, error)
 	GetPostsByUser(userId utils.UUID, opts GetPostsOpts) ([]Post, error)
+	GetPostsByOutfitIds(userId utils.UUID, outfitIds []utils.UUID) ([]Post, error)
 
 	Subscribe(subscriberId, userId utils.UUID) error
 	Unsubscribe(subscriberId, userId utils.UUID) error
