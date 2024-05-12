@@ -101,11 +101,6 @@ func (h FeedHandler) GetRecommendedPosts(ctx *fiber.Ctx) error {
 		return app_errors.ErrUnauthorized
 	}
 
-	userId, err := utils.ParseUUID(ctx.Params("id"))
-	if err != nil {
-		return app_errors.ErrUserIdInvalid
-	}
-
 	limit, _ := strconv.Atoi(ctx.Query("limit"))
 	if limit == 0 {
 		limit = 9
@@ -117,7 +112,7 @@ func (h FeedHandler) GetRecommendedPosts(ctx *fiber.Ctx) error {
 	}
 
 	posts, err := h.recsys.GetRecommendations(ctx.UserContext(), limit, domain.RecsysRequest{
-		UserID:        userId,
+		UserID:        session.UserID,
 		SamplesAmount: samplesAmount,
 	})
 	if err != nil {
