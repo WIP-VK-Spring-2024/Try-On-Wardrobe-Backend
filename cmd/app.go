@@ -246,11 +246,11 @@ func (app *App) Run() error {
 	app.api.Put("/outfits/:id", outfitHandler.Update)
 
 	app.api.Get("/posts", feedHandler.GetPosts)
+	app.api.Get("/posts/recommended", feedHandler.GetRecommendedPosts)
 	app.api.Get("/users/:id/posts", feedHandler.GetPostsByUser)
 	app.api.Get("/posts/:id/comments", feedHandler.GetComments)
 	app.api.Post("/posts/:id/comments", feedHandler.CreateComment)
 	app.api.Post("/posts/:id/rate", feedHandler.RatePost)
-	app.api.Post("/posts/recommended", feedHandler.GetRecommendedPosts)
 
 	app.api.Post("/comments/:id/rate", feedHandler.RateComment)
 	app.api.Put("/comments/:id", feedHandler.UpdateComment)
