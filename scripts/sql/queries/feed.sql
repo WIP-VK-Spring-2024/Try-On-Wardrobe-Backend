@@ -14,7 +14,9 @@ select
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id,
-    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -43,7 +45,9 @@ select
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id,
-    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -70,7 +74,9 @@ select
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id,
-    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -99,7 +105,9 @@ select
     post_ratings.value as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id,
-    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -127,7 +135,9 @@ select
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
     coalesce(try_on_results.id, uuid_nil()) as try_on_id,
-    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id

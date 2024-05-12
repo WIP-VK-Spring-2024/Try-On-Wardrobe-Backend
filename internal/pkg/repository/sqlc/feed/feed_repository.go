@@ -228,7 +228,6 @@ func postsFromSqlc(model *sqlc.GetPostsRow) *domain.Post {
 		UserRating:  int(model.UserRating),
 		TryOnID:     model.TryOnID,
 		TryOnImage:  model.TryOnImage,
-		ClothesIds:  model.ClothesIds,
 	}
 }
 

@@ -22,7 +22,7 @@ type Post struct {
 	Rating     int `json:"rating,!omitempty"`      //lint:ignore SA5008 easyjson custom tags
 	UserRating int `json:"user_rating,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 
-	ClothesIds []utils.UUID
+	Tryonable bool `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 }
 
 //easyjson:json
