@@ -28,7 +28,8 @@ select
          else false end is_subbed,
     post_ratings.value as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select jsonb_object_keys from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -62,6 +63,7 @@ type GetLikedPostsRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	ClothesIds  []utils.UUID
 }
 
 func (q *Queries) GetLikedPosts(ctx context.Context, arg GetLikedPostsParams) ([]GetLikedPostsRow, error) {
@@ -87,6 +89,7 @@ func (q *Queries) GetLikedPosts(ctx context.Context, arg GetLikedPostsParams) ([
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.ClothesIds,
 		); err != nil {
 			return nil, err
 		}
@@ -113,7 +116,8 @@ select
          else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select jsonb_object_keys from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -148,6 +152,7 @@ type GetPostsRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	ClothesIds  []utils.UUID
 }
 
 func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsRow, error) {
@@ -178,6 +183,7 @@ func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsR
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.ClothesIds,
 		); err != nil {
 			return nil, err
 		}
@@ -204,7 +210,8 @@ select
          else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select jsonb_object_keys from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -230,6 +237,7 @@ type GetPostsByIdsRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	ClothesIds  []utils.UUID
 }
 
 func (q *Queries) GetPostsByIds(ctx context.Context, userID utils.UUID, outfitIds []utils.UUID) ([]GetPostsByIdsRow, error) {
@@ -255,6 +263,7 @@ func (q *Queries) GetPostsByIds(ctx context.Context, userID utils.UUID, outfitId
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.ClothesIds,
 		); err != nil {
 			return nil, err
 		}
@@ -281,7 +290,8 @@ select
          else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select jsonb_object_keys from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -316,6 +326,7 @@ type GetPostsByUserRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	ClothesIds  []utils.UUID
 }
 
 func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) ([]GetPostsByUserRow, error) {
@@ -346,6 +357,7 @@ func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) 
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.ClothesIds,
 		); err != nil {
 			return nil, err
 		}
@@ -371,7 +383,8 @@ select
     true as is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select jsonb_object_keys from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -404,6 +417,7 @@ type GetSubscriptionPostsRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	ClothesIds  []utils.UUID
 }
 
 func (q *Queries) GetSubscriptionPosts(ctx context.Context, arg GetSubscriptionPostsParams) ([]GetSubscriptionPostsRow, error) {
@@ -429,6 +443,7 @@ func (q *Queries) GetSubscriptionPosts(ctx context.Context, arg GetSubscriptionP
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.ClothesIds,
 		); err != nil {
 			return nil, err
 		}

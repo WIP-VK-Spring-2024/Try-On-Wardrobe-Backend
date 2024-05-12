@@ -13,7 +13,8 @@ select
          else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -41,7 +42,8 @@ select
          else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -67,7 +69,8 @@ select
          else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -95,7 +98,8 @@ select
          else false end is_subbed,
     post_ratings.value as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -122,7 +126,8 @@ select
     true as is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    array(select * from jsonb_object_keys(outfits.transforms))::uuid[] as clothes_ids
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
