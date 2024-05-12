@@ -99,7 +99,7 @@ func (rec Recsys) ListenResults(logger *zap.SugaredLogger) error {
 
 			args := make([]interface{}, 0, len(response.OutfitIds))
 			for _, outfitId := range response.OutfitIds {
-				args = append(args, outfitId)
+				args = append(args, outfitId.String())
 			}
 
 			_, err := rec.redis.TxPipelined(func(pipeline redis.Pipeliner) error {
