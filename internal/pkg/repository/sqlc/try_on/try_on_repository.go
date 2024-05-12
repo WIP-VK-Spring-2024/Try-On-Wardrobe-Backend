@@ -65,7 +65,7 @@ func (repo TryOnResultRepository) GetByClothes(userImageId utils.UUID, clothesID
 	return fromSqlc(&result), nil
 }
 
-func (repo TryOnResultRepository) GetByOutfit(userImageId, outfitId utils.UUID) (*domain.TryOnResult, error) {
+func (repo TryOnResultRepository) GetByOutfit(userImageId, outfitId utils.UUID, updateOutfit bool) (*domain.TryOnResult, error) {
 	ctx := context.Background()
 	tx, err := repo.db.Begin(ctx)
 	if err != nil {
@@ -85,9 +85,11 @@ func (repo TryOnResultRepository) GetByOutfit(userImageId, outfitId utils.UUID) 
 		return nil, utils.PgxError(err)
 	}
 
-	err = queries.SetOutfitTryOnResult(ctx, outfitId, result.ID)
-	if err != nil {
-		return nil, utils.PgxError(err)
+	if updateOutfit {
+		err = queries.SetOutfitTryOnResult(ctx, outfitId, result.ID)
+		if err != nil {
+			return nil, utils.PgxError(err)
+		}
 	}
 
 	err = tx.Commit(ctx)

@@ -229,6 +229,7 @@ func (app *App) Run() error {
 
 	app.api.Post("/try-on", tryOnHandler.TryOn)
 	app.api.Post("/try-on/outfit", tryOnHandler.TryOnOutfit)
+	app.api.Post("/try-on/post", tryOnHandler.TryOnOutfit)
 	app.api.Get("/try-on", tryOnHandler.GetByUser)
 	app.api.Get("/try-on/:id", tryOnHandler.GetTryOnResult)
 	app.api.Delete("/try-on/:id", tryOnHandler.DeleteResult)

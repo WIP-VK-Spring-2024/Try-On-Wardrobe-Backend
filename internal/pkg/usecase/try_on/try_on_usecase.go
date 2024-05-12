@@ -91,6 +91,29 @@ func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts 
 	})
 }
 
+func (u *TryOnUsecase) TryOnPost(ctx context.Context, outfit utils.UUID, opts domain.TryOnOpts) error {
+	_, err := u.userImages.Get(opts.UserImageID)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	clothes, err := u.outfits.GetClothesInfo(outfit)
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	fmt.Printf("Trying out clothes from post: %+v\n", clothes)
+
+	filteredClothes := filterClothesForTryOn(clothes)
+
+	fmt.Printf("Filtered clothes from post for try on: %+v\n", filteredClothes)
+
+	return u.publisher.Publish(ctx, domain.TryOnRequest{
+		TryOnOpts: opts,
+		Clothes:   filteredClothes,
+	})
+}
+
 func (u *TryOnUsecase) GetTryOnResults(logger *zap.SugaredLogger, handler func(*domain.TryOnResponse) domain.Result) error {
 	ctx := middleware.WithLogger(context.Background(), logger)
 
