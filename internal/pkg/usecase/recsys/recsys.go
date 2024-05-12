@@ -54,10 +54,12 @@ func (rec Recsys) makeRecsysRequest(ctx context.Context, request domain.RecsysRe
 func (rec Recsys) GetRecommendations(ctx context.Context, limit int, request domain.RecsysRequest) ([]domain.Post, error) {
 	redisKey := recsysSetKey(request.UserID)
 
-	result, err := rec.redis.SPopN(redisKey, int64(request.SamplesAmount)).Result()
+	result, err := rec.redis.SPopN(redisKey, int64(limit)).Result()
 	if err != nil && err != redis.Nil {
 		return nil, err
 	}
+
+	fmt.Println("Got results from redis:", result)
 
 	if len(result) == 0 {
 		return nil, rec.makeRecsysRequest(ctx, request)
@@ -65,7 +67,6 @@ func (rec Recsys) GetRecommendations(ctx context.Context, limit int, request dom
 
 	resultUUIDs := make([]utils.UUID, 0, len(result))
 	for _, elem := range result {
-
 		uuid, err := utils.ParseUUID(elem)
 		if err != nil {
 			return nil, err
@@ -87,6 +88,15 @@ func (rec Recsys) ListenResults(logger *zap.SugaredLogger) error {
 		}()
 
 		rec.subscriber.Listen(ctx, func(response *domain.RecsysResponse) domain.Result {
+			if !utils.HttpOk(response.StatusCode) {
+				logger.Warnw("rabbit", "queue", "recsys", "error", response.Message)
+				err := rec.redis.Del(recsysFlagKey(response.UserID)).Err()
+				if err != nil {
+					logger.Errorw("recsys redis error", "error", err)
+				}
+				return domain.ResultDiscard
+			}
+
 			args := make([]interface{}, 0, len(response.OutfitIds))
 			for _, outfitId := range response.OutfitIds {
 				args = append(args, outfitId)
