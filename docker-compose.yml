@@ -16,6 +16,7 @@ services:
       - STATIC.HTTPAPI.TOKEN
       - STATIC.HTTPAPI.ENDPOINT
       - WEATHER_API_KEY
+      - MODELSHEALTH.TOKEN
 
   centrifugo:
     image: centrifugo/centrifugo:v5

@@ -287,10 +287,19 @@ func (h *OutfitHandler) Generate(ctx *fiber.Ctx) error {
 
 	fmt.Printf("Got from query: %+v\n", req)
 
+	isAvailable, err := h.generator.IsAvailable(ctx.UserContext())
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	if !isAvailable {
+		return app_errors.ErrModelUnavailable
+	}
+
 	req.UserID = session.UserID
 	req.Pos.IP = ctx.IP()
 
-	err := h.generator.Generate(ctx.UserContext(), req)
+	err = h.generator.Generate(ctx.UserContext(), req)
 	if err != nil {
 		return app_errors.New(err)
 	}

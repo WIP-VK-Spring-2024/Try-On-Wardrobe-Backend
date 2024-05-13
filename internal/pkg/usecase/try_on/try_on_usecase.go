@@ -9,6 +9,7 @@ import (
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/ml"
 	"try-on/internal/pkg/repository/sqlc/clothes"
 	"try-on/internal/pkg/repository/sqlc/outfits"
 	"try-on/internal/pkg/repository/sqlc/user_images"
@@ -23,8 +24,9 @@ type TryOnUsecase struct {
 	outfits    domain.OutfitRepository
 	userImages domain.UserImageRepository
 
-	subscriber domain.Subscriber[domain.TryOnResponse]
-	publisher  domain.Publisher[domain.TryOnRequest]
+	subscriber   domain.Subscriber[domain.TryOnResponse]
+	publisher    domain.Publisher[domain.TryOnRequest]
+	availability domain.MlModel
 }
 
 func New(
@@ -33,16 +35,22 @@ func New(
 	sub domain.Subscriber[domain.TryOnResponse],
 ) domain.TryOnUsecase {
 	return &TryOnUsecase{
-		clothes:    clothes.New(db),
-		outfits:    outfits.New(db),
-		userImages: user_images.New(db),
-		publisher:  pub,
-		subscriber: sub,
+		clothes:      clothes.New(db),
+		outfits:      outfits.New(db),
+		userImages:   user_images.New(db),
+		publisher:    pub,
+		subscriber:   sub,
+		availability: ml.NewAvailabilityChecker(),
 	}
 }
 
 func (u *TryOnUsecase) Close() {
 	u.publisher.Close()
+}
+
+func (u *TryOnUsecase) IsAvailable(ctx context.Context) (bool, error) {
+	cfg := middleware.Config(ctx).ModelsHealth
+	return u.availability.IsAvailable(cfg.TryOn, ctx)
 }
 
 func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts domain.TryOnOpts) error {

@@ -21,6 +21,7 @@ type TryOnResult struct {
 
 type TryOnUsecase interface {
 	Closer
+	IsAvailable(ctx context.Context) (bool, error)
 	TryOn(ctx context.Context, clothes []utils.UUID, opts TryOnOpts) error
 	TryOnOutfit(ctx context.Context, outfit utils.UUID, opts TryOnOpts) error
 	TryOnPost(ctx context.Context, outfit utils.UUID, opts TryOnOpts) error

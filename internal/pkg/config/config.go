@@ -24,6 +24,7 @@ type Config struct {
 	Rabbit         Rabbit
 	Redis          Redis
 	Classification Classification
+	ModelsHealth   ModelsHealth
 }
 
 type Static struct {
@@ -69,6 +70,15 @@ type Centrifugo struct {
 	TryOnChannel      string
 	ProcessingChannel string
 	OutfitGenChannel  string
+}
+
+type ModelsHealth struct {
+	Token       string
+	Endpoint    string
+	TryOn       string
+	Cut         string
+	OutfitGen   string
+	TokenHeader string
 }
 
 type Cors struct {
@@ -145,6 +155,7 @@ var envBoundConfigValues = []string{
 	"static.httpapi.token",
 	"rabbit.host",
 	"static.httpapi.endpoint",
+	"modelsHealth.token",
 }
 
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {

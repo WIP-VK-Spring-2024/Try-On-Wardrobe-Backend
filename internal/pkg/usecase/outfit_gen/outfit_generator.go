@@ -9,6 +9,7 @@ import (
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/ml"
 	"try-on/internal/pkg/repository/sqlc/clothes"
 	"try-on/internal/pkg/repository/sqlc/outfits"
 	"try-on/internal/pkg/utils"
@@ -24,8 +25,9 @@ type OutfitGenerator struct {
 	clothes domain.ClothesRepository
 	outfits domain.OutfitRepository
 
-	weather    domain.WeatherService
-	translator domain.Translator
+	weather      domain.WeatherService
+	translator   domain.Translator
+	availability domain.MlModel
 }
 
 func New(
@@ -36,17 +38,23 @@ func New(
 	translator domain.Translator,
 ) domain.OutfitGenerator {
 	return &OutfitGenerator{
-		publisher:  publisher,
-		subscriber: subscriber,
-		clothes:    clothes.New(db),
-		outfits:    outfits.New(db),
-		weather:    weather,
-		translator: translator,
+		publisher:    publisher,
+		subscriber:   subscriber,
+		clothes:      clothes.New(db),
+		outfits:      outfits.New(db),
+		weather:      weather,
+		translator:   translator,
+		availability: ml.NewAvailabilityChecker(),
 	}
 }
 
 func (gen *OutfitGenerator) Close() {
 	gen.publisher.Close()
+}
+
+func (gen *OutfitGenerator) IsAvailable(ctx context.Context) (bool, error) {
+	cfg := middleware.Config(ctx).ModelsHealth
+	return gen.availability.IsAvailable(cfg.OutfitGen, ctx)
 }
 
 func (gen *OutfitGenerator) Generate(ctx context.Context, request domain.OutfitGenerationRequest) error {

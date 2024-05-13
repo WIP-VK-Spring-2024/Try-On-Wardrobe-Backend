@@ -28,6 +28,11 @@ var (
 		Code: http.StatusBadRequest,
 	}
 
+	ErrModelUnavailable = &ResponseError{
+		Msg:  "model unavailable",
+		Code: http.StatusServiceUnavailable,
+	}
+
 	ErrUnauthorized = &ResponseError{
 		Msg:  "credentials missing or invalid",
 		Code: http.StatusUnauthorized,
