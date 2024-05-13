@@ -44,9 +44,9 @@
   "modelsHealth": {
     "tokenHeader": "X-ACCESS-TOKEN",
     "endpoint": "http://model-api:8000",
-    "try_on": "/try_on/resp/health",
-    "cut": "/cut/resp/health",
-    "outfitGen": "/outfit_gen/resp/health"
+    "try_on": "/try_on/task/health",
+    "cut": "/cut/task/health",
+    "outfitGen": "/outfit_gen/task/health"
   },
 
   "rabbit": {
