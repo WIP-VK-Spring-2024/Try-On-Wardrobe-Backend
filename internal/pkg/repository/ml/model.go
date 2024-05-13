@@ -2,6 +2,7 @@ package ml
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -36,6 +37,8 @@ func (m ModelAvailabilityChecker) IsAvailable(model string, ctx context.Context)
 	if err != nil {
 		return false, err
 	}
+
+	fmt.Println("Got response", string(body))
 
 	modelResp := domain.ModelHealthResponse{}
 	err = easyjson.Unmarshal(body, &modelResp)
