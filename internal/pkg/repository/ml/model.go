@@ -22,12 +22,14 @@ func NewAvailabilityChecker() domain.MlModel {
 func (m ModelAvailabilityChecker) IsAvailable(model string, ctx context.Context) (bool, error) {
 	cfg := middleware.Config(ctx).ModelsHealth
 
+	fmt.Printf("Model health config: %+v\n", cfg)
+
 	req, err := http.NewRequest(http.MethodGet, cfg.Endpoint+model, nil)
 	if err != nil {
 		return false, err
 	}
 
-	req.Header.Add(cfg.TokenHeader, cfg.Token)
+	req.Header.Set(cfg.TokenHeader, cfg.Token)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
