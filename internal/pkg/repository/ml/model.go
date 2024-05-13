@@ -8,6 +8,7 @@ import (
 
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/utils"
 
 	"github.com/mailru/easyjson"
 )
@@ -31,6 +32,11 @@ func (m ModelAvailabilityChecker) IsAvailable(model string, ctx context.Context)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return false, err
+	}
+
+	if !utils.HttpOk(resp.StatusCode) {
+		middleware.GetLogger(ctx).Warnw("model-health", "code", resp.StatusCode, "status", resp.Status)
+		return false, nil
 	}
 
 	body, err := io.ReadAll(resp.Body)
