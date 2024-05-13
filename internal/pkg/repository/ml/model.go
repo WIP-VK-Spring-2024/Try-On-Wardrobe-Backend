@@ -22,8 +22,6 @@ func NewAvailabilityChecker() domain.MlModel {
 func (m ModelAvailabilityChecker) IsAvailable(model string, ctx context.Context) (bool, error) {
 	cfg := middleware.Config(ctx).ModelsHealth
 
-	fmt.Printf("Model health config: %+v\n", cfg)
-
 	req, err := http.NewRequest(http.MethodGet, cfg.Endpoint+model, nil)
 	if err != nil {
 		return false, err
@@ -46,7 +44,7 @@ func (m ModelAvailabilityChecker) IsAvailable(model string, ctx context.Context)
 		return false, err
 	}
 
-	fmt.Println("Got response", string(body))
+	fmt.Println("Got health response", string(body))
 
 	modelResp := domain.ModelHealthResponse{}
 	err = easyjson.Unmarshal(body, &modelResp)
