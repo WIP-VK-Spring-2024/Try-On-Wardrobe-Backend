@@ -115,6 +115,9 @@ func (h FeedHandler) GetRecommendedPosts(ctx *fiber.Ctx) error {
 		UserID:        session.UserID,
 		SamplesAmount: samplesAmount,
 	})
+	if err == app_errors.ErrModelUnavailable {
+		return err
+	}
 	if err != nil {
 		return app_errors.New(err)
 	}

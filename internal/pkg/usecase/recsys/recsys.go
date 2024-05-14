@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"try-on/internal/middleware"
+	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/ml"
 	"try-on/internal/pkg/utils"
 
 	"github.com/go-redis/redis"
@@ -13,10 +15,11 @@ import (
 )
 
 type Recsys struct {
-	publisher  domain.Publisher[domain.RecsysRequest]
-	subscriber domain.Subscriber[domain.RecsysResponse]
-	redis      *redis.Client
-	feed       domain.FeedRepository
+	publisher    domain.Publisher[domain.RecsysRequest]
+	subscriber   domain.Subscriber[domain.RecsysResponse]
+	redis        *redis.Client
+	feed         domain.FeedRepository
+	availability domain.AvailabilityChecker
 }
 
 func New(
@@ -26,10 +29,11 @@ func New(
 	subscriber domain.Subscriber[domain.RecsysResponse],
 ) domain.Recsys {
 	return &Recsys{
-		redis:      redis,
-		feed:       feed,
-		publisher:  publisher,
-		subscriber: subscriber,
+		redis:        redis,
+		feed:         feed,
+		publisher:    publisher,
+		subscriber:   subscriber,
+		availability: ml.NewAvailabilityChecker(),
 	}
 }
 
@@ -52,6 +56,17 @@ func (rec Recsys) makeRecsysRequest(ctx context.Context, request domain.RecsysRe
 }
 
 func (rec Recsys) GetRecommendations(ctx context.Context, limit int, request domain.RecsysRequest) ([]domain.Post, error) {
+	cfg := middleware.Config(ctx).ModelsHealth
+
+	isAvailable, err := rec.availability.IsAvailable(cfg.Recsys, ctx)
+	if err != nil {
+		middleware.GetLogger(ctx).Warnw("recsys", "error", err)
+		return nil, app_errors.ErrModelUnavailable
+	}
+	if !isAvailable {
+		return nil, app_errors.ErrModelUnavailable
+	}
+
 	redisKey := recsysSetKey(request.UserID)
 
 	result, err := rec.redis.SPopN(redisKey, int64(limit)).Result()

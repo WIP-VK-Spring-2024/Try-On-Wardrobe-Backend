@@ -27,7 +27,7 @@ type OutfitGenerator struct {
 
 	weather      domain.WeatherService
 	translator   domain.Translator
-	availability domain.MlModel
+	availability domain.AvailabilityChecker
 }
 
 func New(

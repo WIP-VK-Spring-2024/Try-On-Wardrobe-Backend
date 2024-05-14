@@ -46,7 +46,8 @@
     "endpoint": "http://model-api:8000",
     "tryOn": "/try_on/task/health",
     "cut": "/cut/task/health",
-    "outfitGen": "/outfit_gen/task/health"
+    "outfitGen": "/outfit_gen/task/health",
+    "recsys": "/recsys/task/health"
   },
 
   "rabbit": {

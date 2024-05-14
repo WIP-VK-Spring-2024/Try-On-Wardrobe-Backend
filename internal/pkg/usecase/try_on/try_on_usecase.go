@@ -26,7 +26,7 @@ type TryOnUsecase struct {
 
 	subscriber   domain.Subscriber[domain.TryOnResponse]
 	publisher    domain.Publisher[domain.TryOnRequest]
-	availability domain.MlModel
+	availability domain.AvailabilityChecker
 }
 
 func New(

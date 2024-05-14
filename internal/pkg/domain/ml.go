@@ -11,6 +11,6 @@ type ModelHealthResponse struct {
 	ResponseTime    *float32
 }
 
-type MlModel interface {
+type AvailabilityChecker interface {
 	IsAvailable(model string, ctx context.Context) (bool, error)
 }

@@ -78,6 +78,7 @@ type ModelsHealth struct {
 	TryOn       string
 	Cut         string
 	OutfitGen   string
+	Recsys      string
 	TokenHeader string
 }
 

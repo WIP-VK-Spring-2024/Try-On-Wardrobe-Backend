@@ -15,7 +15,7 @@ import (
 
 type ModelAvailabilityChecker struct{}
 
-func NewAvailabilityChecker() domain.MlModel {
+func NewAvailabilityChecker() domain.AvailabilityChecker {
 	return &ModelAvailabilityChecker{}
 }
 
