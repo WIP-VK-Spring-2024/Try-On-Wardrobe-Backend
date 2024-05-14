@@ -243,13 +243,19 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 	return ctx.SendString(common.EmptyJson)
 }
 
+//easyjson:json
+type tryOnPostRequest struct {
+	OutfitID    utils.UUID
+	UserImageID utils.UUID
+}
+
 func (h *TryOnHandler) TryOnPost(ctx *fiber.Ctx) error {
 	session := middleware.Session(ctx)
 	if session == nil {
 		return app_errors.ErrUnauthorized
 	}
 
-	var req tryOnOutfitRequest
+	var req tryOnPostRequest
 	err := easyjson.Unmarshal(ctx.Body(), &req)
 	if err != nil {
 		middleware.LogWarning(ctx, err)
