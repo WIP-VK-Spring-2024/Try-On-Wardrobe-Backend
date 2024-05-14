@@ -245,7 +245,7 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 
 //easyjson:json
 type tryOnPostRequest struct {
-	OutfitID    utils.UUID
+	PostID      utils.UUID
 	UserImageID utils.UUID
 }
 
@@ -264,7 +264,7 @@ func (h *TryOnHandler) TryOnPost(ctx *fiber.Ctx) error {
 
 	cfg := middleware.Config(ctx.UserContext())
 
-	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.OutfitID, false)
+	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.PostID, false)
 	if err == nil {
 		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
 		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
@@ -280,7 +280,7 @@ func (h *TryOnHandler) TryOnPost(ctx *fiber.Ctx) error {
 		return app_errors.ErrModelUnavailable
 	}
 
-	err = h.tryOnModel.TryOnPost(ctx.UserContext(), req.OutfitID, domain.TryOnOpts{
+	err = h.tryOnModel.TryOnPost(ctx.UserContext(), req.PostID, domain.TryOnOpts{
 		UserID:       session.UserID,
 		UserImageID:  req.UserImageID,
 		UserImageDir: cfg.Static.FullBody,
