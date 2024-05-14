@@ -78,12 +78,12 @@ func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts 
 func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts domain.TryOnOpts) error {
 	_, err := u.userImages.Get(opts.UserImageID)
 	if err != nil {
-		return app_errors.New(err)
+		return err
 	}
 
 	clothes, err := u.outfits.GetClothesInfo(outfit)
 	if err != nil {
-		return app_errors.New(err)
+		return err
 	}
 
 	fmt.Printf("Trying out clothes from outfit: %+v\n", clothes)
@@ -102,12 +102,14 @@ func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts 
 func (u *TryOnUsecase) TryOnPost(ctx context.Context, outfit utils.UUID, opts domain.TryOnOpts) error {
 	_, err := u.userImages.Get(opts.UserImageID)
 	if err != nil {
-		return app_errors.New(err)
+		fmt.Println("User image error", err.Error())
+		return err
 	}
 
 	clothes, err := u.outfits.GetClothesInfo(outfit)
 	if err != nil {
-		return app_errors.New(err)
+		fmt.Println("clothes info error", err.Error())
+		return err
 	}
 
 	fmt.Printf("Trying out clothes from post: %+v\n", clothes)

@@ -262,6 +262,8 @@ func (h *TryOnHandler) TryOnPost(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
+	fmt.Printf("Got request %+v\n", req)
+
 	cfg := middleware.Config(ctx.UserContext())
 
 	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.PostID, false)
@@ -275,7 +277,6 @@ func (h *TryOnHandler) TryOnPost(ctx *fiber.Ctx) error {
 	if err != nil {
 		return app_errors.New(err)
 	}
-
 	if !isAvailable {
 		return app_errors.ErrModelUnavailable
 	}
