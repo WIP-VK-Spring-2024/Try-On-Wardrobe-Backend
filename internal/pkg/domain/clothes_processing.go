@@ -72,8 +72,8 @@ type ClothesClassificationResponse struct { // End-user response
 	Type    utils.UUID
 	Subtype utils.UUID
 	Style   utils.UUID
-	Seasons []Season
-	Tags    []string
+	Seasons []Season `json:"seasons,!omitempty"` //lint:ignore SA5008 easyjson custom tags
+	Tags    []string `json:"tags,!omitempty"`    //lint:ignore SA5008 easyjson custom tags
 }
 
 //easyjson:json

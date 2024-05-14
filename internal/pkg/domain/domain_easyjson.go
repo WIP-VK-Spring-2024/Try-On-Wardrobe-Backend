@@ -4577,7 +4577,7 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain35(out *jwriter.Writer, in Clot
 		}
 		out.RawText((in.Style).MarshalText())
 	}
-	if len(in.Seasons) != 0 {
+	{
 		const prefix string = ",\"seasons\":"
 		if first {
 			first = false
@@ -4585,7 +4585,9 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain35(out *jwriter.Writer, in Clot
 		} else {
 			out.RawString(prefix)
 		}
-		{
+		if in.Seasons == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
+		} else {
 			out.RawByte('[')
 			for v41, v42 := range in.Seasons {
 				if v41 > 0 {
@@ -4596,15 +4598,12 @@ func easyjson3e1fa5ecEncodeTryOnInternalPkgDomain35(out *jwriter.Writer, in Clot
 			out.RawByte(']')
 		}
 	}
-	if len(in.Tags) != 0 {
+	{
 		const prefix string = ",\"tags\":"
-		if first {
-			first = false
-			out.RawString(prefix[1:])
+		out.RawString(prefix)
+		if in.Tags == nil && (out.Flags&jwriter.NilSliceAsEmpty) == 0 {
+			out.RawString("null")
 		} else {
-			out.RawString(prefix)
-		}
-		{
 			out.RawByte('[')
 			for v43, v44 := range in.Tags {
 				if v43 > 0 {
