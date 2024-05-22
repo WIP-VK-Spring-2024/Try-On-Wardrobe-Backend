@@ -285,6 +285,7 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 				JSONEncoder:  utils.EasyJsonMarshal,
 				JSONDecoder:  utils.EasyJsonUnmarshal,
 				ProxyHeader:  fiber.HeaderXForwardedFor,
+				BodyLimit:    20 * 1024 * 1024,
 			},
 		),
 		cfg:    cfg,
