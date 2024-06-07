@@ -5,6 +5,7 @@ import (
 
 	"try-on/internal/pkg/common"
 
+	"github.com/go-redis/redis"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
@@ -14,12 +15,14 @@ import (
 type Dependencies struct {
 	DB         *pgxpool.Pool
 	Centrifugo *grpc.ClientConn
+	Redis      *redis.Client
 }
 
 //easyjson:json
 type heartbeatResponse struct {
 	DB         string
 	Centrifugo string
+	Redis      string
 }
 
 func Hearbeat(deps Dependencies) func(*fiber.Ctx) error {
@@ -36,6 +39,14 @@ func Hearbeat(deps Dependencies) func(*fiber.Ctx) error {
 			return ctx.Status(http.StatusServiceUnavailable).
 				JSON(&heartbeatResponse{
 					Centrifugo: deps.Centrifugo.GetState().String(),
+				})
+		}
+
+		result, err := deps.Redis.Ping().Result()
+		if err != nil {
+			return ctx.Status(http.StatusServiceUnavailable).
+				JSON(&heartbeatResponse{
+					Redis: result,
 				})
 		}
 

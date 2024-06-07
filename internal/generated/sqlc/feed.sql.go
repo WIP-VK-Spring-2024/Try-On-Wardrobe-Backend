@@ -28,7 +28,10 @@ select
          else false end is_subbed,
     post_ratings.value as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -62,6 +65,7 @@ type GetLikedPostsRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	Tryonable   bool
 }
 
 func (q *Queries) GetLikedPosts(ctx context.Context, arg GetLikedPostsParams) ([]GetLikedPostsRow, error) {
@@ -87,6 +91,7 @@ func (q *Queries) GetLikedPosts(ctx context.Context, arg GetLikedPostsParams) ([
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.Tryonable,
 		); err != nil {
 			return nil, err
 		}
@@ -113,7 +118,10 @@ select
          else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -148,6 +156,7 @@ type GetPostsRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	Tryonable   bool
 }
 
 func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsRow, error) {
@@ -178,6 +187,89 @@ func (q *Queries) GetPosts(ctx context.Context, arg GetPostsParams) ([]GetPostsR
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.Tryonable,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostsByIds = `-- name: GetPostsByIds :many
+select
+    posts.id,
+    posts.created_at,
+    posts.updated_at,
+    posts.outfit_id,
+    outfits.user_id,
+    outfits.image as outfit_image,
+    users.avatar as user_image,
+    users.name as user_name,
+    posts.rating,
+    case when subs.created_at is not null then true
+         else false end is_subbed,
+    coalesce(post_ratings.value, 0) as user_rating,
+    coalesce(try_on_results.image, '') as try_on_image,
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
+from posts
+join outfits on outfits.id = posts.outfit_id
+join users on users.id = outfits.user_id
+left join post_ratings on post_ratings.user_id = $1
+        and post_ratings.post_id = posts.id
+left join subs on subs.subscriber_id = $1 and subs.user_id = outfits.user_id
+left join try_on_results on try_on_results.id = outfits.try_on_result_id
+where posts.outfit_id = any($2::uuid[])
+order by posts.created_at desc
+`
+
+type GetPostsByIdsRow struct {
+	ID          utils.UUID
+	CreatedAt   pgtype.Timestamp
+	UpdatedAt   pgtype.Timestamp
+	OutfitID    utils.UUID
+	UserID      utils.UUID
+	OutfitImage pgtype.Text
+	UserImage   string
+	UserName    string
+	Rating      int32
+	IsSubbed    bool
+	UserRating  int32
+	TryOnImage  string
+	TryOnID     utils.UUID
+	Tryonable   bool
+}
+
+func (q *Queries) GetPostsByIds(ctx context.Context, userID utils.UUID, outfitIds []utils.UUID) ([]GetPostsByIdsRow, error) {
+	rows, err := q.db.Query(ctx, getPostsByIds, userID, outfitIds)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetPostsByIdsRow
+	for rows.Next() {
+		var i GetPostsByIdsRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.OutfitID,
+			&i.UserID,
+			&i.OutfitImage,
+			&i.UserImage,
+			&i.UserName,
+			&i.Rating,
+			&i.IsSubbed,
+			&i.UserRating,
+			&i.TryOnImage,
+			&i.TryOnID,
+			&i.Tryonable,
 		); err != nil {
 			return nil, err
 		}
@@ -204,7 +296,10 @@ select
          else false end is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -239,6 +334,7 @@ type GetPostsByUserRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	Tryonable   bool
 }
 
 func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) ([]GetPostsByUserRow, error) {
@@ -269,6 +365,7 @@ func (q *Queries) GetPostsByUser(ctx context.Context, arg GetPostsByUserParams) 
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.Tryonable,
 		); err != nil {
 			return nil, err
 		}
@@ -294,7 +391,10 @@ select
     true as is_subbed,
     coalesce(post_ratings.value, 0) as user_rating,
     coalesce(try_on_results.image, '') as try_on_image,
-    coalesce(try_on_results.id, uuid_nil()) as try_on_id
+    coalesce(try_on_results.id, uuid_nil()) as try_on_id,
+    exists(select 1 from clothes
+           join types on clothes.type_id = types.id and types.tryonable = true
+           where outfits.transforms ? clothes.id::text) as tryonable
 from posts
 join outfits on outfits.id = posts.outfit_id
 join users on users.id = outfits.user_id
@@ -327,6 +427,7 @@ type GetSubscriptionPostsRow struct {
 	UserRating  int32
 	TryOnImage  string
 	TryOnID     utils.UUID
+	Tryonable   bool
 }
 
 func (q *Queries) GetSubscriptionPosts(ctx context.Context, arg GetSubscriptionPostsParams) ([]GetSubscriptionPostsRow, error) {
@@ -352,6 +453,7 @@ func (q *Queries) GetSubscriptionPosts(ctx context.Context, arg GetSubscriptionP
 			&i.UserRating,
 			&i.TryOnImage,
 			&i.TryOnID,
+			&i.Tryonable,
 		); err != nil {
 			return nil, err
 		}

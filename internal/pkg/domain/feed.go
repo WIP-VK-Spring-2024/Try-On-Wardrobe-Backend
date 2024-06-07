@@ -21,6 +21,8 @@ type Post struct {
 
 	Rating     int `json:"rating,!omitempty"`      //lint:ignore SA5008 easyjson custom tags
 	UserRating int `json:"user_rating,!omitempty"` //lint:ignore SA5008 easyjson custom tags
+
+	Tryonable bool `json:"tryonable,!omitempty"` //lint:ignore SA5008 easyjson custom tags
 }
 
 //easyjson:json
@@ -68,6 +70,7 @@ type FeedRepository interface {
 	GetLikedPosts(opts GetPostsOpts) ([]Post, error)
 	GetSubscriptionPosts(opts GetPostsOpts) ([]Post, error)
 	GetPostsByUser(userId utils.UUID, opts GetPostsOpts) ([]Post, error)
+	GetPostsByOutfitIds(userId utils.UUID, outfitIds []utils.UUID) ([]Post, error)
 
 	Subscribe(subscriberId, userId utils.UUID) error
 	Unsubscribe(subscriberId, userId utils.UUID) error

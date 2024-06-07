@@ -20,9 +20,11 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/repository/centrifugo"
 	"try-on/internal/pkg/repository/file_manager"
+	feedRepo "try-on/internal/pkg/repository/sqlc/feed"
 	"try-on/internal/pkg/repository/weather"
 	"try-on/internal/pkg/usecase/ml"
 	outfitgen "try-on/internal/pkg/usecase/outfit_gen"
+	"try-on/internal/pkg/usecase/recsys"
 	"try-on/internal/pkg/usecase/translator/gtranslate"
 	tryon "try-on/internal/pkg/usecase/try_on"
 	"try-on/internal/pkg/utils"
@@ -36,6 +38,7 @@ import (
 	clothesUsecase "try-on/internal/pkg/usecase/clothes"
 	tagsUsecase "try-on/internal/pkg/usecase/tags"
 
+	"github.com/go-redis/redis"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -137,6 +140,20 @@ func (app *App) Run() error {
 	)
 	defer tryOnUsecase.Close()
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr: app.cfg.Redis.DSN(),
+	})
+
+	feedRepo := feedRepo.New(pg)
+
+	recsys := recsys.New(
+		feedRepo,
+		redisClient,
+		rabbit.NewPublisher[domain.RecsysRequest](rabbitConn, app.cfg.Rabbit.Recsys.Request),
+		rabbit.NewSubscriber[domain.RecsysResponse](rabbitConn, app.cfg.Rabbit.Recsys.Response),
+	)
+	defer recsys.Close()
+
 	tryOnHandler := tryOnHandler.New(
 		pg, tryOnUsecase,
 		app.logger,
@@ -165,7 +182,7 @@ func (app *App) Run() error {
 
 	tagsHandler := tags.New(pg)
 
-	feedHandler := feed.New(pg)
+	feedHandler := feed.New(feedRepo, recsys)
 
 	usersHandler := users.New(pg, fileManager, &app.cfg.Session, &app.cfg.Static)
 
@@ -181,6 +198,7 @@ func (app *App) Run() error {
 	app.api.Get("/heartbeat", heartbeat.Hearbeat(heartbeat.Dependencies{
 		DB:         pg,
 		Centrifugo: centrifugoConn,
+		Redis:      redisClient,
 	}))
 
 	app.api.Post("/users", usersHandler.Create)
@@ -211,6 +229,7 @@ func (app *App) Run() error {
 
 	app.api.Post("/try-on", tryOnHandler.TryOn)
 	app.api.Post("/try-on/outfit", tryOnHandler.TryOnOutfit)
+	app.api.Post("/try-on/post", tryOnHandler.TryOnPost)
 	app.api.Get("/try-on", tryOnHandler.GetByUser)
 	app.api.Get("/try-on/:id", tryOnHandler.GetTryOnResult)
 	app.api.Delete("/try-on/:id", tryOnHandler.DeleteResult)
@@ -227,6 +246,7 @@ func (app *App) Run() error {
 	app.api.Put("/outfits/:id", outfitHandler.Update)
 
 	app.api.Get("/posts", feedHandler.GetPosts)
+	app.api.Get("/posts/recommended", feedHandler.GetRecommendedPosts)
 	app.api.Get("/users/:id/posts", feedHandler.GetPostsByUser)
 	app.api.Get("/posts/:id/comments", feedHandler.GetComments)
 	app.api.Post("/posts/:id/comments", feedHandler.CreateComment)
@@ -252,6 +272,7 @@ func (app *App) Run() error {
 	clothesHandler.ListenProcessingResults(&app.cfg.Centrifugo)
 	tryOnHandler.ListenTryOnResults(&app.cfg.Centrifugo)
 	outfitHandler.GetGenerationResults(&app.cfg.Centrifugo)
+	recsys.ListenResults(app.logger)
 
 	return app.api.Listen(app.cfg.Addr)
 }
@@ -264,6 +285,7 @@ func NewApp(cfg *config.Config, logger *zap.SugaredLogger) *App {
 				JSONEncoder:  utils.EasyJsonMarshal,
 				JSONDecoder:  utils.EasyJsonUnmarshal,
 				ProxyHeader:  fiber.HeaderXForwardedFor,
+				BodyLimit:    20 * 1024 * 1024,
 			},
 		),
 		cfg:    cfg,

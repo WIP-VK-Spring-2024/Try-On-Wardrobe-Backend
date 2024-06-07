@@ -20,8 +20,8 @@ func AddConfig(cfg *config.Config) func(*fiber.Ctx) error {
 	}
 }
 
-func Config(ctx *fiber.Ctx) *config.Config {
-	cfg, ok := ctx.UserContext().Value(configKey).(*config.Config)
+func Config(ctx context.Context) *config.Config {
+	cfg, ok := ctx.Value(configKey).(*config.Config)
 	if !ok {
 		return nil
 	}

@@ -18,6 +18,7 @@ begin
     elsif tg_op = 'DELETE' then
         delete from post_comments
             where old.id = any(path);
+        return old;
     else
         return new;
     end if;

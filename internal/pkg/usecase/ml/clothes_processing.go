@@ -92,6 +92,10 @@ func (p *ClothesProcessor) GetProcessingResults(logger *zap.SugaredLogger, handl
 			return domain.ResultDiscard
 		}
 
+		if tags == nil {
+			tags = []string{}
+		}
+
 		typeId, tryonable, err := p.classificationRepo.GetTypeBySubtype(subtypeId)
 		if err != nil {
 			logger.Errorw(err.Error())

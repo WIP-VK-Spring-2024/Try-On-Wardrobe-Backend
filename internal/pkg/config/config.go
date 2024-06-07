@@ -22,7 +22,9 @@ type Config struct {
 	Sql            Sql
 	S3             S3
 	Rabbit         Rabbit
+	Redis          Redis
 	Classification Classification
+	ModelsHealth   ModelsHealth
 }
 
 type Static struct {
@@ -54,11 +56,30 @@ type HttpApi struct {
 	GetUrl      string
 }
 
+type Redis struct {
+	Host string
+	Port int
+}
+
+func (r Redis) DSN() string {
+	return fmt.Sprintf("%s:%d", r.Host, r.Port)
+}
+
 type Centrifugo struct {
 	Url               string
 	TryOnChannel      string
 	ProcessingChannel string
 	OutfitGenChannel  string
+}
+
+type ModelsHealth struct {
+	Token       string
+	Endpoint    string
+	TryOn       string
+	Cut         string
+	OutfitGen   string
+	Recsys      string
+	TokenHeader string
 }
 
 type Cors struct {
@@ -76,6 +97,7 @@ type Rabbit struct {
 	TryOn     RabbitQueue
 	Process   RabbitQueue
 	OutfitGen RabbitQueue
+	Recsys    RabbitQueue
 }
 
 type RabbitQueue struct {
@@ -134,7 +156,7 @@ var envBoundConfigValues = []string{
 	"static.httpapi.token",
 	"rabbit.host",
 	"static.httpapi.endpoint",
-	// "weatherapikey",
+	"modelsHealth.token",
 }
 
 func NewDynamicConfig(configPath string, onChange func(*Config), onError func(error)) (*Config, error) {

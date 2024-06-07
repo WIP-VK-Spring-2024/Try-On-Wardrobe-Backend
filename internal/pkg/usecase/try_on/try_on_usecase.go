@@ -9,6 +9,7 @@ import (
 	"try-on/internal/middleware"
 	"try-on/internal/pkg/app_errors"
 	"try-on/internal/pkg/domain"
+	"try-on/internal/pkg/repository/ml"
 	"try-on/internal/pkg/repository/sqlc/clothes"
 	"try-on/internal/pkg/repository/sqlc/outfits"
 	"try-on/internal/pkg/repository/sqlc/user_images"
@@ -23,8 +24,9 @@ type TryOnUsecase struct {
 	outfits    domain.OutfitRepository
 	userImages domain.UserImageRepository
 
-	subscriber domain.Subscriber[domain.TryOnResponse]
-	publisher  domain.Publisher[domain.TryOnRequest]
+	subscriber   domain.Subscriber[domain.TryOnResponse]
+	publisher    domain.Publisher[domain.TryOnRequest]
+	availability domain.AvailabilityChecker
 }
 
 func New(
@@ -33,16 +35,22 @@ func New(
 	sub domain.Subscriber[domain.TryOnResponse],
 ) domain.TryOnUsecase {
 	return &TryOnUsecase{
-		clothes:    clothes.New(db),
-		outfits:    outfits.New(db),
-		userImages: user_images.New(db),
-		publisher:  pub,
-		subscriber: sub,
+		clothes:      clothes.New(db),
+		outfits:      outfits.New(db),
+		userImages:   user_images.New(db),
+		publisher:    pub,
+		subscriber:   sub,
+		availability: ml.NewAvailabilityChecker(),
 	}
 }
 
 func (u *TryOnUsecase) Close() {
 	u.publisher.Close()
+}
+
+func (u *TryOnUsecase) IsAvailable(ctx context.Context) (bool, error) {
+	cfg := middleware.Config(ctx).ModelsHealth
+	return u.availability.IsAvailable(cfg.TryOn, ctx)
 }
 
 func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts domain.TryOnOpts) error {
@@ -70,12 +78,12 @@ func (u *TryOnUsecase) TryOn(ctx context.Context, clothesIds []utils.UUID, opts 
 func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts domain.TryOnOpts) error {
 	_, err := u.userImages.Get(opts.UserImageID)
 	if err != nil {
-		return app_errors.New(err)
+		return err
 	}
 
 	clothes, err := u.outfits.GetClothesInfo(outfit)
 	if err != nil {
-		return app_errors.New(err)
+		return err
 	}
 
 	fmt.Printf("Trying out clothes from outfit: %+v\n", clothes)
@@ -87,6 +95,31 @@ func (u *TryOnUsecase) TryOnOutfit(ctx context.Context, outfit utils.UUID, opts 
 	return u.publisher.Publish(ctx, domain.TryOnRequest{
 		TryOnOpts: opts,
 		OutfitID:  outfit,
+		Clothes:   filteredClothes,
+	})
+}
+
+func (u *TryOnUsecase) TryOnPost(ctx context.Context, outfit utils.UUID, opts domain.TryOnOpts) error {
+	_, err := u.userImages.Get(opts.UserImageID)
+	if err != nil {
+		fmt.Println("User image error", err.Error())
+		return err
+	}
+
+	clothes, err := u.outfits.GetClothesInfo(outfit)
+	if err != nil {
+		fmt.Println("clothes info error", err.Error())
+		return err
+	}
+
+	fmt.Printf("Trying out clothes from post: %+v\n", clothes)
+
+	filteredClothes := filterClothesForTryOn(clothes)
+
+	fmt.Printf("Filtered clothes from post for try on: %+v\n", filteredClothes)
+
+	return u.publisher.Publish(ctx, domain.TryOnRequest{
+		TryOnOpts: opts,
 		Clothes:   filteredClothes,
 	})
 }

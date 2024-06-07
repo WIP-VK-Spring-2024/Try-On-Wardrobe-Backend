@@ -161,13 +161,22 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	cfg := middleware.Config(ctx)
+	cfg := middleware.Config(ctx.UserContext())
 
 	tryOn, err := h.results.GetByClothes(req.UserImageID, req.ClothesID)
 	if err == nil {
 		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
 		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
 		return ctx.SendString(common.EmptyJson)
+	}
+
+	isAvailable, err := h.tryOnModel.IsAvailable(ctx.UserContext())
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	if !isAvailable {
+		return app_errors.ErrModelUnavailable
 	}
 
 	err = h.tryOnModel.TryOn(ctx.UserContext(), req.ClothesID, domain.TryOnOpts{
@@ -177,7 +186,6 @@ func (h *TryOnHandler) TryOn(ctx *fiber.Ctx) error {
 		ClothesDir:   cfg.Static.Cut,
 	})
 	if err != nil {
-		middleware.LogWarning(ctx, err)
 		return app_errors.New(err)
 	}
 
@@ -203,9 +211,9 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 		return app_errors.ErrBadRequest
 	}
 
-	cfg := middleware.Config(ctx)
+	cfg := middleware.Config(ctx.UserContext())
 
-	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.OutfitID)
+	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.OutfitID, true)
 	if err == nil {
 		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
 		tryOn.OutfitID = req.OutfitID
@@ -213,7 +221,67 @@ func (h *TryOnHandler) TryOnOutfit(ctx *fiber.Ctx) error {
 		return ctx.SendString(common.EmptyJson)
 	}
 
+	isAvailable, err := h.tryOnModel.IsAvailable(ctx.UserContext())
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	if !isAvailable {
+		return app_errors.ErrModelUnavailable
+	}
+
 	err = h.tryOnModel.TryOnOutfit(ctx.UserContext(), req.OutfitID, domain.TryOnOpts{
+		UserID:       session.UserID,
+		UserImageID:  req.UserImageID,
+		UserImageDir: cfg.Static.FullBody,
+		ClothesDir:   cfg.Static.Cut,
+	})
+	if err != nil {
+		return app_errors.New(err)
+	}
+
+	return ctx.SendString(common.EmptyJson)
+}
+
+//easyjson:json
+type tryOnPostRequest struct {
+	PostID      utils.UUID
+	UserImageID utils.UUID
+}
+
+func (h *TryOnHandler) TryOnPost(ctx *fiber.Ctx) error {
+	session := middleware.Session(ctx)
+	if session == nil {
+		return app_errors.ErrUnauthorized
+	}
+
+	var req tryOnPostRequest
+	err := easyjson.Unmarshal(ctx.Body(), &req)
+	if err != nil {
+		middleware.LogWarning(ctx, err)
+		return app_errors.ErrBadRequest
+	}
+
+	fmt.Printf("Got request %+v\n", req)
+
+	cfg := middleware.Config(ctx.UserContext())
+
+	tryOn, err := h.results.GetByOutfit(req.UserImageID, req.PostID, false)
+	if err == nil {
+		userChannel := cfg.Centrifugo.TryOnChannel + session.UserID.String()
+		h.publisher.Publish(ctx.UserContext(), userChannel, tryOn)
+		return ctx.SendString(common.EmptyJson)
+	}
+
+	isAvailable, err := h.tryOnModel.IsAvailable(ctx.UserContext())
+	if err != nil {
+		return app_errors.New(err)
+	}
+	if !isAvailable {
+		return app_errors.ErrModelUnavailable
+	}
+
+	err = h.tryOnModel.TryOnPost(ctx.UserContext(), req.PostID, domain.TryOnOpts{
 		UserID:       session.UserID,
 		UserImageID:  req.UserImageID,
 		UserImageDir: cfg.Static.FullBody,

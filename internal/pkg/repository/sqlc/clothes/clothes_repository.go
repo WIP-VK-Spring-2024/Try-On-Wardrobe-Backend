@@ -68,9 +68,10 @@ func (c ClothesRepository) GetTryOnInfo(ids []utils.UUID) ([]domain.TryOnClothes
 
 	return utils.Map(clothesInfo, func(t *sqlc.GetClothesTryOnInfoRow) *domain.TryOnClothesInfo {
 		return &domain.TryOnClothesInfo{
-			ClothesID: t.ID,
-			Category:  t.Category,
-			Layer:     int(t.Layer),
+			ClothesID:   t.ID,
+			Category:    t.Category,
+			Subcategory: t.Subcategory,
+			Layer:       int(t.Layer),
 		}
 	}), nil
 }

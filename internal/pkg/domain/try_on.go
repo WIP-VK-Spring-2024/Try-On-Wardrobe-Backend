@@ -21,8 +21,10 @@ type TryOnResult struct {
 
 type TryOnUsecase interface {
 	Closer
+	IsAvailable(ctx context.Context) (bool, error)
 	TryOn(ctx context.Context, clothes []utils.UUID, opts TryOnOpts) error
 	TryOnOutfit(ctx context.Context, outfit utils.UUID, opts TryOnOpts) error
+	TryOnPost(ctx context.Context, outfit utils.UUID, opts TryOnOpts) error
 	GetTryOnResults(logger *zap.SugaredLogger, handler func(*TryOnResponse) Result) error
 }
 
@@ -43,9 +45,10 @@ type TryOnRequest struct {
 
 //easyjson:json
 type TryOnClothesInfo struct {
-	ClothesID utils.UUID
-	Category  string
-	Layer     int `json:"-"`
+	ClothesID   utils.UUID
+	Category    string
+	Subcategory string
+	Layer       int `json:"-"`
 }
 
 //easyjson:json
@@ -65,7 +68,7 @@ type TryOnResultRepository interface {
 	Delete(id utils.UUID) error
 	SetTryOnResultID(outfitId, id utils.UUID) error
 	GetByUser(userId utils.UUID) ([]TryOnResult, error)
-	GetByOutfit(userImageId, outfitId utils.UUID) (*TryOnResult, error)
+	GetByOutfit(userImageId, outfitId utils.UUID, updateOutfit bool) (*TryOnResult, error)
 	Get(id utils.UUID) (*TryOnResult, error)
 	GetByClothes(userImageId utils.UUID, clothesId []utils.UUID) (*TryOnResult, error)
 	Rate(id utils.UUID, rating int) error

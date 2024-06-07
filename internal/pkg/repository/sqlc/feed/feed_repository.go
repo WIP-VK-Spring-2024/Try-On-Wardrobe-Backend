@@ -40,6 +40,15 @@ func (f FeedRepository) GetPosts(opts domain.GetPostsOpts) ([]domain.Post, error
 	return utils.Map(posts, postsFromSqlc), nil
 }
 
+func (f FeedRepository) GetPostsByOutfitIds(userId utils.UUID, outfitIds []utils.UUID) ([]domain.Post, error) {
+	posts, err := f.queries.GetPostsByIds(context.Background(), userId, outfitIds)
+	if err != nil {
+		return nil, utils.PgxError(err)
+	}
+
+	return utils.Map(posts, outfitIdPostsFromSqlc), nil
+}
+
 func (f FeedRepository) GetPostsByUser(userId utils.UUID, opts domain.GetPostsOpts) ([]domain.Post, error) {
 	posts, err := f.queries.GetPostsByUser(context.Background(), sqlc.GetPostsByUserParams{
 		Since:    pgtype.Timestamp{Time: opts.Since.Time, Valid: true},
@@ -195,6 +204,11 @@ func subbedPostsFromSqlc(model *sqlc.GetSubscriptionPostsRow) *domain.Post {
 	return postsFromSqlc(&tmp)
 }
 
+func outfitIdPostsFromSqlc(model *sqlc.GetPostsByIdsRow) *domain.Post {
+	tmp := sqlc.GetPostsRow(*model)
+	return postsFromSqlc(&tmp)
+}
+
 func postsFromSqlc(model *sqlc.GetPostsRow) *domain.Post {
 	return &domain.Post{
 		Model: domain.Model{
@@ -214,6 +228,7 @@ func postsFromSqlc(model *sqlc.GetPostsRow) *domain.Post {
 		UserRating:  int(model.UserRating),
 		TryOnID:     model.TryOnID,
 		TryOnImage:  model.TryOnImage,
+		Tryonable:   model.Tryonable,
 	}
 }
 

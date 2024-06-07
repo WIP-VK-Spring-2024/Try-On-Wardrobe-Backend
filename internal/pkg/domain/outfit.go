@@ -118,6 +118,7 @@ type OutfitGenerationResponse struct {
 
 type OutfitGenerator interface {
 	Closer
+	IsAvailable(ctx context.Context) (bool, error)
 	Generate(ctx context.Context, request OutfitGenerationRequest) error
 	ListenGenerationResults(logger *zap.SugaredLogger, handler func(*OutfitGenerationResponse) Result) error
 }
