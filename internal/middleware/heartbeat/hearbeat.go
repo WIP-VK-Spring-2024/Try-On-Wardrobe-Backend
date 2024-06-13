@@ -25,7 +25,7 @@ type heartbeatResponse struct {
 	Redis      string
 }
 
-func Hearbeat(deps Dependencies) func(*fiber.Ctx) error {
+func Heartbeat(deps Dependencies) func(*fiber.Ctx) error {
 	return func(ctx *fiber.Ctx) error {
 		err := deps.DB.Ping(ctx.UserContext())
 		if err != nil {
