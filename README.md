@@ -69,8 +69,7 @@
     "avatar": "/avatars/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
     "gender": "male",
     "privacy": "private"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -98,8 +97,7 @@
     "avatar": "/avatars/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
     "gender": "male",
     "privacy": "private"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -150,7 +148,7 @@
   "msg": "Неправильный формат запроса",
   "errors": {
     "name": ["Неподдерживаемые символы"],
-    "email": ["Неподдерживаемые символы", "Неверный формат почты]
+    "email": ["Неподдерживаемые символы", "Неверный формат почты"]
   }
 }</pre></td>
   </tr>
@@ -242,7 +240,7 @@
   "msg": "Неправильный формат запроса",
   "errors": {
     "name": ["Неподдерживаемые символы"],
-    "email": ["Неподдерживаемые символы", "Неверный формат почты]
+    "email": ["Неподдерживаемые символы", "Неверный формат почты"]
   }
 }</pre></td>
 </tr>
@@ -307,8 +305,7 @@
     "image": "/clothes/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
     "seasons": ["summer", "winter", "spring", "autumn"],
     "tags": ["Для спорта", "Лёгкое"]
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -502,11 +499,9 @@
         "updated_at": "2024-04-13T12:00:07.458144Z",
         "name": "Футболка",
         "type_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
-      },
-      ...
+      }
     ]
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -532,8 +527,7 @@
     "updated_at": "2024-04-13T12:00:07.458144Z",
     "name": "Футболка",
     "type_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -558,8 +552,7 @@
     "created_at": "2024-04-13T12:00:07.458144Z",
     "updated_at": "2024-04-13T12:00:07.458144Z",
     "name": "Спортивный"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -591,8 +584,7 @@
     "created_at": "2024-04-13T12:00:07.458144Z",
     "updated_at": "2024-04-13T12:00:07.458144Z",
     "name": "В зал"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -623,8 +615,7 @@
     "created_at": "2024-04-13T12:00:07.458144Z",
     "updated_at": "2024-04-13T12:00:07.458144Z",
     "name": "В зал"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -649,8 +640,7 @@
     "created_at": "2024-04-13T12:00:07.458144Z",
     "updated_at": "2024-04-13T12:00:07.458144Z",
     "image": "photos/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -764,7 +754,7 @@
 {
   "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
   "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
-  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"],
   "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
 }
 ``` 
@@ -823,7 +813,7 @@
   "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
   "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
   "outfit_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
-  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"],
   "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
 }
 ```
@@ -882,7 +872,7 @@
   "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
   "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
   "outfit_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
-  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"],
   "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
 }
 ```
@@ -939,10 +929,9 @@
     "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
     "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
     "outfit_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
-    "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+    "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"],
     "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -965,7 +954,7 @@
   "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
   "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
   "outfit_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
-  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"],
   "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
 }</pre></td>
   </tr>
@@ -1068,8 +1057,7 @@
     "created_at": "2024-04-13T12:00:07.458144Z",
     "updated_at": "2024-04-13T12:00:07.458144Z",
     "name": "Для активного отдыха"
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -1101,11 +1089,9 @@
       "clothes": [
         {
           "clothes_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
-        },
-        ...
+        }
       ]
-    },
-    ...
+    }
   ]
 }
 ```
@@ -1214,11 +1200,9 @@ Transform не используется на бэкенде, служит для
         "angle": 42,
         "scale": 42,
         "zindex": 0
-      },
-      ...
+      }
     }
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -1255,8 +1239,7 @@ Transform не используется на бэкенде, служит для
       "angle": 42,
       "scale": 42,
       "zindex": 0
-    },
-    ...
+    }
   }
 }</pre></td>
   </tr>
@@ -1380,8 +1363,7 @@ Transform не используется на бэкенде, служит для
     "rating": 42,
     "user_rating": 1, // оценка текущего пользователя. 0, если не поставил лайк, 1 - если поставил
     "tryonable": true
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -1421,8 +1403,7 @@ Transform не используется на бэкенде, служит для
     "rating": 42,
     "user_rating": 1, // оценка текущего пользователя. 0, если не поставил лайк, 1 - если поставил
     "tryonable": true
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
   <tr>
@@ -1471,8 +1452,7 @@ Transform не используется на бэкенде, служит для
     "rating": 42,
     "user_rating": 1, // оценка текущего пользователя. 0, если не поставил лайк, 1 - если поставил
     "tryonable": true
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -1514,8 +1494,7 @@ Transform не используется на бэкенде, служит для
     "rating": 42,
     "user_rating": 1, // оценка текущего пользователя. 0, если не поставил лайк, 1 - если поставил
     "tryonable": true
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -1557,8 +1536,7 @@ Transform не используется на бэкенде, служит для
     "rating": 42,
     "user_rating": 1, // оценка текущего пользователя. 0, если не поставил лайк, 1 - если поставил
     "tryonable": true
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
@@ -1601,8 +1579,7 @@ Transform не используется на бэкенде, служит для
     "parent_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", // для реализации комментов с ответами
     "rating": 42,
     "user_rating": 1 // оценка текущего пользователя. 0, если не поставил лайк, 1 - если поставил
-  },
-  ...
+  }
 ]</pre></td>
   </tr>
 </table>
