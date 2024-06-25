@@ -7,6 +7,7 @@ import (
 	"try-on/internal/pkg/domain"
 	"try-on/internal/pkg/utils"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -95,6 +96,9 @@ func (repo UserRepository) SearchUsers(opts domain.SearchUserOpts) ([]domain.Use
 		Since:        opts.Since,
 		Limit:        int32(opts.Limit),
 	})
+	if err == pgx.ErrNoRows {
+		return []domain.User{}, nil
+	}
 	if err != nil {
 		return nil, utils.PgxError(err)
 	}

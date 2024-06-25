@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -195,7 +194,7 @@ func (app *App) Run() error {
 		checkSession,
 	)
 
-	app.api.Get("/heartbeat", heartbeat.Hearbeat(heartbeat.Dependencies{
+	app.api.Get("/heartbeat", heartbeat.Heartbeat(heartbeat.Dependencies{
 		DB:         pg,
 		Centrifugo: centrifugoConn,
 		Redis:      redisClient,
@@ -261,13 +260,6 @@ func (app *App) Run() error {
 
 	app.api.Post("/users/:id/sub", feedHandler.Subscribe)
 	app.api.Delete("/users/:id/sub", feedHandler.Unsubscribe)
-
-	app.api.Static("/static", app.cfg.Static.Dir)
-
-	app.api.Post("/hook", func(c *fiber.Ctx) error {
-		fmt.Println(string(c.Body()))
-		return c.SendString("{}")
-	})
 
 	clothesHandler.ListenProcessingResults(&app.cfg.Centrifugo)
 	tryOnHandler.ListenTryOnResults(&app.cfg.Centrifugo)
