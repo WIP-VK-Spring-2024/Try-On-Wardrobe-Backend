@@ -3,13 +3,13 @@ package heartbeat
 import (
 	"net/http"
 
+	"try-on/internal/generated/proto/centrifugo"
 	"try-on/internal/pkg/common"
 
 	"github.com/go-redis/redis"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 )
 
 type Dependencies struct {
@@ -26,6 +26,8 @@ type heartbeatResponse struct {
 }
 
 func Heartbeat(deps Dependencies) func(*fiber.Ctx) error {
+	centrifugoClient := centrifugo.NewCentrifugoApiClient(deps.Centrifugo)
+
 	return func(ctx *fiber.Ctx) error {
 		err := deps.DB.Ping(ctx.UserContext())
 		if err != nil {
@@ -35,10 +37,17 @@ func Heartbeat(deps Dependencies) func(*fiber.Ctx) error {
 				})
 		}
 
-		if deps.Centrifugo.GetState() != connectivity.Ready {
+		resp, err := centrifugoClient.Info(ctx.UserContext(), &centrifugo.InfoRequest{})
+		if err != nil {
 			return ctx.Status(http.StatusServiceUnavailable).
 				JSON(&heartbeatResponse{
-					Centrifugo: deps.Centrifugo.GetState().String(),
+					Centrifugo: err.Error(),
+				})
+		}
+		if resp.Error != nil {
+			return ctx.Status(http.StatusServiceUnavailable).
+				JSON(&heartbeatResponse{
+					Centrifugo: resp.Error.Message,
 				})
 		}
 
