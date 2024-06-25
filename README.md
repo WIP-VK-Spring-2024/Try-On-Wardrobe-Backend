@@ -13,8 +13,6 @@
 
 Все POST/PUT/PATCH запросы требуют ```Content-Type=application/json```, за исключением тех, где происходит загрузка картинок. Там требуется ```multipart/form```
 
-### Общее
-
 ### GET /heartbeat
 
 Возвращает текущее состояние сервера, проверяет подключения к Postgres, Centrifugo, Redis
