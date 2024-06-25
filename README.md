@@ -1133,7 +1133,7 @@
 | transforms | map[uuid]Transform |     Нет      | Одежда образа      |
 | img        | image              |     Нет      | Изображение образа |
 
-```json
+```js
 Transform = {
   "x": 42,
   "y": 42,
@@ -1346,7 +1346,7 @@ Transform не используется на бэкенде, служит для
   </tr>
     <tr>
     <td>200</td>
-    <td><pre lang="json">
+    <td><pre lang="jsonc">
 [
   {
     "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
@@ -1386,7 +1386,7 @@ Transform не используется на бэкенде, служит для
   </tr>
     <tr>
     <td>200</td>
-    <td><pre lang="json">
+    <td><pre lang="jsonc">
 [
   {
     "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
@@ -1435,7 +1435,7 @@ Transform не используется на бэкенде, служит для
   </tr>
     <tr>
     <td>200</td>
-    <td><pre lang="json">
+    <td><pre lang="jsonc">
 [
   {
     "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
@@ -1477,7 +1477,7 @@ Transform не используется на бэкенде, служит для
   </tr>
     <tr>
     <td>200</td>
-    <td><pre lang="json">
+    <td><pre lang="jsonc">
 [
   {
     "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
@@ -1519,7 +1519,7 @@ Transform не используется на бэкенде, служит для
   </tr>
     <tr>
     <td>200</td>
-    <td><pre lang="json">
+    <td><pre lang="jsonc">
 [
   {
     "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
@@ -1561,7 +1561,7 @@ Transform не используется на бэкенде, служит для
   </tr>
     <tr>
     <td>200</td>
-    <td><pre lang="json">
+    <td><pre lang="jsonc">
 [
   {
     "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
