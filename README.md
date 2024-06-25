@@ -152,7 +152,7 @@
   "msg": "Неправильный формат запроса",
   "errors": {
     "name": ["Неподдерживаемые символы"],
-    "email": ["Неподдерживаемые символы", "Неверный формат почты],
+    "email": ["Неподдерживаемые символы", "Неверный формат почты]
   }
 }</pre></td>
   </tr>
@@ -244,7 +244,7 @@
   "msg": "Неправильный формат запроса",
   "errors": {
     "name": ["Неподдерживаемые символы"],
-    "email": ["Неподдерживаемые символы", "Неверный формат почты],
+    "email": ["Неподдерживаемые символы", "Неверный формат почты]
   }
 }</pre></td>
 </tr>
@@ -327,6 +327,161 @@
 
 #### Ответы
 
+При получении ответа 200 путь к обрезанному фото и определённые категории, стиль, возвращаются через канал Centrifugo, указанный в config.json (по умолчанию - "processing#\<user_id\>")
+
+Пример ответа из Centrifugo:
+```json
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "msg": "processed",
+  "image": "cut/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "tryonable": "true",
+  "classification": {
+    "type": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "subtype": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "style": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "seasons": ["autumn", "winter"],
+    "tags": ["Тёплое", "С мехом"]
+  }
+}
+```
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "msg": "created",
+  "image": "/clothes/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+}
+</pre></td>
+  </tr>
+</table>
+
+### GET /clothes/:id
+
+Получение вещи
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "created_at": "2024-04-13T12:00:07.458144Z",
+  "updated_at": "2024-04-13T12:00:07.458144Z",
+  "name": "Футболка в зал",
+  "tryonable": "true",
+  "style_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "type_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "subtype_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "image": "/clothes/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "seasons": ["summer", "winter", "spring", "autumn"],
+  "tags": ["Для спорта", "Лёгкое"]
+}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+</table>
+
+### PUT /clothes/:id
+
+Обновление полей вещи
+
+#### Параметры
+
+| Имя     | Тип данных | Опциональный | Описание          |
+| ------- | ---------- | :----------: | ----------------- |
+| img     | image      |      Да      | Фотография вещи   |
+| name    | string     |      Да      | Название вещи     |
+| tags    | string[]   |      Да      | Теги вещи         |
+| seasons | string[]   |      Да      | Времена года вещи |
+| style   | uuid       |      Да      | Стиль вещи        |
+| type    | uuid       |      Да      | Категория вещи    |
+| subtype | uuid       |      Да      | Подкатегория вещи |
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>403</td>
+    <td><pre lang="json">
+{
+  "msg": "Изменять этот ресурс может только его владелец"
+}</pre></td>
+  </tr>
+</table>
+
+### DELETE /clothes/:id
+
+Удаление вещи
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>403</td>
+    <td><pre lang="json">
+{
+  "msg": "Удалять этот ресурс может только его владелец"
+}</pre></td>
+  </tr>
+</table>                          
+
+### GET /types
+
+Получение списка категорий
+
+#### Ответы
+
 <table>
   <tr>
     <th>Код</th>
@@ -338,69 +493,854 @@
 [
   {
     "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
-    "msg": "created",
-    "image": "/clothes/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "created_at": "2024-04-13T12:00:07.458144Z",
+    "updated_at": "2024-04-13T12:00:07.458144Z",
+    "name": "Верх",
+    "tryonable": "true",
+    "subtypes": [
+      {
+        "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+        "created_at": "2024-04-13T12:00:07.458144Z",
+        "updated_at": "2024-04-13T12:00:07.458144Z",
+        "name": "Футболка",
+        "type_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+      },
+      ...
+    ]
   },
   ...
 ]</pre></td>
   </tr>
 </table>
 
-### GET /clothes/:id
-
-### PUT /clothes/:id
-
-### DELETE /clothes/:id
-
-### GET /user/:id/clothes                                
-
-### GET /types
-
 ### GET /subtypes
+
+Получение списка подкатегорий
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+[
+  {
+    "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "created_at": "2024-04-13T12:00:07.458144Z",
+    "updated_at": "2024-04-13T12:00:07.458144Z",
+    "name": "Футболка",
+    "type_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+  },
+  ...
+]</pre></td>
+  </tr>
+</table>
 
 ### GET /styles
 
+Получение списка стилей
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+[
+  {
+    "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "created_at": "2024-04-13T12:00:07.458144Z",
+    "updated_at": "2024-04-13T12:00:07.458144Z",
+    "name": "Спортивный"
+  },
+  ...
+]</pre></td>
+  </tr>
+</table>
+
 ### GET /tags
+
+Получение списка тегов
+
+#### Параметры
+
+| Имя   | Тип данных | Опциональный | Описание                            |
+| ----- | ---------- | :----------: | ----------------------------------- |
+| limit | int        |      Да      | Максимальное кол-во тегов  в ответе |
+| from  | int        |      Да      | Offset для пагинации                |
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+[
+  {
+    "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "created_at": "2024-04-13T12:00:07.458144Z",
+    "updated_at": "2024-04-13T12:00:07.458144Z",
+    "name": "В зал"
+  },
+  ...
+]</pre></td>
+  </tr>
+</table>
  
 ### GET /tags/favourite
 
+Получение списка наиболее используемых тегов пользователя
+
+#### Параметры
+
+| Имя   | Тип данных | Опциональный | Описание                            |
+| ----- | ---------- | :----------: | ----------------------------------- |
+| limit | int        |      Да      | Максимальное кол-во тегов  в ответе |
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+[
+  {
+    "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "created_at": "2024-04-13T12:00:07.458144Z",
+    "updated_at": "2024-04-13T12:00:07.458144Z",
+    "name": "В зал"
+  },
+  ...
+]</pre></td>
+  </tr>
+</table>
+
 ### GET /photos
+
+Получение списка загруженных фото пользователя
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+[
+  {
+    "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "created_at": "2024-04-13T12:00:07.458144Z",
+    "updated_at": "2024-04-13T12:00:07.458144Z",
+    "image": "photos/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+  },
+  ...
+]</pre></td>
+  </tr>
+</table>
  
 ### GET /photos/:id
 
+Получение фото пользователя по id
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "created_at": "2024-04-13T12:00:07.458144Z",
+  "updated_at": "2024-04-13T12:00:07.458144Z",
+  "image": "photos/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+</table>
+
 ### POST /photos
+
+Загрузка фото пользователя
+
+#### Параметры
+
+| Имя | Тип данных | Опциональный | Описание                |
+| --- | ---------- | :----------: | ----------------------- |
+| img | image      |     Нет      | Фотография пользователя |
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "image": "photos/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+}</pre></td>
+  </tr>
+</table>
 
 ### DELETE /photos/:id
 
+Удаление фото пользователя
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>403</td>
+    <td><pre lang="json">
+{
+  "msg": "Удалять этот ресурс может только его владелец"
+}</pre></td>
+  </tr>
+</table>
+
 ### POST /try-on
+
+Примерка одной или нескольких вещей
+
+#### Параметры
+
+| Имя           | Тип данных | Опциональный | Описание                      |
+| ------------- | ---------- | :----------: | ----------------------------- |
+| user_image_id | uuid       |     Нет      | ID фотографии пользователя    |
+| clothes_id    | uuid[]     |     Нет      | Массив ID одежды для примерки |
+
+#### Ответы
+
+При получении ответа 200 результат примерки возвращается через канал Centrifugo, указанный в config.json (по умолчанию - "try-on#\<user_id\>")
+
+Пример ответа из Centrifugo:
+```json
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+  "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+}
+``` 
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>400</td>
+    <td><pre lang="json">
+{
+  "msg": "Невозможно примерить запрашиваемую одежду"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Указанной фотографии/вещей не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>503</td>
+    <td><pre lang="json">
+{
+  "msg": "Сервис примерки недоступен"
+}</pre></td>
+  </tr>
+</table>
 
 ### POST /try-on/outfit
 
+Примерка образа
+
+#### Параметры
+
+| Имя           | Тип данных | Опциональный | Описание                   |
+| ------------- | ---------- | :----------: | -------------------------- |
+| user_image_id | uuid       |     Нет      | ID фотографии пользователя |
+| outfit_id     | uuid       |     Нет      | ID образа для примерки     |
+
+#### Ответы
+
+При получении ответа 200 результат примерки возвращается через канал Centrifugo, указанный в config.json (по умолчанию - "try-on#\<user_id\>")
+
+Пример ответа из Centrifugo:
+```json
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "outfit_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+  "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+}
+```
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>400</td>
+    <td><pre lang="json">
+{
+  "msg": "Невозможно примерить запрашиваемый образ"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Указанной фотографии/образа не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>503</td>
+    <td><pre lang="json">
+{
+  "msg": "Сервис примерки недоступен"
+}</pre></td>
+  </tr>
+</table>
+
 ### POST /try-on/post
+
+Примерка образа из поста
+
+#### Параметры
+
+| Имя           | Тип данных | Опциональный | Описание                   |
+| ------------- | ---------- | :----------: | -------------------------- |
+| user_image_id | uuid       |     Нет      | ID фотографии пользователя |
+| post_id       | uuid       |     Нет      | ID **образа** для примерки |
+
+#### Ответы
+
+При получении ответа 200 результат примерки возвращается через канал Centrifugo, указанный в config.json (по умолчанию - "try-on#\<user_id\>")
+
+Пример ответа из Centrifugo:
+```json
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "outfit_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+  "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+}
+```
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>400</td>
+    <td><pre lang="json">
+{
+  "msg": "Невозможно примерить запрашиваемый образ"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Указанной фотографии/образа не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>503</td>
+    <td><pre lang="json">
+{
+  "msg": "Сервис примерки недоступен"
+}</pre></td>
+  </tr>
+</table>
  
 ### GET /try-on
 
+Получение списка результатов примерок текущего пользователя
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+[
+  {
+    "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "outfit_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+    "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+  },
+  ...
+]</pre></td>
+  </tr>
+</table>
+
 ### GET /try-on/:id
+
+Получение результата примерки по ID
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "user_image_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "outfit_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "clothes_id": ["2a78df8a-0277-4c72-a2d9-43fb8fef1d2c", ...],
+  "image": "/try-on/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+</table>
 
 ### DELETE /try-on/:id
 
+Удаление результата примерки
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>403</td>
+    <td><pre lang="json">
+{
+  "msg": "Удалять этот ресурс может только его владелец"
+}</pre></td>
+  </tr>
+</table>
+
 ### PATCH /try-on/:id/rate
+
+Оценка результата примерки (планировалось использовать оценки для сбора статистики качества модели)
+
+#### Параметры
+
+| Имя    | Тип данных   | Опциональный | Описание                   |
+| ------ | ------------ | :----------: | -------------------------- |
+| rating | -1 \| 0 \| 1 |     Нет      | Оценка результата примерки |
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>403</td>
+    <td><pre lang="json">
+{
+  "msg": "Изменять этот ресурс может только его владелец"
+}</pre></td>
+  </tr>
+</table>
 
 ### GET /outfits/purposes
 
+Получение списка назначений образов. Используются в генерации образов
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+[
+  {
+    "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "created_at": "2024-04-13T12:00:07.458144Z",
+    "updated_at": "2024-04-13T12:00:07.458144Z",
+    "name": "Для активного отдыха"
+  },
+  ...
+]</pre></td>
+  </tr>
+</table>
+
 ### GET /outfits/gen
+
+Получение сгенерированных образов
+
+#### Параметры
+
+| Имя         | Тип данных               | Опциональный | Описание                                                         |
+| ----------- | ------------------------ | :----------: | ---------------------------------------------------------------- |
+| amount      | int                      |      Да      | Максимальное число образов в ответе                              |
+| use_weather | bool                     |      Да      | Учитывать ли погоду в генерации                                  |
+| prompt      | string                   |      Да      | Описание желаемого образа                                        |
+| purposes    | string[]                 |      Да      | Список назначений образа                                         |
+| pos         | {lat: float, lon: float} |      Да      | Координаты пользователя (будет использован IP, если не переданы) |
+
+#### Ответы
+
+
+При получении ответа 200 результат примерки возвращается через канал Centrifugo, указанный в config.json (по умолчанию - "outfit-gen#\<user_id\>")
+
+Пример ответа из Centrifugo:
+```json
+{
+  "outfits": [
+    {
+      "clothes": [
+        {
+          "clothes_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+        },
+        ...
+      ]
+    },
+    ...
+  ]
+}
+```
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>400</td>
+    <td><pre lang="json">
+{
+  "msg": "Не хватает одежды для генерации"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>503</td>
+    <td><pre lang="json">
+{
+  "msg": "Сервис генерации образов недоступен"
+}</pre></td>
+  </tr>
+</table>
 
 ### POST /outfits
 
+Создание образа
+
+#### Параметры
+
+| Имя        | Тип данных         | Опциональный | Описание           |
+| ---------- | ------------------ | :----------: | ------------------ |
+| transforms | map[uuid]Transform |     Нет      | Одежда образа      |
+| img        | image              |     Нет      | Изображение образа |
+
+```json
+Transform = {
+  "x": 42,
+  "y": 42,
+  "width": 42,
+  "height": 42,
+  "angle": 42,
+  "scale": 42,
+  "zindex": 0
+}
+```
+
+Transform не используется на бэкенде, служит для отрисовки одежды в редакторе
+
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "image": "outfits/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "created_at": "2024-04-13T12:00:07.458144Z",
+  "updated_at": "2024-04-13T12:00:07.458144Z",
+}</pre></td>
+  </tr>
+</table>
+
 ### GET /outfits
 
-### GET /user/:id/outfits
+Получение образов текущего пользователя
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+[
+  {
+    "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "created_at": "2024-04-13T12:00:07.458144Z",
+    "updated_at": "2024-04-13T12:00:07.458144Z",
+    "name": "Образ для активного отдыха",
+    "image": "photos/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "tags": ["В поход", "Для спорта"],
+    "privacy": "private",
+    "user_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+    "transforms": {
+      "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c": {
+        "x": 42,
+        "y": 42,
+        "width": 42,
+        "height": 42,
+        "angle": 42,
+        "scale": 42,
+        "zindex": 0
+      },
+      ...
+    }
+  },
+  ...
+]</pre></td>
+  </tr>
+</table>
 
 ### GET /outfits/:id
 
+Получение образа по ID
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+    <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{
+  "uuid": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "created_at": "2024-04-13T12:00:07.458144Z",
+  "updated_at": "2024-04-13T12:00:07.458144Z",
+  "name": "Образ для активного отдыха",
+  "image": "photos/2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "tags": ["В поход", "Для спорта"],
+  "privacy": "private",
+  "user_id": "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c",
+  "transforms": {
+    "2a78df8a-0277-4c72-a2d9-43fb8fef1d2c": {
+      "x": 42,
+      "y": 42,
+      "width": 42,
+      "height": 42,
+      "angle": 42,
+      "scale": 42,
+      "zindex": 0
+    },
+    ...
+  }
+}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+</table>
+
 ### DELETE /outfits/:id
 
+Удаление образа
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>403</td>
+    <td><pre lang="json">
+{
+  "msg": "Удалять этот ресурс может только его владелец"
+}</pre></td>
+  </tr>
+</table>
+
 ### PUT /outfits/:id
+
+#### Параметры
+
+| Имя        | Тип данных         | Опциональный | Описание           |
+| ---------- | ------------------ | :----------: | ------------------ |
+| transforms | map[uuid]Transform |     Нет      | Одежда образа      |
+| img        | image              |     Нет      | Изображение образа |
+| tags       | string[]           |     Нет      | Теги образа        |
+| name       | string             |     Нет      | Название образа    |
+
+Обновление образа
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>403</td>
+    <td><pre lang="json">
+{
+  "msg": "Изменять этот ресурс может только его владелец"
+}</pre></td>
+  </tr>
+</table>
 
 ### GET /posts
 
@@ -419,6 +1359,34 @@
 ### PUT /comments/:id
 
 ### DELETE /comments/:id
+
+#### Ответы
+
+<table>
+  <tr>
+    <th>Код</th>
+    <th>Пример</th>
+  </tr>
+  <tr>
+    <td>200</td>
+    <td><pre lang="json">
+{}</pre></td>
+  </tr>
+  <tr>
+    <td>404</td>
+    <td><pre lang="json">
+{
+  "msg": "Запрашиваемого ресурса не существует"
+}</pre></td>
+  </tr>
+  <tr>
+    <td>403</td>
+    <td><pre lang="json">
+{
+  "msg": "Удалять этот ресурс может только его владелец"
+}</pre></td>
+  </tr>
+</table>
 
 ### GET /posts/liked
 
